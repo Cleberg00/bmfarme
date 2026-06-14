@@ -6,11 +6,13 @@ function get(name) {
 }
 
 module.exports = {
-  get jwtSecret()          { return get('JWT_SECRET'); },
-  get dataApiKey()         { return get('DATA_API_KEY'); },
-  get cloudflareApiToken() { return get('CLOUDFLARE_API_TOKEN'); },
-  get cloudflareAccountId(){ return get('CLOUDFLARE_ACCOUNT_ID'); },
-  get vpsIp()              { return get('VPS_IP'); },
-  get sms24ApiKey()        { return get('SMS24_API_KEY'); },
-  get sms24ApiUrl()        { return get('SMS24_API_URL'); },
+  get jwtSecret()                  { return get('JWT_SECRET'); },
+  get cloudflareApiToken()         { return get('CLOUDFLARE_API_TOKEN'); },
+  get cloudflareAccountId()        { return get('CLOUDFLARE_ACCOUNT_ID'); },
+  get cloudflareWorkersSubdomain() { return get('CLOUDFLARE_WORKERS_SUBDOMAIN'); },
+  get sms24ApiKey()                { return get('SMS24_API_KEY'); },
+  get sms24ApiUrl()                { return get('SMS24_API_URL'); },
+  // legado opcional
+  get vpsIp()     { return process.env.VPS_IP || ''; },
+  get dataApiKey(){ return process.env.DATA_API_KEY || ''; },
 };
