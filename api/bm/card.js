@@ -5,6 +5,7 @@ function buildCardHtml(d) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtCnpj(c) { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
   function fmtCep(c)  { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{5})(\d{3})$/,'$1-$2')||c; }
+  function fmtPhone(t){ if(!t) return ''; const n=String(t).replace(/\D/g,''); if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; return t; }
 
   const now = new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
@@ -215,7 +216,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#000;background
     </div>
     <div class="cell bl">
       <span class="fl">Telefone</span>
-      <div class="fv">${esc(d.smsPhone || d.telefone || '')}</div>
+      <div class="fv">${esc(fmtPhone(d.smsPhone || d.telefone || ''))}</div>
     </div>
   </div>
 
@@ -293,33 +294,43 @@ module.exports = async function handler(req, res) {
     ]);
     if (!client) return null;
 
-    // Extrai dados extras do campo raw se existir
-    const raw = client.raw || {};
+    // Formata telefone: "6185494555" → "(61) 8549-4555"
+    function fmtPhone(tel) {
+      if (!tel) return '';
+      const d = String(tel).replace(/\D/g, '');
+      if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+      if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+      return tel;
+    }
+
+    // O campo endereco da BrasilAPI vem como "RUA BAGE, 365, FLAMBOYANT, CHAPADAO DO SUL, MS"
+    // Tenta separar logradouro dos demais campos
+    const endParts = (client.endereco || '').split(',').map(p => p.trim());
+    const logradouro = endParts[0] || '';
+    const numero = endParts[1] || '';
+    // bairro e municipio já vêm nos campos separados do cliente
+    const bairro = client.bairro || endParts[2] || '';
 
     return {
       razaoSocial:        client.razaoSocial        || '',
       nomeFantasia:       client.nomeFantasia        || '',
       cnpj:               client.cnpj               || '',
-      dataAbertura:       raw.data_inicio_atividade
-                            ? new Date(raw.data_inicio_atividade).toLocaleDateString('pt-BR')
-                            : '',
+      dataAbertura:       '',
       situacao:           client.situacao            || 'ATIVA',
-      dataSituacao:       raw.data_situacao_cadastral
-                            ? new Date(raw.data_situacao_cadastral).toLocaleDateString('pt-BR')
-                            : '',
-      porte:              raw.porte                  || '',
-      naturezaJuridica:   raw.natureza_juridica      || '',
+      dataSituacao:       '',
+      porte:              '',
+      naturezaJuridica:   '',
       atividadePrincipal: client.atividadePrincipal  || '',
-      endereco:           client.endereco            || '',
-      numero:             raw.numero                 || '',
-      complemento:        raw.complemento            || '',
-      bairro:             raw.bairro                 || '',
+      endereco:           logradouro,
+      numero:             numero,
+      complemento:        '',
+      bairro:             bairro,
       cep:                client.cep                 || '',
       municipio:          client.municipio           || '',
       uf:                 client.uf                  || '',
       email:              client.email               || '',
-      telefone:           client.telefone            || '',
-      smsPhone:           smsLog?.phoneNumber        || '',
+      telefone:           fmtPhone(client.telefone),
+      smsPhone:           smsLog?.phoneNumber        ? fmtPhone(smsLog.phoneNumber) : '',
     };
   }
 
