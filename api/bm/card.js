@@ -113,7 +113,33 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#000;background
   <!-- Cabeçalho -->
   <div class="hdr">
     <div class="hdr-inner">
-      <img class="brasao" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Coat_of_arms_of_Brazil.svg/200px-Coat_of_arms_of_Brazil.svg.png" alt="" onerror="this.style.display='none'"/>
+      <svg class="brasao" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+        <!-- Brasão simplificado da República Federativa do Brasil -->
+        <circle cx="100" cy="100" r="98" fill="#009C3B" stroke="#FEDF00" stroke-width="4"/>
+        <circle cx="100" cy="100" r="78" fill="#002776"/>
+        <circle cx="100" cy="100" r="68" fill="#009C3B"/>
+        <ellipse cx="100" cy="100" rx="55" ry="38" fill="#002776"/>
+        <!-- Faixa branca diagonal -->
+        <rect x="30" y="92" width="140" height="16" rx="3" fill="white" transform="rotate(-10 100 100)"/>
+        <!-- Texto ORDEM E PROGRESSO -->
+        <text x="100" y="103" text-anchor="middle" font-size="8" font-family="Arial" font-weight="bold" fill="#009C3B" transform="rotate(-10 100 100)">ORDEM E PROGRESSO</text>
+        <!-- Estrelas simplificadas -->
+        <circle cx="100" cy="68" r="3" fill="white"/>
+        <circle cx="78" cy="76" r="2.5" fill="white"/>
+        <circle cx="122" cy="76" r="2.5" fill="white"/>
+        <circle cx="65" cy="90" r="2" fill="white"/>
+        <circle cx="135" cy="90" r="2" fill="white"/>
+        <circle cx="70" cy="108" r="2" fill="white"/>
+        <circle cx="130" cy="108" r="2" fill="white"/>
+        <circle cx="80" cy="122" r="2.5" fill="white"/>
+        <circle cx="120" cy="122" r="2.5" fill="white"/>
+        <circle cx="100" cy="130" r="2.5" fill="white"/>
+        <!-- Ramos -->
+        <path d="M40,140 Q60,110 80,105" stroke="#FEDF00" stroke-width="3" fill="none"/>
+        <path d="M160,140 Q140,110 120,105" stroke="#FEDF00" stroke-width="3" fill="none"/>
+        <path d="M40,140 Q50,155 70,150 Q80,145 80,105" stroke="#009C3B" stroke-width="2" fill="none"/>
+        <path d="M160,140 Q150,155 130,150 Q120,145 120,105" stroke="#009C3B" stroke-width="2" fill="none"/>
+      </svg>
       <div class="hdr-text">
         <h1>República Federativa do Brasil</h1>
         <h2>Cadastro Nacional da Pessoa Jurídica</h2>
