@@ -12,54 +12,56 @@ function buildCardHtml(d) {
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=794"/>
 <title>Comprovante CNPJ</title>
 <style>
-@page{size:A4 portrait;margin:0;}
+@page{size:A4 portrait;margin:10mm 15mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;background:#e8e8e8;min-height:100vh;}
-.page-wrap{width:794px;min-height:1123px;margin:0 auto;background:#fff;padding:40px 45px;}
-.wrap{width:100%;border:1px solid #555;}
+html{zoom:1;}
+body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#000;background:#c8c8c8;}
+.outer{display:flex;justify-content:center;padding:20px 0 40px;}
+.page-wrap{width:720px;background:#fff;padding:30px 35px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
+.wrap{width:100%;border:2px solid #333;}
 /* Header */
-.hdr{padding:8px 12px 6px;text-align:center;border-bottom:1px solid #555;}
-.hdr-inner{display:flex;align-items:center;justify-content:center;gap:14px;}
-.brasao{width:56px;height:auto;}
-.hdr-text h1{font-size:15px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;}
-.hdr-text h2{font-size:12px;font-weight:bold;text-transform:uppercase;margin-top:3px;}
+.hdr{padding:10px 14px 8px;text-align:center;border-bottom:2px solid #333;}
+.hdr-inner{display:flex;align-items:center;justify-content:center;gap:16px;}
+.brasao{width:64px;height:auto;}
+.hdr-text h1{font-size:17px;font-weight:bold;text-transform:uppercase;letter-spacing:0.3px;}
+.hdr-text h2{font-size:13px;font-weight:bold;text-transform:uppercase;margin-top:4px;}
 /* Linha do título doc */
-.title-row{display:flex;border-bottom:1px solid #555;}
-.title-left{padding:5px 10px;border-right:1px solid #555;min-width:170px;}
-.title-left .fl{font-size:8px;color:#555;text-transform:uppercase;display:block;margin-bottom:2px;}
-.title-left .fv{font-size:12px;font-weight:bold;}
-.title-left .fv2{font-size:10px;}
-.title-mid{flex:1;padding:5px 10px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;font-weight:bold;text-transform:uppercase;line-height:1.4;}
-.title-right{padding:5px 10px;border-left:1px solid #555;min-width:120px;}
-.title-right .fl{font-size:8px;color:#555;text-transform:uppercase;display:block;margin-bottom:2px;}
-.title-right .fv{font-size:11px;font-weight:bold;}
+.title-row{display:flex;border-bottom:1px solid #333;}
+.title-left{padding:6px 12px;border-right:1px solid #333;min-width:185px;}
+.title-left .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
+.title-left .fv{font-size:14px;font-weight:bold;}
+.title-left .fv2{font-size:12px;}
+.title-mid{flex:1;padding:6px 12px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:bold;text-transform:uppercase;line-height:1.4;}
+.title-right{padding:6px 12px;border-left:1px solid #333;min-width:130px;}
+.title-right .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
+.title-right .fv{font-size:13px;font-weight:bold;}
 /* Rows */
-.row{padding:5px 10px;border-bottom:1px solid #555;}
-.row .fl{font-size:8px;color:#555;text-transform:uppercase;display:block;margin-bottom:2px;}
-.row .fv{font-size:11px;font-weight:bold;}
-.row-flex{display:flex;border-bottom:1px solid #555;}
-.cell{padding:5px 10px;flex:1;}
-.cell .fl{font-size:8px;color:#555;text-transform:uppercase;display:block;margin-bottom:2px;}
-.cell .fv{font-size:11px;font-weight:bold;}
-.bl{border-left:1px solid #555;}
-.w130{flex:0 0 130px;}
-.w100{flex:0 0 100px;}
-.w80{flex:0 0 80px;}
-.w65{flex:0 0 65px;}
-.w55{flex:0 0 55px;}
+.row{padding:6px 12px;border-bottom:1px solid #333;}
+.row .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
+.row .fv{font-size:13px;font-weight:bold;}
+.row-flex{display:flex;border-bottom:1px solid #333;}
+.cell{padding:6px 12px;flex:1;}
+.cell .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
+.cell .fv{font-size:13px;font-weight:bold;}
+.bl{border-left:1px solid #333;}
+.w140{flex:0 0 140px;}
+.w110{flex:0 0 110px;}
+.w90{flex:0 0 90px;}
+.w70{flex:0 0 70px;}
+.w60{flex:0 0 60px;}
 /* Footer */
-.ftr{padding:12px 10px 8px;font-size:9px;color:#222;}
-.ftr-bottom{display:flex;justify-content:space-between;margin-top:2px;}
-.actions{display:flex;gap:12px;justify-content:center;margin:24px 0 16px;}
-.btn{padding:10px 30px;border:none;border-radius:6px;font-size:11px;font-weight:bold;cursor:pointer;}
+.ftr{padding:14px 12px 10px;font-size:11px;color:#222;}
+.ftr-bottom{display:flex;justify-content:space-between;margin-top:3px;}
+.actions{display:flex;gap:14px;justify-content:center;margin:28px 0 20px;}
+.btn{padding:11px 32px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;}
 .btn-p{background:#1a7f4b;color:#fff;}
 .btn-c{background:#e5e7eb;color:#374151;}
 @media print{
   body{background:#fff;}
-  .page-wrap{width:100%;padding:8mm 10mm;margin:0;}
+  .outer{padding:0;}
+  .page-wrap{width:100%;padding:0;box-shadow:none;}
   .actions{display:none;}
 }
 /* Header */
@@ -104,6 +106,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;background
 </style>
 </head>
 <body>
+<div class="outer">
 <div class="page-wrap">
 <div class="wrap">
 
@@ -174,11 +177,11 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;background
       <span class="fl">Logradouro</span>
       <div class="fv">${esc(d.endereco||'')}</div>
     </div>
-    <div class="cell bl w70">
+    <div class="cell bl w90">
       <span class="fl">Número</span>
       <div class="fv">${esc(d.numero||'S/N')}</div>
     </div>
-    <div class="cell bl w120">
+    <div class="cell bl w140">
       <span class="fl">Complemento</span>
       <div class="fv">${esc(d.complemento||'********')}</div>
     </div>
@@ -186,7 +189,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;background
 
   <!-- CEP / Bairro / Município / UF -->
   <div class="row-flex">
-    <div class="cell w90">
+    <div class="cell w110">
       <span class="fl">CEP</span>
       <div class="fv">${esc(fmtCep(d.cep))}</div>
     </div>
@@ -198,7 +201,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;background
       <span class="fl">Município</span>
       <div class="fv">${esc(d.municipio||'')}</div>
     </div>
-    <div class="cell bl w50">
+    <div class="cell bl w60">
       <span class="fl">UF</span>
       <div class="fv">${esc(d.uf||'')}</div>
     </div>
@@ -267,6 +270,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#000;background
   <button class="btn btn-c" onclick="window.close()">✕ Fechar</button>
 </div>
 </div><!-- /page-wrap -->
+</div><!-- /outer -->
 </body>
 </html>`;
 }
