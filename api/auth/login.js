@@ -33,6 +33,7 @@ module.exports = async function handler(req, res) {
       user: { id: user.id, email: user.email, name: user.name, role: user.role }
     });
   } catch (error) {
+    console.error('[login error]', error);
     return res.status(500).json({ error: error.message || 'Falha no login.' });
   }
 };
