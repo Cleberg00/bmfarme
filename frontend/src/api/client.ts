@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+// Na Vercel, as API routes ficam no mesmo domínio em /api
+// Se VITE_API_URL não estiver definido, usa caminho relativo (funciona em produção e dev com proxy)
+const baseURL = import.meta.env.VITE_API_URL
+  ? import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/api'
+  : '/api';
+
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:3000') + '/api',
+  baseURL,
   headers: { 'Content-Type': 'application/json' },
 });
 
