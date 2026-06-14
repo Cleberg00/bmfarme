@@ -12,8 +12,11 @@ module.exports = async function handler(req, res) {
 
   try {
     const { cnpj } = req.query;
+
+    // Busca dados frescos da Receita Federal
     const cnpjData = await lookupCnpj(cnpj);
 
+    // Salva/atualiza no banco
     const client = await prisma.client.upsert({
       where: { cnpj: cnpjData.cnpj },
       update: {
@@ -31,10 +34,14 @@ module.exports = async function handler(req, res) {
       }
     });
 
-    // Retorna cliente do banco + dados extras da API (nomeFantasia, telefone, etc.)
+    // Retorna dados da API (sempre frescos) + id do banco
     return res.status(200).json({
-      ...client,
+      id: client.id,
+      cnpj: cnpjData.cnpj,
+      razaoSocial: cnpjData.razaoSocial,
       nomeFantasia: cnpjData.nomeFantasia,
+      endereco: cnpjData.endereco,
+      cep: cnpjData.cep,
       municipio: cnpjData.municipio,
       uf: cnpjData.uf,
       situacao: cnpjData.situacao,
