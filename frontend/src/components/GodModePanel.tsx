@@ -5,6 +5,7 @@ import InfraBlock from './blocks/InfraBlock';
 import SmsBlock from './blocks/SmsBlock';
 import TrackingBlock from './blocks/TrackingBlock';
 import DashboardPanel from './DashboardPanel';
+import WabaPanel from './WabaPanel';
 
 type ClientData = {
   razaoSocial: string;
@@ -51,10 +52,10 @@ export default function GodModePanel() {
   const [smsPhone, setSmsPhone] = useState<string | null>(null);
   const [generatingCard, setGeneratingCard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showWaba, setShowWaba] = useState(false);
 
-  if (showDashboard) {
-    return <DashboardPanel onBack={() => setShowDashboard(false)} />;
-  }
+  if (showDashboard) return <DashboardPanel onBack={() => setShowDashboard(false)} />;
+  if (showWaba)      return <WabaPanel onBack={() => setShowWaba(false)} />;
 
   const resetPipeline = () => {
     setClientId(null);
@@ -103,12 +104,14 @@ export default function GodModePanel() {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {/* Dashboard */}
-            <button
-              type="button"
-              onClick={() => setShowDashboard(true)}
-              className="rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm font-semibold text-purple-400 transition hover:bg-purple-500/20"
-            >
+            <button type="button" onClick={() => setShowDashboard(true)}
+              className="rounded-xl border border-purple-500/30 bg-purple-500/10 px-4 py-2 text-sm font-semibold text-purple-400 transition hover:bg-purple-500/20">
               📊 Dashboard
+            </button>
+            {/* WABAs */}
+            <button type="button" onClick={() => setShowWaba(true)}
+              className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400 transition hover:bg-green-500/20">
+              📱 WABAs
             </button>
             {/* Cartão CNPJ — só aparece quando tem cliente */}
             {clientId && (

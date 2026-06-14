@@ -39,6 +39,7 @@ model User {
   domains   Domain[]
   smsLogs   SmsLog[]
   bmAssets  BmAsset[]
+  wabaAssets WabaAsset[]
 }
 
 model Client {
@@ -94,8 +95,22 @@ model SmsLog {
   bmAssets    BmAsset[]
 }
 
+enum WabaTier {
+  TIER_1K
+  TIER_10K
+  TIER_100K
+  UNLIMITED
+}
+
+enum WabaStatus {
+  ACTIVE
+  SUSPENDED
+  FLAGGED
+  UNKNOWN
+}
+
 model BmAsset {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   bmId        String
   profileUsed String
   notes       String?
@@ -103,11 +118,28 @@ model BmAsset {
   domainId    String
   smsLogId    String
   userId      String
-  createdAt   DateTime @default(now())
-  client      Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
-  domain      Domain   @relation(fields: [domainId], references: [id], onDelete: Restrict)
-  smsLog      SmsLog   @relation(fields: [smsLogId], references: [id], onDelete: Restrict)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt   DateTime    @default(now())
+  client      Client      @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  domain      Domain      @relation(fields: [domainId], references: [id], onDelete: Restrict)
+  smsLog      SmsLog      @relation(fields: [smsLogId], references: [id], onDelete: Restrict)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  wabaAssets  WabaAsset[]
 
   @@unique([clientId, bmId])
+}
+
+model WabaAsset {
+  id          String     @id @default(cuid())
+  wabaId      String     @unique
+  displayName String
+  tier        WabaTier   @default(TIER_1K)
+  status      WabaStatus @default(ACTIVE)
+  phoneNumber String?
+  notes       String?
+  bmAssetId   String?
+  userId      String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bmAsset     BmAsset?   @relation(fields: [bmAssetId], references: [id], onDelete: SetNull)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Restrict)
 }

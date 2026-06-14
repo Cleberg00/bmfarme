@@ -9,11 +9,13 @@
     "prisma:migrate": "prisma migrate deploy --schema=prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^5.16.2",
+    "@prisma/client": "^5.22.0",
     "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "node-ssh": "^13.2.0",
-    "prisma": "^5.16.2"
+    "node-ssh": "^13.2.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
   }
 }
