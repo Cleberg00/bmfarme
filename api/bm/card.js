@@ -113,7 +113,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#000;background
   <!-- Cabeçalho -->
   <div class="hdr">
     <div class="hdr-inner">
-      <img class="brasao" src="/brasao2.gif" alt="Brasão da República"/>
+      <img class="brasao" src="https://bmfarme.vercel.app/brasao2.gif" alt="Brasão"/>
       <div class="hdr-text">
         <h1>República Federativa do Brasil</h1>
         <h2>Cadastro Nacional da Pessoa Jurídica</h2>
