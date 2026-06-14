@@ -14,10 +14,12 @@ function buildCardHtml(d) {
 <meta charset="UTF-8"/>
 <title>Comprovante CNPJ</title>
 <style>
-@page{size:A4 portrait;margin:10mm 12mm;}
+@page{size:A4 portrait;margin:15mm 20mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,Helvetica,sans-serif;font-size:9pt;color:#000;background:#fff;}
+body{font-family:Arial,Helvetica,sans-serif;font-size:9pt;color:#000;background:#e8e8e8;}
+.page-wrap{width:210mm;min-height:297mm;margin:0 auto;background:#fff;padding:15mm 20mm;}
 .wrap{width:100%;border:1px solid #555;}
+@media print{body{background:#fff;}.page-wrap{width:100%;padding:0;margin:0;}.actions{display:none;}}
 /* Header */
 .hdr{padding:6px 10px 4px;text-align:center;border-bottom:1px solid #555;}
 .hdr-inner{display:flex;align-items:center;justify-content:center;gap:12px;}
@@ -60,6 +62,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:9pt;color:#000;background:
 </style>
 </head>
 <body>
+<div class="page-wrap">
 <div class="wrap">
 
   <!-- Cabeçalho -->
@@ -221,6 +224,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:9pt;color:#000;background:
   <button class="btn btn-p" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
   <button class="btn btn-c" onclick="window.close()">✕ Fechar</button>
 </div>
+</div><!-- /page-wrap -->
 </body>
 </html>`;
 }
