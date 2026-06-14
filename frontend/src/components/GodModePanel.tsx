@@ -8,6 +8,7 @@ import DashboardPanel from './DashboardPanel';
 import WabaPanel from './WabaPanel';
 import CnpjCardModal from './CnpjCardModal';
 import ProfileModal from './ProfileModal';
+import WabaBlock from './blocks/WabaBlock';
 
 type ClientData = {
   razaoSocial: string;
@@ -108,12 +109,13 @@ export default function GodModePanel() {
           </div>
 
           {/* Barra de progresso */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {[
               { n: 1, label: 'CNPJ',  done: !!clientId },
-              { n: 2, label: 'Infra', done: !!domainId },
+              { n: 2, label: 'Site',  done: !!domainId },
               { n: 3, label: 'SMS',   done: !!smsLogId },
-              { n: 4, label: 'BM',    done: false },
+              { n: 4, label: 'WABA',  done: false },
+              { n: 5, label: 'BM',    done: false },
             ].map((s) => (
               <div key={s.n} className={`rounded-xl border px-3 py-2 text-center text-xs font-bold transition ${s.done ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400' : 'border-slate-800 bg-slate-900 text-slate-600'}`}>
                 {s.done ? '✓' : s.n} {s.label}
@@ -180,8 +182,13 @@ export default function GodModePanel() {
             />
           </StepSection>
 
-          {/* Step 4 — BM */}
-          <StepSection step={4} title="Registrar BM" subtitle="Registre o BM após verificação completa">
+          {/* Step 4 — WABA */}
+          <StepSection step={4} title="Criar WABA" subtitle="Acesse o DataCrazy CRM e crie a WABA vinculada à BM verificada">
+            <WabaBlock />
+          </StepSection>
+
+          {/* Step 5 — BM */}
+          <StepSection step={5} title="Registrar BM" subtitle="Registre o BM após verificação completa">
             <TrackingBlock clientId={clientId} domainId={domainId} smsLogId={smsLogId} />
           </StepSection>
 
