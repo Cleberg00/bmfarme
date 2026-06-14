@@ -4,8 +4,8 @@ import StatusBadge from '../ui/StatusBadge';
 import axios from 'axios';
 
 type InfraBlockProps = {
-  clientId: number | null;
-  onDomainReady: (domainId: number) => void;
+  clientId: string | null;
+  onDomainReady: (domainId: string) => void;
 };
 
 export default function InfraBlock({ clientId, onDomainReady }: InfraBlockProps) {
@@ -23,7 +23,7 @@ export default function InfraBlock({ clientId, onDomainReady }: InfraBlockProps)
     try {
       const { data } = await api.post('/infra/deploy', { domainName, metaVerificationCode, clientId });
       setStatus('success');
-      onDomainReady(data.id ?? data.domain?.id);
+      onDomainReady(data.id ?? data.domain?.id ?? '');
     } catch (requestError) {
       setStatus('error');
       setError(

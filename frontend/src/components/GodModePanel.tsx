@@ -38,10 +38,10 @@ function StepSection({
 
 export default function GodModePanel() {
   const { logout, user } = useAuth();
-  const [clientId, setClientId] = useState<number | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [clientData, setClientData] = useState<ClientData | null>(null);
-  const [domainId, setDomainId] = useState<number | null>(null);
-  const [smsLogId, setSmsLogId] = useState<number | null>(null);
+  const [domainId, setDomainId] = useState<string | null>(null);
+  const [smsLogId, setSmsLogId] = useState<string | null>(null);
   const [smsCode, setSmsCode] = useState<string | null>(null);
 
   const resetPipeline = () => {

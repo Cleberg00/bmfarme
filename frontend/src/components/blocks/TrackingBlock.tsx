@@ -3,9 +3,9 @@ import api from '../../api/client';
 import axios from 'axios';
 
 type TrackingBlockProps = {
-  clientId: number | null;
-  domainId: number | null;
-  smsLogId: number | null;
+  clientId: string | null;
+  domainId: string | null;
+  smsLogId: string | null;
 };
 
 type BmRecord = {

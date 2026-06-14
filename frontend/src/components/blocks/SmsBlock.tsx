@@ -5,12 +5,12 @@ import StatusBadge from '../ui/StatusBadge';
 import axios from 'axios';
 
 type SmsBlockProps = {
-  clientId: number | null;
-  onSmsReady: (smsLogId: number, code: string) => void;
+  clientId: string | null;
+  onSmsReady: (smsLogId: string, code: string) => void;
 };
 
 export default function SmsBlock({ clientId, onSmsReady }: SmsBlockProps) {
-  const [logId, setLogId] = useState<number | null>(null);
+  const [logId, setLogId] = useState<string | null>(null);
   const [generatedPhone, setGeneratedPhone] = useState<string | null>(null);
   const [requestStatus, setRequestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [error, setError] = useState('');
@@ -60,8 +60,8 @@ export default function SmsBlock({ clientId, onSmsReady }: SmsBlockProps) {
     setGeneratedPhone(null);
     try {
       const { data } = await api.post('/sms/generate', { clientId });
-      const nextLogId = data.smsLog?.id ?? data.id;
-      const nextPhone = data.smsLog?.phoneNumber ?? data.phoneNumber ?? null;
+      const nextLogId: string = data.smsLog?.id ?? data.id;
+      const nextPhone: string | null = data.smsLog?.phoneNumber ?? data.phoneNumber ?? null;
       setLogId(nextLogId);
       setGeneratedPhone(nextPhone);
       lastDeliveredCodeRef.current = null;
