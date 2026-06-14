@@ -23,7 +23,7 @@ export default function InfraBlock({ clientId, onDomainReady }: InfraBlockProps)
     try {
       const { data } = await api.post('/infra/deploy', { domainName, metaVerificationCode, clientId });
       setStatus('success');
-      onDomainReady(data.domain.id);
+      onDomainReady(data.id ?? data.domain?.id);
     } catch (requestError) {
       setStatus('error');
       setError(

@@ -27,8 +27,13 @@ export default function TrackingBlock({ clientId, domainId, smsLogId }: Tracking
   const [error, setError] = useState('');
 
   const loadRecords = useCallback(async () => {
-    const { data } = await api.get('/bm/list');
-    setRecords(data.bms || data);
+    try {
+      const { data } = await api.get('/bm/list');
+      // API retorna { items: [], pagination: {} }
+      setRecords(Array.isArray(data) ? data : (data.items ?? []));
+    } catch {
+      // falha silenciosa — tabela fica vazia
+    }
   }, []);
 
   const handleRegister = async () => {

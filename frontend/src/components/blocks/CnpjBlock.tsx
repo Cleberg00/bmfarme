@@ -39,7 +39,8 @@ export default function CnpjBlock({ onClientReady }: CnpjBlockProps) {
     setError('');
     try {
       const { data } = await api.get(`/cnpj/${rawDigits}`);
-      const nextClient = data.client as ClientPayload;
+      // API retorna o objeto Client direto
+      const nextClient = data as ClientPayload;
       setClient(nextClient);
       setStatus('success');
       onClientReady(nextClient.id, {
