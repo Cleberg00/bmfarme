@@ -159,16 +159,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, cep, muni
     const d = String(c || '').replace(/\D/g, '');
     return d.replace(/^(\d{5})(\d{3})$/, '$1-$2') || c;
   }
-
-  // Remove números/pontos do início da razão social
   function cleanName(s) { return String(s || '').replace(/^[\d.\s-]+/, '').trim(); }
-
-  const displayName = esc(cleanName(nomeFantasia || razaoSocial));
-  const razaoFmt    = esc(cleanName(razaoSocial));
-  const cnpjFmt     = esc(formatCnpj(cnpj));
-  const enderecoFmt = [esc(endereco), municipio && uf ? `${esc(municipio)}, ${esc(uf)}` : (esc(municipio) || esc(uf)), cep ? `CEP: ${formatCep(cep)}` : ''].filter(Boolean).join(' — ');
-
-  // Formata telefone removendo código do país
   function fmtPhone(t) {
     if (!t) return '';
     let n = String(t).replace(/\D/g, '');
@@ -178,16 +169,22 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, cep, muni
     return t;
   }
 
+  // Extrai só o código de verificação
+  let verificationCode = metaVerificationCode || '';
+  const contentMatch = verificationCode.match(/content=["']([^"']+)["']/);
+  if (contentMatch) verificationCode = contentMatch[1];
+
+  // Template de cores variado baseado no CNPJ
+  const tpl = getTemplate(cnpj);
+
+  const displayName = esc(cleanName(nomeFantasia || razaoSocial));
+  const razaoFmt    = esc(cleanName(razaoSocial));
+  const cnpjFmt     = esc(formatCnpj(cnpj));
+  const enderecoFmt = [esc(endereco), municipio && uf ? `${esc(municipio)}, ${esc(uf)}` : (esc(municipio) || esc(uf)), cep ? `CEP: ${formatCep(cep)}` : ''].filter(Boolean).join(' — ');
   const telFmt      = esc(fmtPhone(smsPhone || telefone || ''));
   const mailFmt     = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
   const smsCodeFmt  = esc(smsCode || '');
-
-  // Meta tag só se método for meta_tag
-  // Extrai só o código caso o usuário cole o HTML completo da meta tag
-  let verificationCode = metaVerificationCode || '';
-  const contentMatch = verificationCode.match(/content=["']([^"']+)["']/);
-  if (contentMatch) verificationCode = contentMatch[1];
 
   const metaTag = (verificationMethod !== 'html_file' && verificationCode)
     ? `<meta name="facebook-domain-verification" content="${esc(verificationCode)}" />`
@@ -202,12 +199,12 @@ ${metaTag}
 <title>${displayName} | Portal de Atendimento</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Public+Sans:wght@300;400;500;600&display=swap');
-:root{--green:#059669;--green-dark:#047857;--bg:#f3f4f6;--card:#ffffff;--text:#111827;--muted:#4b5563;--light:#9ca3af;--border:#e5e7eb;}
+:root{--green:${tpl.primary};--green-dark:${tpl.dark};--accent-bg:${tpl.accent};--bg:#f3f4f6;--card:#ffffff;--text:${tpl.text};--muted:#4b5563;--light:#9ca3af;--border:#e5e7eb;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Public Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background-image:radial-gradient(#d1d5db 1px,transparent 1px);background-size:24px 24px;}
 .wrap{max-width:700px;width:100%;background:var(--card);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.08);overflow:hidden;border-top:5px solid var(--green);}
 .hdr{padding:40px 40px 30px;text-align:center;border-bottom:1px solid var(--border);}
-.shield{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;background:#ecfdf5;border-radius:12px;margin-bottom:20px;color:var(--green);}
+.shield{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;background:var(--accent-bg);border-radius:12px;margin-bottom:20px;color:var(--green);}
 .shield svg{width:26px;height:26px;}
 .hdr h1{font-family:'Lora',serif;font-size:1.6rem;margin-bottom:8px;letter-spacing:-0.5px;}
 .hdr p{color:var(--muted);font-size:0.95rem;}
@@ -216,7 +213,7 @@ body{font-family:'Public Sans',sans-serif;background:var(--bg);color:var(--text)
 .block{background:#f9fafb;padding:16px;border-radius:4px;border:1px solid var(--border);}
 .lbl{font-size:0.75rem;text-transform:uppercase;color:var(--light);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;}
 .val{font-size:0.95rem;color:var(--text);font-weight:500;}
-.notice{border-left:3px solid var(--green);padding:15px 20px;background:#f8fafc;margin-bottom:35px;}
+.notice{border-left:3px solid var(--green);padding:15px 20px;background:var(--accent-bg);margin-bottom:35px;}
 .notice h3{font-size:0.85rem;text-transform:uppercase;color:var(--green-dark);margin-bottom:8px;}
 .notice p{font-size:0.85rem;line-height:1.6;color:var(--muted);}
 .form-section{border-top:1px solid var(--border);padding-top:35px;}
