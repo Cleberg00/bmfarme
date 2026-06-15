@@ -357,6 +357,21 @@ export default {
       throw new Error(msg);
     }
 
+    // Habilita a rota workers.dev para o worker (necessário via API)
+    try {
+      await axios.post(
+        `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${workerName}/subdomain`,
+        { enabled: true },
+        {
+          headers: {
+            Authorization: `Bearer ${env.cloudflareApiToken}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 15000,
+        }
+      );
+    } catch { /* silencioso — pode já estar habilitado */ }
+
     const url = `https://${workerName}.${workersDomain}.workers.dev`;
     return { workerName, url };
   } catch (error) {
