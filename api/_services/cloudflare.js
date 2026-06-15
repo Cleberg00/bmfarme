@@ -1,6 +1,77 @@
 const axios = require('axios');
 const env = require('../_lib/env');
 
+// ─── Cloudflare Workers AI ───────────────────────────────────────────────────
+
+/**
+ * Gera texto personalizado para a landing page usando Llama via Workers AI.
+ * Retorna objeto { tagline, descricao, antiSpam } ou valores padrão se falhar.
+ */
+async function generateAiContent({ razaoSocial, atividadePrincipal, municipio, uf, smsPhone }) {
+  try {
+    const prompt = `Você é um especialista em comunicação corporativa brasileira.
+Crie conteúdo para uma landing page institucional da empresa "${razaoSocial}" (${atividadePrincipal || 'empresa'}) localizada em ${municipio || 'Brasil'}${uf ? `/${uf}` : ''}.
+${smsPhone ? `O número oficial de WhatsApp é ${smsPhone}.` : ''}
+
+Retorne APENAS um JSON válido com exatamente estas 3 chaves (sem markdown, sem explicações):
+{
+  "tagline": "slogan curto e profissional da empresa (máx 10 palavras)",
+  "descricao": "frase de apresentação institucional (máx 20 palavras, formal)",
+  "antiSpam": "texto de 2 frases explicando que o WhatsApp é apenas para atendimento receptivo e não faz spam"
+}`;
+
+    const res = await axios.post(
+      `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3-8b-instruct`,
+      { messages: [{ role: 'user', content: prompt }], max_tokens: 300 },
+      {
+        headers: { Authorization: `Bearer ${env.cloudflareAiToken}`, 'Content-Type': 'application/json' },
+        timeout: 20000
+      }
+    );
+
+    const text = res.data?.result?.response || '';
+    // Extrai o JSON da resposta
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      return {
+        tagline:  parsed.tagline  || 'Portal de Autoatendimento e Informações Cadastrais',
+        descricao: parsed.descricao || 'Soluções empresariais com transparência e qualidade.',
+        antiSpam: parsed.antiSpam  || 'Nosso canal é exclusivo para atendimento receptivo. Não realizamos spam ou telemarketing.',
+      };
+    }
+  } catch { /* fallback se IA falhar */ }
+
+  return {
+    tagline:  'Portal de Autoatendimento e Informações Cadastrais',
+    descricao: 'Atendimento receptivo e soluções empresariais com transparência.',
+    antiSpam: 'Nosso canal de WhatsApp destina-se exclusivamente ao atendimento receptivo de clientes. Não realizamos spam ou contatos não solicitados.',
+  };
+}
+
+// ─── Templates de cores ──────────────────────────────────────────────────────
+
+const TEMPLATES = [
+  // 1 — Verde financeiro (original)
+  { name: 'verde', primary: '#059669', dark: '#047857', accent: '#ecfdf5', border: '#bbf7d0', text: '#111827' },
+  // 2 — Azul corporativo
+  { name: 'azul', primary: '#2563eb', dark: '#1d4ed8', accent: '#eff6ff', border: '#bfdbfe', text: '#1e3a5f' },
+  // 3 — Cinza executivo
+  { name: 'cinza', primary: '#374151', dark: '#1f2937', accent: '#f9fafb', border: '#d1d5db', text: '#111827' },
+  // 4 — Vinho/roxo institucional
+  { name: 'vinho', primary: '#7c3aed', dark: '#6d28d9', accent: '#f5f3ff', border: '#ddd6fe', text: '#1e1b4b' },
+  // 5 — Laranja/âmbar profissional
+  { name: 'laranja', primary: '#d97706', dark: '#b45309', accent: '#fffbeb', border: '#fde68a', text: '#1c1917' },
+];
+
+function getTemplate(seed) {
+  // Usa o CNPJ como seed para sempre gerar o mesmo template para a mesma empresa
+  const idx = seed ? parseInt(seed.replace(/\D/g, '').slice(0, 4), 10) % TEMPLATES.length : Math.floor(Math.random() * TEMPLATES.length);
+  return TEMPLATES[idx];
+}
+
+// ─── API Client ──────────────────────────────────────────────────────────────
+
 function getApi() {
   return axios.create({
     baseURL: 'https://api.cloudflare.com/client/v4',
@@ -310,4 +381,6 @@ module.exports = {
   createZone, createARecord, deleteZone,
   // workers
   deployWorker, deleteWorker, buildLandingHtml, slugify,
+  // AI
+  generateAiContent,
 };

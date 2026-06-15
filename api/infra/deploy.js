@@ -1,6 +1,6 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
-const { deployWorker, deleteWorker, buildLandingHtml } = require('../_services/cloudflare');
+const { deployWorker, deleteWorker, buildLandingHtml, generateAiContent } = require('../_services/cloudflare');
 
 module.exports = async function handler(req, res) {
   setCors(res);
@@ -46,7 +46,17 @@ module.exports = async function handler(req, res) {
     const smsPhone = smsLog?.phoneNumber || null;
     const smsCode  = smsLog?.smsCode || null;
 
-    // Gera o HTML da landing page com todos os dados do cliente + SMS
+    // Gera conteúdo com IA e HTML da landing page
+    const [aiContent] = await Promise.all([
+      generateAiContent({
+        razaoSocial:        client.razaoSocial,
+        atividadePrincipal: client.atividadePrincipal,
+        municipio:          client.municipio,
+        uf:                 client.uf,
+        smsPhone,
+      }),
+    ]);
+
     const html = buildLandingHtml({
       subdomain:          cleanSubdomain,
       razaoSocial:        client.razaoSocial,
@@ -64,6 +74,7 @@ module.exports = async function handler(req, res) {
       smsCode,
       metaVerificationCode,
       verificationMethod: method,
+      aiContent,
     });
 
     // Publica o worker (cria ou atualiza — a API do Cloudflare faz upsert)

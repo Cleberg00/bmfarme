@@ -144,6 +144,7 @@ export default function GodModePanel() {
           {/* Step 1 — CNPJ */}
           <StepSection step={1} title="Consultar CNPJ" subtitle="Busque os dados da empresa pelo CNPJ">
             <CnpjBlock
+              workerUrl={workerUrl}
               onClientReady={(id, data) => {
                 setClientId(id);
                 setClientData(data);

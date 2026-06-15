@@ -21,6 +21,7 @@ type ClientPayload = {
 
 type CnpjBlockProps = {
   onClientReady: (clientId: string, data: { razaoSocial: string; endereco: string; cep: string }) => void;
+  workerUrl?: string | null;
 };
 
 // Palavras que ficam minúsculas no título
@@ -59,7 +60,7 @@ function formatCnpj(value: string) {
     .replace(/(\d{4})(\d)/, '$1-$2');
 }
 
-export default function CnpjBlock({ onClientReady }: CnpjBlockProps) {
+export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) {
   const [cnpj, setCnpj] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -161,18 +162,25 @@ export default function CnpjBlock({ onClientReady }: CnpjBlockProps) {
           <div className="grid gap-3 sm:grid-cols-2">
             <FieldCopy label="Razão Social" value={client.razaoSocial} />
             {client.nomeFantasia && <FieldCopy label="Nome Fantasia" value={client.nomeFantasia} />}
+            <FieldCopy label="CNPJ (EIN)" value={client.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')} />
+            {client.situacao && <FieldCopy label="Situação" value={client.situacao} />}
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="sm:col-span-2">
-              <FieldCopy label="Endereço" value={client.endereco} />
+
+          {/* Endereço separado por campo — para preencher no Meta */}
+          <div className="rounded-xl border border-slate-700/50 bg-slate-800/30 p-3 space-y-2">
+            <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">📍 Endereço (campos separados para o Meta)</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <FieldCopy label="Endereço (logradouro)" value={client.endereco} />
+              <FieldCopy label="Endereço (continuação / bairro)" value={client.municipio ? client.municipio : ''} />
+              <FieldCopy label="Cidade" value={client.municipio} />
+              <FieldCopy label="Estado / Província" value={client.uf} />
+              <FieldCopy label="CEP / Código Postal" value={client.cep ? client.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : ''} />
+              <FieldCopy label="Telefone Comercial" value={client.telefone} />
             </div>
-            <FieldCopy label="CEP" value={client.cep ? client.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : ''} />
+            {workerUrl && <FieldCopy label="Site da empresa" value={workerUrl} />}
+            {client.email && <FieldCopy label="E-mail" value={client.email} />}
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <FieldCopy label="Município / UF" value={client.municipio && client.uf ? `${client.municipio} / ${client.uf}` : (client.municipio || client.uf)} />
-            <FieldCopy label="Telefone" value={client.telefone} />
-            <FieldCopy label="E-mail" value={client.email} />
-          </div>
+
           {client.atividadePrincipal && (
             <FieldCopy label="Atividade Principal" value={client.atividadePrincipal} />
           )}
