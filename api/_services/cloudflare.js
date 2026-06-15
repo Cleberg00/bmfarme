@@ -160,8 +160,11 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, cep, muni
     return d.replace(/^(\d{5})(\d{3})$/, '$1-$2') || c;
   }
 
-  const displayName = esc(nomeFantasia || razaoSocial);
-  const razaoFmt    = esc(razaoSocial);
+  // Remove números/pontos do início da razão social
+  function cleanName(s) { return String(s || '').replace(/^[\d.\s-]+/, '').trim(); }
+
+  const displayName = esc(cleanName(nomeFantasia || razaoSocial));
+  const razaoFmt    = esc(cleanName(razaoSocial));
   const cnpjFmt     = esc(formatCnpj(cnpj));
   const enderecoFmt = [esc(endereco), municipio && uf ? `${esc(municipio)}, ${esc(uf)}` : (esc(municipio) || esc(uf)), cep ? `CEP: ${formatCep(cep)}` : ''].filter(Boolean).join(' — ');
 

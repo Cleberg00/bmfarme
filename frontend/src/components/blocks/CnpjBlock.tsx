@@ -41,6 +41,11 @@ function toTitleCase(str: string): string {
     .join(' ');
 }
 
+// Remove números/pontos do início da razão social (ex: "65.682.194 THAIS..." → "THAIS...")
+function cleanRazao(str: string): string {
+  return str.replace(/^[\d.\s-]+/, '').trim();
+}
+
 function FieldCopy({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
@@ -147,7 +152,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-lg font-bold text-slate-100">
-                  {toTitleCase(client.nomeFantasia || client.razaoSocial)}
+                  {toTitleCase(cleanRazao(client.nomeFantasia || client.razaoSocial))}
                 </h3>
                 {client.situacao && (
                   <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${client.situacao.toUpperCase().includes('ATIVA') ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
@@ -156,7 +161,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
                 )}
               </div>
               <p className="text-xs text-slate-500 mt-0.5">
-                {toTitleCase(client.razaoSocial)} · {client.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
+                {toTitleCase(cleanRazao(client.razaoSocial))} · {client.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')}
               </p>
             </div>
           </div>
