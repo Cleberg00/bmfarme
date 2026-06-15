@@ -294,25 +294,15 @@ async function deployWorker(subdomain, htmlContent, metaVerificationCode, verifi
   const verificationFileHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><meta name="facebook-domain-verification" content="${cleanCode}" /></body></html>`;
   const verificationFilePath = '/.well-known/facebook-domain-verification.html';
 
-  // Worker script em ES Module — roteia por URL
-  const workerScript = `const MAIN_HTML = ${JSON.stringify(htmlContent)};
-const VERIFY_HTML = ${JSON.stringify(verificationFileHtml)};
-const VERIFY_PATH = ${JSON.stringify(verificationFilePath)};
-const METHOD = ${JSON.stringify(verificationMethod || 'meta_tag')};
+  // Worker script no formato simples que funciona na Cloudflare
+  const workerScript = `const financialPortalHTML = ${JSON.stringify(htmlContent)};
 
 export default {
   async fetch(request) {
-    const url = new URL(request.url);
-    // Serve arquivo de verificação para qualquer método (por segurança)
-    if (url.pathname === VERIFY_PATH) {
-      return new Response(VERIFY_HTML, {
-        headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
-      });
-    }
-    return new Response(MAIN_HTML, {
-      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
+    return new Response(financialPortalHTML, {
+      headers: { "content-type": "text/html;charset=UTF-8" }
     });
-  },
+  }
 };`;
 
   try {
