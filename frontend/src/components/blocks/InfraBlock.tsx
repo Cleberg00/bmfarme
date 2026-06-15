@@ -133,9 +133,10 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
             <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">.workers.dev</span>
           </div>
           {workerPreviewUrl && (
-            <p className="text-xs text-slate-500 truncate">
-              <span className="text-emerald-400 font-mono">{workerPreviewUrl}</span>
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm font-mono text-emerald-400">{workerPreviewUrl}</span>
+              <CopyButton value={`https://${workerPreviewUrl}`} label="URL" />
+            </div>
           )}
         </div>
 
