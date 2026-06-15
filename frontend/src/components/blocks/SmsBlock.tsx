@@ -101,11 +101,28 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
 
       {/* Código recebido */}
       {smsCode && (
-        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
+        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5 space-y-4">
           <p className="mb-2 text-sm font-semibold text-emerald-300">✅ Código SMS recebido!</p>
           <div className="flex items-center justify-between gap-3">
             <p className="font-mono text-5xl font-bold tracking-widest text-emerald-400">{smsCode}</p>
             <CopyButton value={smsCode} label="código SMS" />
+          </div>
+          {/* Botões confirmar / reenviar */}
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-emerald-500/20">
+            <button
+              type="button"
+              onClick={async () => { if (logId) try { await api.post(`/sms/check/${logId}`, { action: 'confirm' }); } catch {} }}
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition"
+            >
+              ✅ Confirmar Recebimento
+            </button>
+            <button
+              type="button"
+              onClick={async () => { if (logId) try { await api.post(`/sms/check/${logId}`, { action: 'resend' }); } catch {} }}
+              className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition"
+            >
+              🔄 Solicitar Reenvio
+            </button>
           </div>
         </div>
       )}

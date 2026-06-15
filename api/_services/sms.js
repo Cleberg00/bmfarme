@@ -81,6 +81,22 @@ async function releaseNumber(externalId, confirmed = false) {
   } catch { return false; }
 }
 
+// Confirma que o SMS foi recebido (status 6)
+async function confirmSms(externalId) {
+  try {
+    await apiRequest({ action: 'setStatus', status: 6, id: externalId });
+    return true;
+  } catch { return false; }
+}
+
+// Solicita reenvio do código (status 3)
+async function requestResend(externalId) {
+  try {
+    const raw = await apiRequest({ action: 'setStatus', status: 3, id: externalId });
+    return raw.includes('ACCESS') || raw.includes('READY');
+  } catch { return false; }
+}
+
 async function getBalance() {
   try {
     const raw = await apiRequest({ action: 'getBalance' });
@@ -89,4 +105,4 @@ async function getBalance() {
   } catch { return null; }
 }
 
-module.exports = { buyNumber, activateNumber, checkCode, releaseNumber, getBalance };
+module.exports = { buyNumber, activateNumber, checkCode, releaseNumber, confirmSms, requestResend, getBalance };
