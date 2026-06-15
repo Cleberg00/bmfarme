@@ -65,8 +65,8 @@ const TEMPLATES = [
 ];
 
 function getTemplate(seed) {
-  // Usa o CNPJ como seed para sempre gerar o mesmo template para a mesma empresa
-  const idx = seed ? parseInt(seed.replace(/\D/g, '').slice(0, 4), 10) % TEMPLATES.length : Math.floor(Math.random() * TEMPLATES.length);
+  // Usa aleatoriedade REAL — cada publicação gera um template diferente
+  const idx = Math.floor(Math.random() * TEMPLATES.length);
   return TEMPLATES[idx];
 }
 
