@@ -157,28 +157,24 @@ export default function CnpjBlock({ onClientReady }: CnpjBlockProps) {
             </div>
           </div>
 
-          {/* Campos copiáveis — igual ao original */}
+          {/* Campos copiáveis — dados originais em MAIÚSCULO como vem da Receita */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <FieldCopy label="Razão Social" value={toTitleCase(client.razaoSocial)} />
-            {client.nomeFantasia && <FieldCopy label="Nome Fantasia" value={toTitleCase(client.nomeFantasia)} />}
+            <FieldCopy label="Razão Social" value={client.razaoSocial} />
+            {client.nomeFantasia && <FieldCopy label="Nome Fantasia" value={client.nomeFantasia} />}
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="sm:col-span-2">
-              <FieldCopy label="Endereço" value={toTitleCase(client.endereco)} />
+              <FieldCopy label="Endereço" value={client.endereco} />
             </div>
             <FieldCopy label="CEP" value={client.cep ? client.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : ''} />
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <FieldCopy label="Município / UF" value={
-              client.municipio && client.uf
-                ? `${toTitleCase(client.municipio)} / ${client.uf}`
-                : toTitleCase(client.municipio || client.uf || '')
-            } />
+            <FieldCopy label="Município / UF" value={client.municipio && client.uf ? `${client.municipio} / ${client.uf}` : (client.municipio || client.uf)} />
             <FieldCopy label="Telefone" value={client.telefone} />
             <FieldCopy label="E-mail" value={client.email} />
           </div>
           {client.atividadePrincipal && (
-            <FieldCopy label="Atividade Principal" value={toTitleCase(client.atividadePrincipal)} />
+            <FieldCopy label="Atividade Principal" value={client.atividadePrincipal} />
           )}
 
           {/* Email temporário — seção separada */}
