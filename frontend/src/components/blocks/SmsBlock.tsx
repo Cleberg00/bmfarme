@@ -14,6 +14,7 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
   const [logId, setLogId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [confirmed, setConfirmed] = useState(false);
   const lastDeliveredCodeRef = useRef<string | null>(null);
 
   const { status, smsCode, isPolling, phoneNumber } = useSmsPoll(logId, Boolean(logId));
@@ -36,6 +37,7 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
     setLoading(true);
     setError('');
     setLogId(null);
+    setConfirmed(false);
     lastDeliveredCodeRef.current = null;
     try {
       const { data } = await api.post('/sms/generate', { clientId });
@@ -60,7 +62,7 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
       <button
         type="button"
         onClick={handleGenerate}
-        disabled={loading || isPolling}
+        disabled={loading}
         className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? (
@@ -108,22 +110,28 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
             <CopyButton value={smsCode} label="código SMS" />
           </div>
           {/* Botões confirmar / reenviar */}
-          <div className="flex flex-wrap gap-2 pt-2 border-t border-emerald-500/20">
-            <button
-              type="button"
-              onClick={async () => { if (logId) try { await api.post(`/sms/check/${logId}`, { action: 'confirm' }); } catch {} }}
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition"
-            >
-              ✅ Confirmar Recebimento
-            </button>
-            <button
-              type="button"
-              onClick={async () => { if (logId) try { await api.post(`/sms/check/${logId}`, { action: 'resend' }); } catch {} }}
-              className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition"
-            >
-              🔄 Solicitar Reenvio
-            </button>
-          </div>
+          {!confirmed ? (
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-emerald-500/20">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (logId) try { await api.post(`/sms/check/${logId}`, { action: 'confirm' }); setConfirmed(true); } catch {}
+                }}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-500 transition"
+              >
+                ✅ Confirmar Recebimento
+              </button>
+              <button
+                type="button"
+                onClick={async () => { if (logId) try { await api.post(`/sms/check/${logId}`, { action: 'resend' }); } catch {} }}
+                className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition"
+              >
+                🔄 Solicitar Reenvio
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs text-emerald-400 pt-2 border-t border-emerald-500/20">✅ SMS confirmado com sucesso!</p>
+          )}
         </div>
       )}
 
