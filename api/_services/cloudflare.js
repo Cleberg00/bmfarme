@@ -190,98 +190,68 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, cep, muni
     ? `<meta name="facebook-domain-verification" content="${esc(verificationCode)}" />`
     : '';
 
-  return `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-${metaTag}
-<title>${displayName} | Portal de Atendimento</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Public+Sans:wght@300;400;500;600&display=swap');
-:root{--green:${tpl.primary};--green-dark:${tpl.dark};--accent-bg:${tpl.accent};--bg:#f3f4f6;--card:#ffffff;--text:${tpl.text};--muted:#4b5563;--light:#9ca3af;--border:#e5e7eb;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Public Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background-image:radial-gradient(#d1d5db 1px,transparent 1px);background-size:24px 24px;}
-.wrap{max-width:700px;width:100%;background:var(--card);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.08);overflow:hidden;border-top:5px solid var(--green);}
-.hdr{padding:40px 40px 30px;text-align:center;border-bottom:1px solid var(--border);}
-.shield{display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;background:var(--accent-bg);border-radius:12px;margin-bottom:20px;color:var(--green);}
-.shield svg{width:26px;height:26px;}
-.hdr h1{font-family:'Lora',serif;font-size:1.6rem;margin-bottom:8px;letter-spacing:-0.5px;}
-.hdr p{color:var(--muted);font-size:0.95rem;}
-.body{padding:40px;}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:35px;}
-.block{background:#f9fafb;padding:16px;border-radius:4px;border:1px solid var(--border);}
-.lbl{font-size:0.75rem;text-transform:uppercase;color:var(--light);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;}
-.val{font-size:0.95rem;color:var(--text);font-weight:500;}
-.notice{border-left:3px solid var(--green);padding:15px 20px;background:var(--accent-bg);margin-bottom:35px;}
-.notice h3{font-size:0.85rem;text-transform:uppercase;color:var(--green-dark);margin-bottom:8px;}
-.notice p{font-size:0.85rem;line-height:1.6;color:var(--muted);}
-.form-section{border-top:1px solid var(--border);padding-top:35px;}
-.row{display:flex;gap:15px;margin-bottom:15px;}
-input,select{flex:1;padding:14px 16px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:0.95rem;background:var(--card);}
-input:focus,select:focus{outline:none;border-color:var(--green);}
-.btn{background:var(--green);color:#fff;border:none;padding:14px 24px;font-weight:600;font-size:0.95rem;border-radius:4px;cursor:pointer;width:100%;transition:background .2s;}
-.btn:hover{background:var(--green-dark);}
-.footer{text-align:center;margin-top:15px;font-size:0.75rem;color:var(--light);}
-@media(max-width:600px){.grid{grid-template-columns:1fr;}.row{flex-direction:column;}}
-</style>
-</head>
-<body>
-<article class="wrap">
-  <header class="hdr">
-    <div class="shield">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-    </div>
-    <h1>${displayName}</h1>
-    <p>Portal de Autoatendimento e Informações Cadastrais.</p>
-  </header>
-  <section class="body">
-    <div class="grid">
-      <div class="block">
-        <div class="lbl">Razão Social Oficial</div>
-        <div class="val">${razaoFmt}</div>
-      </div>
-      <div class="block">
-        <div class="lbl">CNPJ Matriz</div>
-        <div class="val">${cnpjFmt}</div>
-      </div>
-      ${telFmt ? `<div class="block">
-        <div class="lbl">Central WABA (WhatsApp)</div>
-        <div class="val">${telFmt}${smsCodeFmt ? ` &bull; Cód: <strong>${smsCodeFmt}</strong>` : ''}</div>
-      </div>` : ''}
-      ${enderecoFmt ? `<div class="block">
-        <div class="lbl">Endereço de Correspondência</div>
-        <div class="val" style="font-size:0.85rem;">${enderecoFmt}</div>
-      </div>` : ''}
-      ${atividadeFmt ? `<div class="block" style="grid-column:1/-1;">
-        <div class="lbl">Atividade Principal</div>
-        <div class="val" style="font-size:0.85rem;">${atividadeFmt}</div>
-      </div>` : ''}
-    </div>
-    <div class="notice">
-      <h3>Diretrizes de Comunicação e Prevenção a Spam</h3>
-      <p>A <strong>${displayName}</strong>${atividadeFmt ? ` (${atividadeFmt})` : ''} utiliza${telFmt ? ` a linha oficial <strong>${telFmt}</strong>` : ' seus canais'} estritamente como um <strong>Canal de Atendimento Receptivo (Inbound)</strong>.<br><br>Nossa operação não realiza telemarketing ativo, cobranças invasivas por mensagem ou envio de notificações não solicitadas. O canal de WhatsApp destina-se apenas a clientes que buscam nosso concierge para emissão de 2ª via de boletos, validação de titularidade e renegociação amigável mediante opt-in prévio.</p>
-    </div>
-    <div class="form-section">
-      <h3 style="font-size:1rem;margin-bottom:15px;">Acesso ao Ambiente Seguro</h3>
-      <form onsubmit="event.preventDefault();alert('Conexão criptografada estabelecida. Um atendente iniciará a conciliação através de nosso canal oficial do WhatsApp em breve.');">
-        <div class="row">
-          <input type="text" placeholder="CPF/CNPJ do Titular" required>
-          <select required>
-            <option value="" disabled selected>Motivo do Contato...</option>
-            <option>Solicitar 2ª Via de Boleto</option>
-            <option>Consultar Acordo Existente</option>
-            <option>Atualização Cadastral</option>
-          </select>
-        </div>
-        <button type="submit" class="btn">Iniciar Atendimento Receptivo</button>
-      </form>
-      ${mailFmt ? `<div class="footer">Contato Administrativo: ${mailFmt}</div>` : ''}
-    </div>
-  </section>
-</article>
-</body>
-</html>`;
+  // Shared head and meta
+  const headOpen = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">${metaTag}<title>${displayName}</title>`;
+  const headClose = `</head>`;
+
+  // Data blocks reused across templates
+  const dataBlocks = {
+    razao: razaoFmt,
+    cnpj: cnpjFmt,
+    tel: telFmt,
+    smsCode: smsCodeFmt,
+    endereco: enderecoFmt,
+    atividade: atividadeFmt,
+    email: mailFmt,
+  };
+
+  let html = '';
+
+  switch (tpl.name) {
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // VERDE — Assessoria de Cobrança / Recuperação de Crédito
+    // Layout: Card centralizado com sidebar lateral colorida
+    // ═══════════════════════════════════════════════════════════════════════════
+    case 'verde':
+      html = `${headOpen}<style>@import url('https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Public+Sans:wght@300;400;500;600&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Public Sans',sans-serif;background:#f0fdf4;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}.container{display:flex;max-width:900px;width:100%;background:#fff;border-radius:8px;box-shadow:0 8px 30px rgba(5,150,105,.12);overflow:hidden}.sidebar{width:260px;background:linear-gradient(135deg,${tpl.primary},${tpl.dark});color:#fff;padding:40px 30px;display:flex;flex-direction:column;justify-content:space-between}.sidebar h2{font-family:'Lora',serif;font-size:1.3rem;margin-bottom:12px}.sidebar p{font-size:.85rem;opacity:.9;line-height:1.6}.sidebar .badge{background:rgba(255,255,255,.2);padding:8px 12px;border-radius:6px;font-size:.75rem;text-align:center;margin-top:auto}.main{flex:1;padding:40px}.main h1{font-family:'Lora',serif;font-size:1.5rem;color:${tpl.text};margin-bottom:6px}.main .sub{color:#6b7280;font-size:.9rem;margin-bottom:30px}.info{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px}.info .item{background:#f9fafb;border:1px solid ${tpl.border};border-radius:6px;padding:12px}.info .item .lbl{font-size:.7rem;text-transform:uppercase;color:#9ca3af;font-weight:600;letter-spacing:.5px;margin-bottom:4px}.info .item .val{font-size:.9rem;font-weight:500;color:${tpl.text}}.notice{background:${tpl.accent};border-left:3px solid ${tpl.primary};padding:14px 18px;border-radius:0 6px 6px 0;margin-bottom:28px}.notice strong{color:${tpl.dark};font-size:.8rem;text-transform:uppercase;display:block;margin-bottom:6px}.notice p{font-size:.82rem;color:#4b5563;line-height:1.5}.form-area h3{font-size:.95rem;color:${tpl.text};margin-bottom:14px}.form-area .row{display:flex;gap:12px;margin-bottom:12px}.form-area input,.form-area select{flex:1;padding:12px;border:1px solid #e5e7eb;border-radius:6px;font-size:.9rem;font-family:inherit}.form-area input:focus,.form-area select:focus{outline:none;border-color:${tpl.primary}}.form-area .btn{width:100%;padding:13px;background:${tpl.primary};color:#fff;border:none;border-radius:6px;font-weight:600;font-size:.9rem;cursor:pointer}.form-area .btn:hover{background:${tpl.dark}}.foot{text-align:center;margin-top:12px;font-size:.72rem;color:#9ca3af}@media(max-width:700px){.container{flex-direction:column}.sidebar{width:100%;padding:24px}.info{grid-template-columns:1fr}.form-area .row{flex-direction:column}}</style>${headClose}<body><div class="container"><aside class="sidebar"><div><h2>Assessoria de Cobrança</h2><p>Recuperação de crédito com transparência e respeito ao consumidor. Atendimento receptivo via WhatsApp Business.</p></div><div class="badge">&#x1f6e1; Canal Oficial Verificado</div></aside><main class="main"><h1>${displayName}</h1><p class="sub">Portal de Negociação e Recuperação de Crédito</p><div class="info"><div class="item"><div class="lbl">Razão Social</div><div class="val">${dataBlocks.razao}</div></div><div class="item"><div class="lbl">CNPJ</div><div class="val">${dataBlocks.cnpj}</div></div>${dataBlocks.tel ? `<div class="item"><div class="lbl">WhatsApp Oficial</div><div class="val">${dataBlocks.tel}${dataBlocks.smsCode ? ` &bull; Cód: <b>${dataBlocks.smsCode}</b>` : ''}</div></div>` : ''}${dataBlocks.endereco ? `<div class="item"><div class="lbl">Endereço</div><div class="val" style="font-size:.82rem">${dataBlocks.endereco}</div></div>` : ''}${dataBlocks.atividade ? `<div class="item" style="grid-column:1/-1"><div class="lbl">Atividade Principal</div><div class="val" style="font-size:.82rem">${dataBlocks.atividade}</div></div>` : ''}</div><div class="notice"><strong>&#x26a0; Política Anti-Spam</strong><p>A ${displayName} utiliza o WhatsApp exclusivamente como canal de atendimento receptivo (inbound). Não realizamos cobranças invasivas, telemarketing ativo ou envio de mensagens não solicitadas. O contato ocorre apenas mediante opt-in prévio do titular para renegociação amigável.</p></div><div class="form-area"><h3>Solicitar Atendimento</h3><form onsubmit="event.preventDefault();alert('Solicitação registrada. Aguarde contato pelo canal oficial.')"><div class="row"><input type="text" placeholder="CPF/CNPJ do Titular" required><select required><option value="" disabled selected>Assunto...</option><option>2ª Via de Boleto</option><option>Renegociação</option><option>Validação de Titularidade</option></select></div><button type="submit" class="btn">Solicitar Atendimento</button></form>${dataBlocks.email ? `<div class="foot">Contato: ${dataBlocks.email}</div>` : ''}</div></main></div></body></html>`;
+      break;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // AZUL — Atendimento Governamental / Serviços Públicos
+    // Layout: Hero banner topo + conteúdo centralizado institucional
+    // ═══════════════════════════════════════════════════════════════════════════
+    case 'azul':
+      html = `${headOpen}<style>@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Inter:wght@300;400;500;600&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:#f8fafc;color:${tpl.text}}.hero{background:linear-gradient(160deg,${tpl.primary} 0%,${tpl.dark} 100%);color:#fff;padding:50px 20px;text-align:center}.hero .emblem{width:60px;height:60px;background:rgba(255,255,255,.15);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:1.8rem}.hero h1{font-family:'Merriweather',serif;font-size:1.7rem;margin-bottom:8px}.hero p{opacity:.85;font-size:.95rem;max-width:500px;margin:0 auto}.content{max-width:720px;margin:-30px auto 40px;padding:0 20px}.card{background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(37,99,235,.1);padding:36px;margin-bottom:24px}.card h2{font-size:1.1rem;color:${tpl.primary};margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid ${tpl.border}}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.grid .f{padding:10px;border-radius:6px;background:${tpl.accent}}.grid .f .lbl{font-size:.68rem;text-transform:uppercase;color:#6b7280;font-weight:600;letter-spacing:.4px;margin-bottom:3px}.grid .f .val{font-size:.88rem;font-weight:500}.alert{display:flex;gap:14px;align-items:flex-start;background:#eff6ff;border:1px solid ${tpl.border};border-radius:8px;padding:18px}.alert .icon{font-size:1.4rem;flex-shrink:0}.alert .txt h4{font-size:.82rem;color:${tpl.dark};margin-bottom:6px;text-transform:uppercase}.alert .txt p{font-size:.82rem;color:#4b5563;line-height:1.5}form .row{display:flex;gap:12px;margin-bottom:12px}form input,form select{flex:1;padding:12px 14px;border:1px solid #e2e8f0;border-radius:6px;font-size:.9rem;font-family:inherit}form input:focus,form select:focus{outline:none;border-color:${tpl.primary}}form .btn{width:100%;padding:14px;background:${tpl.primary};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:.9rem}form .btn:hover{background:${tpl.dark}}.foot{text-align:center;font-size:.72rem;color:#9ca3af;margin-top:10px}@media(max-width:600px){.grid{grid-template-columns:1fr}form .row{flex-direction:column}}</style>${headClose}<body><div class="hero"><div class="emblem">&#x1f3db;</div><h1>${displayName}</h1><p>Portal de Atendimento ao Cidadão — Serviços Públicos Digitais</p></div><div class="content"><div class="card"><h2>Dados Institucionais</h2><div class="grid"><div class="f"><div class="lbl">Razão Social</div><div class="val">${dataBlocks.razao}</div></div><div class="f"><div class="lbl">CNPJ</div><div class="val">${dataBlocks.cnpj}</div></div>${dataBlocks.tel ? `<div class="f"><div class="lbl">Canal WhatsApp</div><div class="val">${dataBlocks.tel}${dataBlocks.smsCode ? ` &bull; Cód: <b>${dataBlocks.smsCode}</b>` : ''}</div></div>` : ''}${dataBlocks.endereco ? `<div class="f"><div class="lbl">Endereço</div><div class="val" style="font-size:.8rem">${dataBlocks.endereco}</div></div>` : ''}${dataBlocks.atividade ? `<div class="f" style="grid-column:1/-1"><div class="lbl">Atividade</div><div class="val" style="font-size:.8rem">${dataBlocks.atividade}</div></div>` : ''}</div></div><div class="card"><div class="alert"><div class="icon">&#x1f4cb;</div><div class="txt"><h4>Comunicação Oficial — Política Anti-Spam</h4><p>Este canal de WhatsApp é destinado exclusivamente ao atendimento receptivo de cidadãos que procuram informações sobre serviços públicos. Não são realizados disparos em massa, spam ou contatos não autorizados. Toda comunicação segue as diretrizes da LGPD e legislação vigente.</p></div></div></div><div class="card"><h2>Fale Conosco</h2><form onsubmit="event.preventDefault();alert('Protocolo gerado. Aguarde atendimento pelo canal oficial.')"><div class="row"><input type="text" placeholder="CPF do Cidadão" required><select required><option value="" disabled selected>Serviço desejado...</option><option>Consulta de Protocolo</option><option>Agendamento</option><option>Ouvidoria</option></select></div><button type="submit" class="btn">Gerar Protocolo de Atendimento</button></form>${dataBlocks.email ? `<div class="foot">${dataBlocks.email}</div>` : ''}</div></div></body></html>`;
+      break;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CINZA — Consultoria Empresarial / Marketing Digital
+    // Layout: Minimal/clean, tipografia grande, sem bordas pesadas
+    // ═══════════════════════════════════════════════════════════════════════════
+    case 'cinza':
+      html = `${headOpen}<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#fff;color:${tpl.text};min-height:100vh}.page{max-width:640px;margin:0 auto;padding:60px 24px}.tag{display:inline-block;background:${tpl.accent};color:${tpl.primary};font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:6px 12px;border-radius:20px;margin-bottom:24px}h1{font-family:'Space Grotesk',sans-serif;font-size:2.2rem;line-height:1.2;margin-bottom:10px;color:${tpl.dark}}h1 span{color:${tpl.primary}}.subtitle{font-size:1rem;color:#6b7280;margin-bottom:40px;line-height:1.5}.divider{height:1px;background:#e5e7eb;margin:32px 0}.details{margin-bottom:32px}.details .row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f3f4f6}.details .row:last-child{border:none}.details .row .k{font-size:.78rem;text-transform:uppercase;color:#9ca3af;font-weight:600;letter-spacing:.3px}.details .row .v{font-size:.9rem;font-weight:500;text-align:right;max-width:60%}.box{background:${tpl.accent};border-radius:12px;padding:24px;margin-bottom:32px}.box h3{font-size:.8rem;text-transform:uppercase;color:${tpl.primary};letter-spacing:.5px;margin-bottom:10px}.box p{font-size:.85rem;color:#4b5563;line-height:1.6}form .inputs{display:flex;gap:10px;margin-bottom:12px}form input,form select{flex:1;padding:14px;border:1px solid #e5e7eb;border-radius:8px;font-size:.9rem;font-family:inherit;background:#fafafa}form input:focus,form select:focus{outline:none;border-color:${tpl.primary}}form .btn{width:100%;padding:14px;background:${tpl.dark};color:#fff;border:none;border-radius:8px;font-weight:600;font-size:.9rem;cursor:pointer}form .btn:hover{background:${tpl.primary}}.foot{margin-top:14px;text-align:center;font-size:.72rem;color:#9ca3af}@media(max-width:500px){h1{font-size:1.6rem}form .inputs{flex-direction:column}}</style>${headClose}<body><div class="page"><div class="tag">Consultoria &amp; Marketing Digital</div><h1>${displayName}</h1><p class="subtitle">Soluções estratégicas em comunicação digital e marketing empresarial.</p><div class="details"><div class="row"><span class="k">Razão Social</span><span class="v">${dataBlocks.razao}</span></div><div class="row"><span class="k">CNPJ</span><span class="v">${dataBlocks.cnpj}</span></div>${dataBlocks.tel ? `<div class="row"><span class="k">WhatsApp Business</span><span class="v">${dataBlocks.tel}${dataBlocks.smsCode ? ` · ${dataBlocks.smsCode}` : ''}</span></div>` : ''}${dataBlocks.endereco ? `<div class="row"><span class="k">Endereço</span><span class="v" style="font-size:.82rem">${dataBlocks.endereco}</span></div>` : ''}${dataBlocks.atividade ? `<div class="row"><span class="k">Atividade</span><span class="v" style="font-size:.82rem">${dataBlocks.atividade}</span></div>` : ''}</div><div class="box"><h3>&#x1f512; Compromisso Anti-Spam</h3><p>A ${displayName} utiliza WhatsApp Business exclusivamente para atendimento receptivo a clientes que nos procuram. Não realizamos disparos em massa, spam ou contatos não autorizados. Toda comunicação é feita mediante consentimento prévio (opt-in), em conformidade com a LGPD.</p></div><div class="divider"></div><form onsubmit="event.preventDefault();alert('Solicitação enviada. Nossa equipe retornará pelo canal oficial.')"><div class="inputs"><input type="text" placeholder="Seu e-mail corporativo" required><select required><option value="" disabled selected>Interesse...</option><option>Consultoria Digital</option><option>Gestão de Tráfego</option><option>Automação WhatsApp</option></select></div><button type="submit" class="btn">Solicitar Contato</button></form>${dataBlocks.email ? `<div class="foot">${dataBlocks.email}</div>` : ''}</div></body></html>`;
+      break;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // VINHO — Comunicação Corporativa / Disparos Oficiais
+    // Layout: Split-screen (esquerda escura + direita clara)
+    // ═══════════════════════════════════════════════════════════════════════════
+    case 'vinho':
+      html = `${headOpen}<style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@300;400;600&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Nunito',sans-serif;min-height:100vh;display:flex;background:#faf9fc;color:${tpl.text}}.left{width:42%;background:linear-gradient(170deg,${tpl.dark} 0%,#1e1b4b 100%);color:#fff;padding:50px 36px;display:flex;flex-direction:column;justify-content:center}.left .icon{font-size:2.4rem;margin-bottom:20px}.left h1{font-family:'Playfair Display',serif;font-size:1.8rem;margin-bottom:14px;line-height:1.3}.left p{font-size:.88rem;opacity:.85;line-height:1.6;margin-bottom:24px}.left .stats{display:flex;gap:20px}.left .stats div{text-align:center}.left .stats div strong{display:block;font-size:1.3rem}.left .stats div span{font-size:.7rem;opacity:.7;text-transform:uppercase}.right{flex:1;padding:50px 40px;overflow-y:auto;display:flex;flex-direction:column;justify-content:center}.right h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:${tpl.dark};margin-bottom:20px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}.grid .cell{background:${tpl.accent};border:1px solid ${tpl.border};border-radius:8px;padding:12px}.grid .cell .lbl{font-size:.67rem;text-transform:uppercase;color:#7c3aed;font-weight:600;letter-spacing:.4px;margin-bottom:3px}.grid .cell .val{font-size:.85rem;font-weight:500}.warn{background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:16px;margin-bottom:24px;display:flex;gap:10px;align-items:flex-start}.warn .wi{font-size:1.2rem;flex-shrink:0}.warn .wt h4{font-size:.78rem;color:#92400e;text-transform:uppercase;margin-bottom:4px}.warn .wt p{font-size:.8rem;color:#78350f;line-height:1.5}form .rw{display:flex;gap:10px;margin-bottom:10px}form input,form select{flex:1;padding:12px;border:1px solid ${tpl.border};border-radius:6px;font-size:.88rem;font-family:inherit}form input:focus,form select:focus{outline:none;border-color:${tpl.primary}}form .btn{width:100%;padding:13px;background:${tpl.primary};color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:.88rem}form .btn:hover{background:${tpl.dark}}.ft{text-align:center;margin-top:10px;font-size:.7rem;color:#9ca3af}@media(max-width:768px){body{flex-direction:column}.left{width:100%;padding:30px 24px}.right{padding:30px 24px}.grid{grid-template-columns:1fr}form .rw{flex-direction:column}}</style>${headClose}<body><div class="left"><div class="icon">&#x1f4e8;</div><h1>${displayName}</h1><p>Plataforma de Comunicação Corporativa Oficial — Gestão de mensagens empresariais com conformidade regulatória.</p><div class="stats"><div><strong>100%</strong><span>Compliance</span></div><div><strong>LGPD</strong><span>Adequado</span></div><div><strong>Opt-in</strong><span>Obrigatório</span></div></div></div><div class="right"><h2>Informações Corporativas</h2><div class="grid"><div class="cell"><div class="lbl">Razão Social</div><div class="val">${dataBlocks.razao}</div></div><div class="cell"><div class="lbl">CNPJ</div><div class="val">${dataBlocks.cnpj}</div></div>${dataBlocks.tel ? `<div class="cell"><div class="lbl">Canal Oficial</div><div class="val">${dataBlocks.tel}${dataBlocks.smsCode ? ` · <b>${dataBlocks.smsCode}</b>` : ''}</div></div>` : ''}${dataBlocks.endereco ? `<div class="cell"><div class="lbl">Sede</div><div class="val" style="font-size:.8rem">${dataBlocks.endereco}</div></div>` : ''}${dataBlocks.atividade ? `<div class="cell" style="grid-column:1/-1"><div class="lbl">Atividade</div><div class="val" style="font-size:.8rem">${dataBlocks.atividade}</div></div>` : ''}</div><div class="warn"><div class="wi">&#x26a0;&#xfe0f;</div><div class="wt"><h4>Aviso de Conformidade — Política Anti-Spam</h4><p>A ${displayName} opera exclusivamente com comunicação receptiva via WhatsApp. Não realizamos disparos não solicitados, spam ou telemarketing ativo. Todas as interações são iniciadas pelo destinatário mediante consentimento prévio registrado.</p></div></div><form onsubmit="event.preventDefault();alert('Solicitação registrada com sucesso. Retornaremos pelo canal oficial.')"><div class="rw"><input type="text" placeholder="CNPJ da sua empresa" required><select required><option value="" disabled selected>Tipo de contato...</option><option>Comunicação Interna</option><option>Notificações Oficiais</option><option>Suporte Técnico</option></select></div><button type="submit" class="btn">Enviar Solicitação</button></form>${dataBlocks.email ? `<div class="ft">${dataBlocks.email}</div>` : ''}</div></body></html>`;
+      break;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LARANJA — Soluções de Atendimento / SAC Digital
+    // Layout: Top nav + cards empilhados com cantos arredondados grandes
+    // ═══════════════════════════════════════════════════════════════════════════
+    case 'laranja':
+    default:
+      html = `${headOpen}<style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Outfit',sans-serif;background:linear-gradient(180deg,#fffbeb 0%,#fff 40%);color:${tpl.text};min-height:100vh}.nav{display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid ${tpl.border}}.nav .logo{font-weight:700;font-size:1.1rem;color:${tpl.dark}}.nav .badge{background:${tpl.primary};color:#fff;font-size:.7rem;font-weight:600;padding:5px 12px;border-radius:20px}.wrap{max-width:680px;margin:40px auto;padding:0 20px}.hero-card{background:linear-gradient(135deg,${tpl.primary},${tpl.dark});color:#fff;border-radius:20px;padding:36px;margin-bottom:24px;text-align:center}.hero-card h1{font-size:1.6rem;margin-bottom:8px}.hero-card p{opacity:.9;font-size:.9rem}.section{background:#fff;border:1px solid #f3f4f6;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 2px 12px rgba(217,119,6,.06)}.section h2{font-size:1rem;color:${tpl.dark};margin-bottom:16px;display:flex;align-items:center;gap:8px}.section h2 .dot{width:8px;height:8px;background:${tpl.primary};border-radius:50%}.items{display:grid;grid-template-columns:1fr 1fr;gap:10px}.items .it{padding:10px 14px;background:#fffbeb;border-radius:10px;border:1px solid ${tpl.border}}.items .it .lbl{font-size:.67rem;text-transform:uppercase;color:#92400e;font-weight:600;letter-spacing:.3px;margin-bottom:2px}.items .it .val{font-size:.85rem;font-weight:500}.anti{background:#fef3c7;border-radius:12px;padding:20px;display:flex;gap:12px;align-items:flex-start}.anti .ai{font-size:1.3rem;flex-shrink:0}.anti .at h4{font-size:.78rem;color:${tpl.dark};text-transform:uppercase;margin-bottom:6px}.anti .at p{font-size:.82rem;color:#78350f;line-height:1.5}form .fr{display:flex;gap:10px;margin-bottom:10px}form input,form select{flex:1;padding:13px;border:1px solid #fde68a;border-radius:10px;font-size:.88rem;font-family:inherit;background:#fffbeb}form input:focus,form select:focus{outline:none;border-color:${tpl.primary}}form .btn{width:100%;padding:14px;background:${tpl.primary};color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:.9rem}form .btn:hover{background:${tpl.dark}}.foot{text-align:center;margin-top:10px;font-size:.72rem;color:#9ca3af}@media(max-width:500px){.items{grid-template-columns:1fr}form .fr{flex-direction:column}}</style>${headClose}<body><nav class="nav"><div class="logo">${displayName}</div><div class="badge">SAC Digital</div></nav><div class="wrap"><div class="hero-card"><h1>Central de Atendimento Digital</h1><p>Soluções inteligentes de SAC via WhatsApp Business</p></div><div class="section"><h2><span class="dot"></span>Dados da Empresa</h2><div class="items"><div class="it"><div class="lbl">Razão Social</div><div class="val">${dataBlocks.razao}</div></div><div class="it"><div class="lbl">CNPJ</div><div class="val">${dataBlocks.cnpj}</div></div>${dataBlocks.tel ? `<div class="it"><div class="lbl">WhatsApp SAC</div><div class="val">${dataBlocks.tel}${dataBlocks.smsCode ? ` · <b>${dataBlocks.smsCode}</b>` : ''}</div></div>` : ''}${dataBlocks.endereco ? `<div class="it"><div class="lbl">Endereço</div><div class="val" style="font-size:.8rem">${dataBlocks.endereco}</div></div>` : ''}${dataBlocks.atividade ? `<div class="it" style="grid-column:1/-1"><div class="lbl">Atividade</div><div class="val" style="font-size:.8rem">${dataBlocks.atividade}</div></div>` : ''}</div></div><div class="section"><div class="anti"><div class="ai">&#x2705;</div><div class="at"><h4>Política de Uso — Anti-Spam</h4><p>A ${displayName} utiliza o WhatsApp exclusivamente como SAC receptivo. Não enviamos mensagens não solicitadas, spam ou telemarketing. Todo atendimento é iniciado pelo cliente, garantindo conformidade com as políticas do WhatsApp Business e LGPD.</p></div></div></div><div class="section"><h2><span class="dot"></span>Abrir Chamado</h2><form onsubmit="event.preventDefault();alert('Chamado aberto com sucesso! Retornaremos pelo WhatsApp oficial.')"><div class="fr"><input type="text" placeholder="CPF/CNPJ" required><select required><option value="" disabled selected>Departamento...</option><option>Suporte Técnico</option><option>Financeiro</option><option>Cancelamento</option></select></div><button type="submit" class="btn">Abrir Chamado</button></form>${dataBlocks.email ? `<div class="foot">${dataBlocks.email}</div>` : ''}</div></div></body></html>`;
+      break;
+  }
+
+  return html;
 }
 
 /**
