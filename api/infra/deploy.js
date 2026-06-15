@@ -5,10 +5,66 @@ const { deployWorker, deleteWorker, buildLandingHtml, generateAiContent } = requ
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
   const user = verifyAuth(req, res);
   if (!user) return;
+
+  // ── PATCH — republicar site existente com novo número ──────────────────
+  if (req.method === 'PATCH') {
+    try {
+      const { domainId, newPhone } = req.body;
+      if (!domainId || !newPhone)
+        return res.status(400).json({ error: 'domainId e newPhone são obrigatórios.' });
+
+      const domain = await prisma.domain.findUnique({ where: { id: domainId } });
+      if (!domain) return res.status(404).json({ error: 'Domínio não encontrado.' });
+
+      const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
+      if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
+
+      // Gera novo HTML com o número atualizado
+      const html = buildLandingHtml({
+        razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
+        cnpj: client.cnpj, endereco: client.endereco, cep: client.cep,
+        municipio: client.municipio, uf: client.uf, situacao: client.situacao,
+        atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        email: client.email, smsPhone: newPhone, smsCode: null,
+        metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
+      });
+
+      // Republica o worker
+      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag');
+
+      return res.status(200).json({ success: true, workerUrl: url, newPhone, workerName });
+    } catch (error) {
+      return res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  // ── GET — lista todos os domínios publicados ──────────────────────────
+  if (req.method === 'GET') {
+    try {
+      const domains = await prisma.domain.findMany({
+        where: { status: 'ACTIVE' },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          client: { select: { razaoSocial: true, cnpj: true } },
+          user: { select: { name: true } },
+        },
+      });
+      const env = require('../_lib/env');
+      const items = domains.map(d => ({
+        ...d,
+        workerUrl: `https://${d.cloudflareZoneId}.${env.cloudflareWorkersSubdomain}.workers.dev`,
+      }));
+      return res.status(200).json(items);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // ── POST — publicar novo site (existente) ──────────────────────────────
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
   let deployedWorkerName = null;
 

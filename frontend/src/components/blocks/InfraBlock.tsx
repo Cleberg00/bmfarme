@@ -256,6 +256,37 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
           )}
         </div>
       )}
+
+      {/* Seção editar número de site já publicado */}
+      {deployed && (
+        <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 space-y-3">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-500">✏️ Alterar número no site publicado</p>
+          <div className="flex items-center gap-2">
+            <input
+              id="edit-phone"
+              placeholder="Novo número (ex: 5511999999999)"
+              className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-2.5 text-sm text-slate-100 outline-none focus:border-emerald-500"
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                const input = document.getElementById('edit-phone') as HTMLInputElement;
+                const newPhone = input?.value?.trim();
+                if (!newPhone || !deployed.domainId) return;
+                try {
+                  await api.patch('/infra/deploy', { domainId: deployed.domainId, newPhone });
+                  alert('✅ Número atualizado no site com sucesso!');
+                  input.value = '';
+                } catch { alert('❌ Erro ao atualizar número.'); }
+              }}
+              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 transition shrink-0"
+            >
+              Atualizar
+            </button>
+          </div>
+          <p className="text-xs text-slate-600">O site será republicado automaticamente com o novo número.</p>
+        </div>
+      )}
     </div>
   );
 }
