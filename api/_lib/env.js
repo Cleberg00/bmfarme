@@ -13,6 +13,7 @@ module.exports = {
   get sms24ApiKey()                { return get('SMS24_API_KEY'); },
   get sms24ApiUrl()                { return get('SMS24_API_URL'); },
   // legado opcional
-  get vpsIp()     { return process.env.VPS_IP || ''; },
-  get dataApiKey(){ return process.env.DATA_API_KEY || ''; },
+  get vpsIp()        { return process.env.VPS_IP || ''; },
+  get dataApiKey()   { return process.env.DATA_API_KEY || ''; },
+  get tempMailKey()  { return process.env.TEMP_MAIL_API_KEY || ''; },
 };
