@@ -55,10 +55,17 @@ model Client {
   razaoSocial        String
   nomeFantasia       String?
   endereco           String
+  numero             String?
+  complemento        String?
+  bairro             String?
   cep                String
   municipio          String?
   uf                 String?
   situacao           String?
+  dataSituacao       String?
+  dataAbertura       String?
+  porte              String?
+  naturezaJuridica   String?
   atividadePrincipal String?
   telefone           String?
   email              String?

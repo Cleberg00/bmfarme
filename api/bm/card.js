@@ -303,28 +303,20 @@ module.exports = async function handler(req, res) {
       return tel;
     }
 
-    // O campo endereco da BrasilAPI vem como "RUA BAGE, 365, FLAMBOYANT, CHAPADAO DO SUL, MS"
-    // Tenta separar logradouro dos demais campos
-    const endParts = (client.endereco || '').split(',').map(p => p.trim());
-    const logradouro = endParts[0] || '';
-    const numero = endParts[1] || '';
-    // bairro e municipio já vêm nos campos separados do cliente
-    const bairro = client.bairro || endParts[2] || '';
-
     return {
       razaoSocial:        client.razaoSocial        || '',
       nomeFantasia:       client.nomeFantasia        || '',
       cnpj:               client.cnpj               || '',
-      dataAbertura:       '',
+      dataAbertura:       client.dataAbertura        || '',
       situacao:           client.situacao            || 'ATIVA',
-      dataSituacao:       '',
-      porte:              '',
-      naturezaJuridica:   '',
+      dataSituacao:       client.dataSituacao        || '',
+      porte:              client.porte               || '',
+      naturezaJuridica:   client.naturezaJuridica    || '',
       atividadePrincipal: client.atividadePrincipal  || '',
-      endereco:           logradouro,
-      numero:             numero,
-      complemento:        '',
-      bairro:             bairro,
+      endereco:           client.endereco            || '',
+      numero:             client.numero              || '',
+      complemento:        client.complemento         || '',
+      bairro:             client.bairro              || '',
       cep:                client.cep                 || '',
       municipio:          client.municipio           || '',
       uf:                 client.uf                  || '',
@@ -342,7 +334,6 @@ module.exports = async function handler(req, res) {
 
       const data = await buildDataFromClient(clientId);
       if (!data) return res.status(404).json({ error: 'Cliente não encontrado.' });
-
       if (format === 'json') return res.status(200).json(data);
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');

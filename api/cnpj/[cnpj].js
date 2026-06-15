@@ -12,56 +12,62 @@ module.exports = async function handler(req, res) {
 
   try {
     const { cnpj } = req.query;
+    const d = await lookupCnpj(cnpj);
+    const raw = d.raw || {};
 
-    // Busca dados frescos da Receita Federal
-    const cnpjData = await lookupCnpj(cnpj);
+    // Formata datas do raw
+    function fmtDate(v) {
+      if (!v) return null;
+      try { return new Date(v).toLocaleDateString('pt-BR'); } catch { return String(v); }
+    }
 
-    // Salva/atualiza no banco
+    const clientData = {
+      razaoSocial:        d.razaoSocial                            || null,
+      nomeFantasia:       d.nomeFantasia                           || null,
+      endereco:           raw.logradouro                           || d.endereco || null,
+      numero:             raw.numero                               || null,
+      complemento:        raw.complemento                          || null,
+      bairro:             raw.bairro                               || null,
+      cep:                d.cep                                    || null,
+      municipio:          d.municipio                              || null,
+      uf:                 d.uf                                     || null,
+      situacao:           d.situacao                               || null,
+      dataSituacao:       fmtDate(raw.data_situacao_cadastral),
+      dataAbertura:       fmtDate(raw.data_inicio_atividade),
+      porte:              raw.porte                                || null,
+      naturezaJuridica:   raw.natureza_juridica                    || null,
+      atividadePrincipal: d.atividadePrincipal                     || null,
+      telefone:           d.telefone                               || null,
+      email:              d.email                                  || null,
+      userId:             user.id,
+    };
+
     const client = await prisma.client.upsert({
-      where: { cnpj: cnpjData.cnpj },
-      update: {
-        razaoSocial: cnpjData.razaoSocial,
-        nomeFantasia: cnpjData.nomeFantasia || null,
-        endereco: cnpjData.endereco,
-        cep: cnpjData.cep,
-        municipio: cnpjData.municipio || null,
-        uf: cnpjData.uf || null,
-        situacao: cnpjData.situacao || null,
-        atividadePrincipal: cnpjData.atividadePrincipal || null,
-        telefone: cnpjData.telefone || null,
-        email: cnpjData.email || null,
-        userId: user.id
-      },
-      create: {
-        cnpj: cnpjData.cnpj,
-        razaoSocial: cnpjData.razaoSocial,
-        nomeFantasia: cnpjData.nomeFantasia || null,
-        endereco: cnpjData.endereco,
-        cep: cnpjData.cep,
-        municipio: cnpjData.municipio || null,
-        uf: cnpjData.uf || null,
-        situacao: cnpjData.situacao || null,
-        atividadePrincipal: cnpjData.atividadePrincipal || null,
-        telefone: cnpjData.telefone || null,
-        email: cnpjData.email || null,
-        userId: user.id
-      }
+      where:  { cnpj: d.cnpj },
+      update: clientData,
+      create: { cnpj: d.cnpj, ...clientData },
     });
 
-    // Retorna dados da API (sempre frescos) + id do banco
     return res.status(200).json({
-      id: client.id,
-      cnpj: cnpjData.cnpj,
-      razaoSocial: cnpjData.razaoSocial,
-      nomeFantasia: cnpjData.nomeFantasia,
-      endereco: cnpjData.endereco,
-      cep: cnpjData.cep,
-      municipio: cnpjData.municipio,
-      uf: cnpjData.uf,
-      situacao: cnpjData.situacao,
-      atividadePrincipal: cnpjData.atividadePrincipal,
-      telefone: cnpjData.telefone,
-      email: cnpjData.email,
+      id:                 client.id,
+      cnpj:               d.cnpj,
+      razaoSocial:        client.razaoSocial,
+      nomeFantasia:       client.nomeFantasia,
+      endereco:           client.endereco,
+      numero:             client.numero,
+      complemento:        client.complemento,
+      bairro:             client.bairro,
+      cep:                client.cep,
+      municipio:          client.municipio,
+      uf:                 client.uf,
+      situacao:           client.situacao,
+      dataSituacao:       client.dataSituacao,
+      dataAbertura:       client.dataAbertura,
+      porte:              client.porte,
+      naturezaJuridica:   client.naturezaJuridica,
+      atividadePrincipal: client.atividadePrincipal,
+      telefone:           client.telefone,
+      email:              client.email,
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({ error: error.message });
