@@ -112,8 +112,8 @@ export default function GodModePanel() {
           <div className="grid grid-cols-5 gap-2">
             {[
               { n: 1, label: 'CNPJ',  done: !!clientId },
-              { n: 2, label: 'Site',  done: !!domainId },
-              { n: 3, label: 'SMS',   done: !!smsLogId },
+              { n: 2, label: 'SMS',   done: !!smsLogId },
+              { n: 3, label: 'Site',  done: !!domainId },
               { n: 4, label: 'WABA',  done: false },
               { n: 5, label: 'BM',    done: false },
             ].map((s) => (
@@ -156,21 +156,8 @@ export default function GodModePanel() {
             />
           </StepSection>
 
-          {/* Step 2 — Site */}
-          <StepSection step={2} title="Publicar Site" subtitle="Gera landing page no Cloudflare Workers para verificação Meta">
-            <InfraBlock
-              clientId={clientId}
-              razaoSocial={clientData?.razaoSocial}
-              smsPhone={smsPhone}
-              onDomainReady={(id, url) => {
-                setDomainId(id);
-                setWorkerUrl(url);
-              }}
-            />
-          </StepSection>
-
-          {/* Step 3 — SMS */}
-          <StepSection step={3} title="Gerar SMS" subtitle="Gere um número virtual para verificação">
+          {/* Step 2 — SMS */}
+          <StepSection step={2} title="Gerar SMS" subtitle="Gere um número virtual para verificação">
             <SmsBlock
               clientId={clientId}
               onPhoneGenerated={(phone) => setSmsPhone(phone)}
@@ -178,6 +165,19 @@ export default function GodModePanel() {
                 setSmsLogId(id);
                 setSmsCode(code);
                 setSmsPhone(phone);
+              }}
+            />
+          </StepSection>
+
+          {/* Step 3 — Site */}
+          <StepSection step={3} title="Publicar Site" subtitle="Gera landing page no Cloudflare Workers para verificação Meta">
+            <InfraBlock
+              clientId={clientId}
+              razaoSocial={clientData?.razaoSocial}
+              smsPhone={smsPhone}
+              onDomainReady={(id, url) => {
+                setDomainId(id);
+                setWorkerUrl(url);
               }}
             />
           </StepSection>
