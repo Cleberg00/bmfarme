@@ -22,24 +22,24 @@ module.exports = async function handler(req, res) {
     }
 
     const clientData = {
-      razaoSocial:        d.razaoSocial                            || null,
-      nomeFantasia:       d.nomeFantasia                           || null,
-      // endereco agora é só o logradouro (rua), campos separados abaixo
-      endereco:           d.endereco                               || null,
-      numero:             d.numero                                 || raw.numero || null,
-      complemento:        d.complemento                            || raw.complemento || null,
-      bairro:             d.bairro                                 || raw.bairro || null,
-      cep:                d.cep                                    || null,
-      municipio:          d.municipio                              || null,
-      uf:                 d.uf                                     || null,
-      situacao:           d.situacao                               || null,
+      razaoSocial:        d.razaoSocial                               || null,
+      nomeFantasia:       d.nomeFantasia                              || null,
+      // endereco é obrigatório no schema — usa logradouro ou bairro como fallback
+      endereco:           d.endereco || d.bairro || d.municipio       || '',
+      numero:             d.numero                                    || null,
+      complemento:        d.complemento                               || null,
+      bairro:             d.bairro                                    || null,
+      cep:                d.cep                                       || '',
+      municipio:          d.municipio                                 || null,
+      uf:                 d.uf                                        || null,
+      situacao:           d.situacao                                  || null,
       dataSituacao:       fmtDate(raw.data_situacao_cadastral),
       dataAbertura:       fmtDate(raw.data_inicio_atividade),
-      porte:              raw.porte                                || null,
-      naturezaJuridica:   raw.natureza_juridica                    || null,
-      atividadePrincipal: d.atividadePrincipal                     || null,
-      telefone:           d.telefone                               || null,
-      email:              d.email                                  || null,
+      porte:              raw.porte                                   || null,
+      naturezaJuridica:   raw.natureza_juridica                       || null,
+      atividadePrincipal: d.atividadePrincipal                        || null,
+      telefone:           d.telefone                                  || null,
+      email:              d.email                                     || null,
       userId:             user.id,
     };
 
