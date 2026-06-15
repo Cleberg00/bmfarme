@@ -24,10 +24,11 @@ module.exports = async function handler(req, res) {
     const clientData = {
       razaoSocial:        d.razaoSocial                            || null,
       nomeFantasia:       d.nomeFantasia                           || null,
-      endereco:           raw.logradouro                           || d.endereco || null,
-      numero:             raw.numero                               || null,
-      complemento:        raw.complemento                          || null,
-      bairro:             raw.bairro                               || null,
+      // endereco agora é só o logradouro (rua), campos separados abaixo
+      endereco:           d.endereco                               || null,
+      numero:             d.numero                                 || raw.numero || null,
+      complemento:        d.complemento                            || raw.complemento || null,
+      bairro:             d.bairro                                 || raw.bairro || null,
       cep:                d.cep                                    || null,
       municipio:          d.municipio                              || null,
       uf:                 d.uf                                     || null,

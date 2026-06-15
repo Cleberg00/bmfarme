@@ -10,6 +10,9 @@ type ClientPayload = {
   razaoSocial: string;
   nomeFantasia?: string;
   endereco: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
   cep: string;
   municipio?: string;
   uf?: string;
@@ -171,7 +174,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
             <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">📍 Endereço (campos separados para o Meta)</p>
             <div className="grid gap-2 sm:grid-cols-2">
               <FieldCopy label="Endereço (logradouro)" value={client.endereco} />
-              <FieldCopy label="Endereço (continuação / bairro)" value={client.municipio ? client.municipio : ''} />
+              <FieldCopy label="Endereço (continuação / bairro)" value={client.bairro || ''} />
               <FieldCopy label="Cidade" value={client.municipio} />
               <FieldCopy label="Estado / Província" value={client.uf} />
               <FieldCopy label="CEP / Código Postal" value={client.cep ? client.cep.replace(/(\d{5})(\d{3})/, '$1-$2') : ''} />

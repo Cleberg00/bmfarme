@@ -18,28 +18,29 @@ async function lookupViaBrasilAPI(cnpj) {
   });
   const d = res.data;
 
-  const enderecoParts = [
-    d.descricao_tipo_de_logradouro ? `${d.descricao_tipo_de_logradouro} ${d.logradouro}` : d.logradouro,
-    d.numero,
-    d.complemento,
-    d.bairro,
-    d.municipio,
-    d.uf
-  ].filter(Boolean);
+  // Logradouro = tipo + nome da rua (ex: "RUA MARGINAL PARAIBA")
+  const logradouro = [
+    d.descricao_tipo_de_logradouro,
+    d.logradouro
+  ].filter(Boolean).join(' ') || '';
 
   return {
     cnpj,
-    razaoSocial: d.razao_social || d.nome_fantasia || '',
-    nomeFantasia: d.nome_fantasia || '',
-    endereco: enderecoParts.join(', '),
-    cep: (d.cep || '').replace(/\D/g, ''),
-    municipio: d.municipio || '',
-    uf: d.uf || '',
-    situacao: d.descricao_situacao_cadastral || '',
+    razaoSocial:        d.razao_social || d.nome_fantasia || '',
+    nomeFantasia:       d.nome_fantasia || '',
+    // endereco = só o logradouro (rua), sem bairro/municipio
+    endereco:           logradouro,
+    numero:             d.numero || '',
+    complemento:        d.complemento || '',
+    bairro:             d.bairro || '',
+    cep:                (d.cep || '').replace(/\D/g, ''),
+    municipio:          d.municipio || '',
+    uf:                 d.uf || '',
+    situacao:           d.descricao_situacao_cadastral || '',
     atividadePrincipal: d.cnae_fiscal_descricao || '',
-    telefone: d.ddd_telefone_1 ? `(${d.ddd_telefone_1}) ${d.telefone_1 || ''}`.trim() : '',
-    email: d.email || '',
-    raw: d
+    telefone:           d.ddd_telefone_1 ? `(${d.ddd_telefone_1}) ${d.telefone_1 || ''}`.trim() : '',
+    email:              d.email || '',
+    raw:                d
   };
 }
 
@@ -51,28 +52,23 @@ async function lookupViaReceitaWS(cnpj) {
   const d = res.data;
   if (d.status === 'ERROR') throw new Error(d.message || 'CNPJ não encontrado.');
 
-  const enderecoParts = [
-    d.logradouro,
-    d.numero,
-    d.complemento,
-    d.bairro,
-    d.municipio,
-    d.uf
-  ].filter(Boolean);
-
   return {
     cnpj,
-    razaoSocial: d.nome || '',
-    nomeFantasia: d.fantasia || '',
-    endereco: enderecoParts.join(', '),
-    cep: (d.cep || '').replace(/\D/g, ''),
-    municipio: d.municipio || '',
-    uf: d.uf || '',
-    situacao: d.situacao || '',
+    razaoSocial:        d.nome || '',
+    nomeFantasia:       d.fantasia || '',
+    // endereco = só o logradouro (rua)
+    endereco:           d.logradouro || '',
+    numero:             d.numero || '',
+    complemento:        d.complemento || '',
+    bairro:             d.bairro || '',
+    cep:                (d.cep || '').replace(/\D/g, ''),
+    municipio:          d.municipio || '',
+    uf:                 d.uf || '',
+    situacao:           d.situacao || '',
     atividadePrincipal: d.atividade_principal?.[0]?.text || '',
-    telefone: d.telefone || '',
-    email: d.email || '',
-    raw: d
+    telefone:           d.telefone || '',
+    email:              d.email || '',
+    raw:                d
   };
 }
 
@@ -81,7 +77,6 @@ async function lookupCnpj(cnpj) {
   if (normalized.length !== 14)
     throw Object.assign(new Error('CNPJ deve conter 14 dígitos.'), { statusCode: 400 });
 
-  // Tenta BrasilAPI primeiro, fallback para ReceitaWS
   try {
     return await lookupViaBrasilAPI(normalized);
   } catch (errBrasil) {
