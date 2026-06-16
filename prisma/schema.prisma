@@ -47,7 +47,6 @@ model User {
   smsLogs    SmsLog[]
   bmAssets   BmAsset[]
   wabaAssets WabaAsset[]
-  auditLogs  AuditLog[]
 }
 
 model Client {
@@ -159,16 +158,4 @@ model WabaAsset {
   updatedAt   DateTime   @updatedAt
   bmAsset     BmAsset?   @relation(fields: [bmAssetId], references: [id], onDelete: SetNull)
   user        User       @relation(fields: [userId], references: [id], onDelete: Restrict)
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  action    String   // ex: "CNPJ_LOOKUP", "SMS_GENERATE", "SITE_DEPLOY", "BM_REGISTER", "WABA_CREATE"
-  details   String?  // JSON com detalhes da operação
-  success   Boolean  @default(true)
-  error     String?
-  userId    String
-  clientId  String?
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Restrict)
 }

@@ -1,13 +1,10 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
-const { deployWorker, deleteWorker, buildLandingHtml, generateAiContent, generateFullSiteHtml } = require('../_services/cloudflare');
-const { rateLimit } = require('../_lib/rateLimit');
-const { audit } = require('../_lib/audit');
+const { deployWorker, deleteWorker, buildLandingHtml, generateAiContent } = require('../_services/cloudflare');
 
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (!rateLimit(req, res, { max: 15 })) return;
 
   const user = verifyAuth(req, res);
   if (!user) return;
@@ -105,8 +102,19 @@ module.exports = async function handler(req, res) {
     const smsPhone = smsLog?.phoneNumber || null;
     const smsCode  = smsLog?.smsCode || null;
 
-    // Gera HTML via IA (100% único) — com fallback pro template estático
-    const siteParams = {
+    // Gera conteúdo com IA e HTML da landing page
+    const [aiContent] = await Promise.all([
+      generateAiContent({
+        razaoSocial:        client.razaoSocial,
+        atividadePrincipal: client.atividadePrincipal,
+        municipio:          client.municipio,
+        uf:                 client.uf,
+        smsPhone,
+      }),
+    ]);
+
+    const html = buildLandingHtml({
+      subdomain:          cleanSubdomain,
       razaoSocial:        client.razaoSocial,
       nomeFantasia:       client.nomeFantasia,
       cnpj:               client.cnpj,
@@ -122,20 +130,8 @@ module.exports = async function handler(req, res) {
       smsCode,
       metaVerificationCode,
       verificationMethod: method,
-    };
-
-    // Tenta IA primeiro, fallback pro estático se falhar
-    let html = await generateFullSiteHtml(siteParams);
-    if (!html) {
-      const aiContent = await generateAiContent({
-        razaoSocial: client.razaoSocial,
-        atividadePrincipal: client.atividadePrincipal,
-        municipio: client.municipio,
-        uf: client.uf,
-        smsPhone,
-      });
-      html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain, aiContent });
-    }
+      aiContent,
+    });
 
     // Publica o worker (cria ou atualiza — a API do Cloudflare faz upsert)
     const { workerName, url } = await deployWorker(cleanSubdomain, html, metaVerificationCode, method);

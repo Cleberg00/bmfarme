@@ -1,14 +1,11 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
 const { lookupCnpj } = require('../_services/cnpj');
-const { rateLimit } = require('../_lib/rateLimit');
-const { audit } = require('../_lib/audit');
 
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed.' });
-  if (!rateLimit(req, res, { max: 30 })) return;
 
   const user = verifyAuth(req, res);
   if (!user) return;
@@ -75,7 +72,6 @@ module.exports = async function handler(req, res) {
       email:              client.email,
     });
   } catch (error) {
-    audit(user.id, 'CNPJ_LOOKUP', { cnpj }, false, error.message).catch(() => {});
     return res.status(error.statusCode || 500).json({ error: error.message });
   }
 };

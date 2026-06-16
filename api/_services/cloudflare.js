@@ -30,6 +30,7 @@ Retorne APENAS um JSON válido com exatamente estas 3 chaves (sem markdown, sem 
     );
 
     const text = res.data?.result?.response || '';
+    // Extrai o JSON da resposta
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -48,131 +49,25 @@ Retorne APENAS um JSON válido com exatamente estas 3 chaves (sem markdown, sem 
   };
 }
 
-// ─── Gerador de site COMPLETO via IA (layout + cores + textos únicos) ────────
-
-/**
- * Gera um HTML completo de landing page via IA.
- * Cada chamada produz um site com layout, cores, fontes e textos 100% únicos.
- * Se a IA falhar, cai no buildLandingHtml (fallback estático).
- */
-async function generateFullSiteHtml(params) {
-  const { razaoSocial, nomeFantasia, cnpj, endereco, cep, municipio, uf,
-          atividadePrincipal, telefone, email, smsPhone, smsCode,
-          metaVerificationCode, verificationMethod } = params;
-
-  function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function fmtCnpj(c) { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
-  function fmtPhone(t) {
-    if(!t) return '';
-    let n=String(t).replace(/\D/g,'');
-    if(n.startsWith('55')&&n.length>=12) n=n.slice(2);
-    if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
-    if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
-    return t;
-  }
-  function cleanName(s) { return String(s||'').replace(/^[\d.\s-]+/,'').replace(/[\d.\s-]+$/,'').trim(); }
-
-  let verificationCode = metaVerificationCode || '';
-  const cMatch = verificationCode.match(/content=["']([^"']+)["']/);
-  if (cMatch) verificationCode = cMatch[1];
-
-  const metaTag = (verificationMethod !== 'html_file' && verificationCode)
-    ? `<meta name="facebook-domain-verification" content="${esc(verificationCode)}" />`
-    : '';
-
-  const displayName = cleanName(nomeFantasia || razaoSocial);
-  const phone = fmtPhone(smsPhone || telefone || '');
-  const cnpjFmt = fmtCnpj(cnpj);
-
-  const prompt = `Você é um web designer expert. Crie uma landing page HTML COMPLETA e ÚNICA para a empresa abaixo.
-
-DADOS DA EMPRESA:
-- Nome: ${displayName}
-- Razão Social: ${cleanName(razaoSocial)}
-- CNPJ: ${cnpjFmt}
-- Atividade: ${atividadePrincipal || 'Serviços empresariais'}
-- Endereço: ${endereco || ''}, ${municipio || ''}-${uf || ''}
-- WhatsApp: ${phone || 'Não informado'}${smsCode ? ` (código: ${smsCode})` : ''}
-- Email: ${email || ''}
-
-REQUISITOS OBRIGATÓRIOS:
-1. HTML completo com <!DOCTYPE html>, <head> com charset UTF-8 e viewport, <body>
-2. CSS inline dentro de <style> no <head> (NÃO use links externos de CSS)
-3. Use Google Fonts (pode usar @import no style)
-4. Layout CRIATIVO e DIFERENTE - pode ser: split-screen, sidebar, hero com cards, minimal, dashboard, magazine, floating panels, gradient mesh, etc. VARIE O LAYOUT a cada geração.
-5. Paleta de cores ÚNICA - escolha cores harmônicas aleatórias (NÃO use sempre verde/azul)
-6. Mostre TODOS os dados da empresa em campos organizados
-7. Inclua seção anti-spam dizendo que WhatsApp é APENAS receptivo, não faz spam, conforme LGPD
-8. Inclua formulário simples com onsubmit="event.preventDefault();alert('Solicitação registrada.')"
-9. Responsivo (media query para mobile)
-10. Profissional e institucional
-
-REGRAS:
-- NÃO use markdown, NÃO use \`\`\`html
-- Retorne APENAS o HTML puro, começando com <!DOCTYPE html>
-- O HTML deve ser COMPLETO e funcional
-- VARIE: use fontes diferentes, layouts diferentes, cores diferentes a cada geração`;
-
-  try {
-    const res = await axios.post(
-      `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
-      { messages: [{ role: 'user', content: prompt }], max_tokens: 4000 },
-      {
-        headers: { Authorization: `Bearer ${env.cloudflareAiToken}`, 'Content-Type': 'application/json' },
-        timeout: 30000
-      }
-    );
-
-    let html = res.data?.result?.response || '';
-
-    // Limpa possíveis markdown wrappers
-    html = html.replace(/^```html?\s*/i, '').replace(/```\s*$/i, '').trim();
-
-    // Valida que é HTML real
-    if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
-      throw new Error('IA não retornou HTML válido');
-    }
-
-    // Injeta meta tag de verificação no <head>
-    if (metaTag) {
-      html = html.replace(/<head>/i, `<head>\n${metaTag}`);
-    }
-
-    return html;
-  } catch (err) {
-    // Fallback: usa o gerador estático
-    console.error('[generateFullSiteHtml] IA falhou, usando fallback:', err.message);
-    return null;
-  }
-}
-
 // ─── Templates de cores ──────────────────────────────────────────────────────
 
-// ─── Gerador infinito de paletas (nunca repete) ─────────────────────────────
+const TEMPLATES = [
+  // 1 — Verde financeiro (original)
+  { name: 'verde', primary: '#059669', dark: '#047857', accent: '#ecfdf5', border: '#bbf7d0', text: '#111827' },
+  // 2 — Azul corporativo
+  { name: 'azul', primary: '#2563eb', dark: '#1d4ed8', accent: '#eff6ff', border: '#bfdbfe', text: '#1e3a5f' },
+  // 3 — Cinza executivo
+  { name: 'cinza', primary: '#374151', dark: '#1f2937', accent: '#f9fafb', border: '#d1d5db', text: '#111827' },
+  // 4 — Vinho/roxo institucional
+  { name: 'vinho', primary: '#7c3aed', dark: '#6d28d9', accent: '#f5f3ff', border: '#ddd6fe', text: '#1e1b4b' },
+  // 5 — Laranja/âmbar profissional
+  { name: 'laranja', primary: '#d97706', dark: '#b45309', accent: '#fffbeb', border: '#fde68a', text: '#1c1917' },
+];
 
-const LAYOUT_NAMES = ['verde', 'azul', 'cinza', 'vinho', 'laranja', 'split', 'hero', 'minimal', 'dashboard', 'floating'];
-
-function hslToHex(h, s, l) {
-  s /= 100; l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = n => { const k = (n + h / 30) % 12; const c = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1); return Math.round(255 * c).toString(16).padStart(2, '0'); };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-function getTemplate() {
-  // Gera hue aleatório (0-360) com saturação e luminosidade variáveis
-  const h = Math.floor(Math.random() * 360);
-  const sat = 45 + Math.floor(Math.random() * 35); // 45-80
-  const layout = LAYOUT_NAMES[Math.floor(Math.random() * LAYOUT_NAMES.length)];
-
-  return {
-    name: layout,
-    primary: hslToHex(h, sat, 38 + Math.floor(Math.random() * 12)),
-    dark: hslToHex(h, sat + 5, 25 + Math.floor(Math.random() * 10)),
-    accent: hslToHex(h, 25 + Math.floor(Math.random() * 15), 96 + Math.floor(Math.random() * 3)),
-    border: hslToHex(h, 25 + Math.floor(Math.random() * 15), 82 + Math.floor(Math.random() * 8)),
-    text: hslToHex(h, 15 + Math.floor(Math.random() * 10), 8 + Math.floor(Math.random() * 10)),
-  };
+function getTemplate(seed) {
+  // Usa aleatoriedade REAL — cada publicação gera um template diferente
+  const idx = Math.floor(Math.random() * TEMPLATES.length);
+  return TEMPLATES[idx];
 }
 
 // ─── API Client ──────────────────────────────────────────────────────────────
@@ -233,28 +128,19 @@ async function deleteZone(zoneId) {
 
 /**
  * Gera o slug do subdomínio a partir da razão social.
- * Adiciona sufixo aleatório de 3 chars pra garantir unicidade em volume alto.
- * Ex: "ROBERTA PORTO DE ANDRADE" → "robertaporto-x7k"
+ * Ex: "ROBERTA PORTO DE ANDRADE DE MARTINO" → "robertaporto"
  */
 function slugify(razaoSocial) {
   const stopWords = new Set(['de', 'da', 'do', 'dos', 'das', 'e', 'em', 'a', 'o', 'para', 'com', 'ltda', 'eireli', 'me', 'sa', 'ss', 'epp']);
   const words = razaoSocial
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, '')
     .split(/\s+/)
     .filter(w => w && !stopWords.has(w));
 
-  // Variação: às vezes usa 1 palavra, às vezes 2, às vezes 3
-  const wordCount = 1 + Math.floor(Math.random() * Math.min(3, words.length));
-  const base = words.slice(0, wordCount).join('').slice(0, 16) || 'empresa';
-
-  // Sufixo aleatório de 3 chars (a-z, 0-9)
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let suffix = '';
-  for (let i = 0; i < 3; i++) suffix += chars[Math.floor(Math.random() * chars.length)];
-
-  return `${base}-${suffix}`;
+  // Pega as 2 primeiras palavras significativas, máx 20 chars total
+  return words.slice(0, 2).join('').slice(0, 20) || 'empresa';
 }
 
 /**
@@ -482,5 +368,5 @@ module.exports = {
   // workers
   deployWorker, deleteWorker, buildLandingHtml, slugify,
   // AI
-  generateAiContent, generateFullSiteHtml,
+  generateAiContent,
 };

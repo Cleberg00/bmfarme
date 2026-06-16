@@ -11,7 +11,6 @@ module.exports = {
   get cloudflareAccountId()        { return get('CLOUDFLARE_ACCOUNT_ID'); },
   get cloudflareWorkersSubdomain() { return get('CLOUDFLARE_WORKERS_SUBDOMAIN'); },
   get cloudflareAiToken()          { return process.env.CLOUDFLARE_AI_TOKEN || env.cloudflareApiToken; },
-  get cloudflareCustomDomain()     { return process.env.CLOUDFLARE_CUSTOM_DOMAIN || ''; },
   get sms24ApiKey()                { return get('SMS24_API_KEY'); },
   get sms24ApiUrl()                { return get('SMS24_API_URL'); },
   // legado opcional
