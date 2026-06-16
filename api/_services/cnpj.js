@@ -37,8 +37,13 @@ async function lookupViaCnpjsWs(cnpj) {
     : '';
 
   // Porte abreviado como na Receita (ME, EPP, DEMAIS)
-  const porteMap = { 'Micro Empresa': 'ME', 'Empresa de Pequeno Porte': 'EPP', 'Demais': 'DEMAIS' };
-  const porte = porteMap[d.porte?.descricao] || d.porte?.descricao || '';
+  const porteRaw = d.porte?.descricao || '';
+  const porteMap = {
+    'micro empresa': 'ME', 'microempresa': 'ME', 'me': 'ME',
+    'empresa de pequeno porte': 'EPP', 'epp': 'EPP',
+    'demais': 'DEMAIS', 'grande porte': 'DEMAIS', 'medio porte': 'DEMAIS',
+  };
+  const porte = porteMap[porteRaw.toLowerCase()] || porteRaw || '';
 
   // Telefone
   let telefone = '';
@@ -80,6 +85,14 @@ async function lookupViaBrasilAPI(cnpj) {
   const cnaeDesc = d.cnae_fiscal_descricao || '';
   const cnaePrincipal = cnaeCodigo ? `${cnaeCodigo} - ${cnaeDesc}` : cnaeDesc;
 
+  // Porte abreviado
+  const porteMapB = {'01':'ME','02':'ME','03':'EPP','05':'DEMAIS','00':'DEMAIS'};
+  const porteB = porteMapB[String(d.porte || '')] || (d.descricao_porte || '').replace(/micro empresa/i,'ME').replace(/empresa de pequeno porte/i,'EPP') || '';
+
+  // Natureza jurídica com código
+  const natJur = d.codigo_natureza_juridica && d.descricao_natureza_juridica
+    ? `${d.codigo_natureza_juridica} - ${d.descricao_natureza_juridica}` : '';
+
   return {
     cnpj,
     razaoSocial:        d.razao_social || d.nome_fantasia || '',
@@ -93,6 +106,8 @@ async function lookupViaBrasilAPI(cnpj) {
     uf:                 d.uf || '',
     situacao:           d.descricao_situacao_cadastral || '',
     atividadePrincipal: cnaePrincipal,
+    porte:              porteB,
+    naturezaJuridica:   natJur,
     telefone:           d.ddd_telefone_1 ? `(${d.ddd_telefone_1}) ${d.telefone_1 || ''}`.trim() : '',
     email:              d.email || '',
     raw:                d
