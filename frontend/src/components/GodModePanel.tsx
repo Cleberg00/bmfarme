@@ -6,6 +6,7 @@ import SmsBlock from './blocks/SmsBlock';
 import TrackingBlock from './blocks/TrackingBlock';
 import DashboardPanel from './DashboardPanel';
 import WabaPanel from './WabaPanel';
+import SitesPanel from './SitesPanel';
 import CnpjCardModal from './CnpjCardModal';
 import ProfileModal from './ProfileModal';
 import WabaBlock from './blocks/WabaBlock';
@@ -49,10 +50,12 @@ export default function GodModePanel() {
   const [showCard, setShowCard]           = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [showWaba, setShowWaba]           = useState(false);
+  const [showSites, setShowSites]         = useState(false);
   const [showProfile, setShowProfile]     = useState(false);
 
   if (showDashboard) return <DashboardPanel onBack={() => setShowDashboard(false)} />;
   if (showWaba)      return <WabaPanel onBack={() => setShowWaba(false)} />;
+  if (showSites)     return <SitesPanel onBack={() => setShowSites(false)} />;
 
   const resetPipeline = () => {
     if (!confirm('Iniciar novo farm? Os dados atuais serão limpos.')) return;
@@ -85,6 +88,10 @@ export default function GodModePanel() {
               <button type="button" onClick={() => setShowWaba(true)}
                 className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400 transition hover:bg-green-500/20">
                 📱 WABAs
+              </button>
+              <button type="button" onClick={() => setShowSites(true)}
+                className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-400 transition hover:bg-cyan-500/20">
+                🌐 Sites
               </button>
               {clientId && (
                 <button type="button" onClick={() => setShowCard(true)}
