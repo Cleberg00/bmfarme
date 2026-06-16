@@ -4,7 +4,7 @@ const { verifyAuth, setCors } = require('../_lib/auth');
 function buildCardHtml(d) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtCnpj(c) { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
-  function fmtCep(c)  { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{5})(\d{3})$/,'$1-$2')||c; }
+  function fmtCep(c)  { const n=String(c||'').replace(/\D/g,''); return n.length===8?n.replace(/^(\d{2})(\d{3})(\d{3})$/,'$1.$2-$3'):c; }
   function fmtPhone(t){
     if(!t) return '';
     let n=String(t).replace(/\D/g,'');
@@ -25,202 +25,275 @@ function buildCardHtml(d) {
 <meta charset="UTF-8"/>
 <title>Comprovante CNPJ</title>
 <style>
-@page{size:A4 portrait;margin:10mm 15mm;}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#c0c0c0;}
-.page{width:210mm;min-height:297mm;margin:0 auto;padding:15mm 20mm;background:#fff;}
-table.card{width:100%;border-collapse:separate;border-spacing:0 3px;}
-table.card td{border:1px solid #000;padding:5px 8px;vertical-align:top;background:#fff;}
-.lbl{font-size:8px;color:#555;text-transform:uppercase;font-weight:normal;display:block;margin-bottom:1px;}
-.val{font-size:12px;font-weight:bold;color:#000;}
-.val-sm{font-size:11px;font-weight:bold;color:#000;}
-/* Header */
-.hdr{display:flex;align-items:center;padding:10px 8px;border:1px solid #000;margin-bottom:3px;}
-.brasao{width:50px;height:auto;margin-right:12px;}
-.hdr-text h1{font-size:14px;font-weight:bold;text-transform:uppercase;margin:0;}
-.hdr-text h2{font-size:11px;font-weight:bold;text-transform:uppercase;margin:2px 0 0;}
-/* Footer */
-.ftr{margin-top:10px;font-size:11px;color:#222;padding:0 2px;}
-.ftr p{margin:2px 0;}
-/* Buttons */
-.actions{display:flex;gap:12px;justify-content:center;margin:24px 0 10px;}
-.btn{padding:10px 28px;border:none;border-radius:5px;font-size:12px;font-weight:bold;cursor:pointer;}
-.btn-green{background:#1a7f4b;color:#fff;}
-.btn-gray{background:#d1d5db;color:#374151;}
-@media print{
-  .actions{display:none!important;}
-  body{background:#fff;}
-  .page{width:100%;min-height:auto;padding:8mm 10mm;margin:0;}
+/* --- ESTILOS PARA A TELA E PARA O PAPEL --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.comprovante-cnpj {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 12mm 15mm;
+  font-family: Arial, sans-serif;
+  color: #000;
+  background-color: #fff;
+}
+/* Sistema de Grid/Linhas */
+.comprovante-cnpj .row {
+  display: flex;
+  width: 100%;
+  margin-bottom: -1px;
+}
+.comprovante-cnpj .col {
+  border: 1px solid #000;
+  margin-right: -1px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.comprovante-cnpj .col:last-child {
+  margin-right: 0;
+}
+/* Larguras das Colunas em Porcentagem */
+.w-100 { width: 100%; }
+.w-70  { width: 70%; }
+.w-60  { width: 60%; }
+.w-50  { width: 50%; }
+.w-40  { width: 40%; }
+.w-35  { width: 35%; }
+.w-30  { width: 30%; }
+.w-20  { width: 20%; }
+.w-15  { width: 15%; }
+.w-10  { width: 10%; }
+/* Textos internos das caixas */
+.comprovante-cnpj label {
+  font-size: 7.5pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #333;
+  margin-bottom: 3px;
+}
+.comprovante-cnpj .valor {
+  font-size: 11pt;
+  font-family: 'Courier New', Courier, monospace;
+  min-height: 18px;
+  padding-top: 2px;
+}
+.comprovante-cnpj .destaque {
+  font-weight: bold;
+}
+/* Cabeçalho e Textos Específicos */
+.header-principal {
+  border: 1px solid #000;
+  padding: 14px 10px;
+  text-align: center;
+  margin-bottom: 10px !important;
+}
+.header-principal .col { border: none; }
+.centralizado { align-items: center; }
+.titulo-topo { font-size: 14pt; font-weight: bold; margin: 0; }
+.subtitulo-topo { font-size: 12pt; font-weight: bold; margin: 4px 0; }
+.nome-documento { font-size: 11pt; font-weight: bold; margin-top: 6px; color: #111; }
+.badge {
+  border: 1px solid #000;
+  padding: 2px 6px;
+  font-size: 9pt;
+  margin-left: 10px;
+}
+.rodape-normativa {
+  margin-top: 20px;
+  font-size: 9pt;
+  text-align: center;
+}
+/* Botões de ação (só na tela) */
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 24px 0 10px;
+}
+.btn {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-green { background: #1a7f4b; color: #fff; }
+.btn-gray  { background: #d1d5db; color: #374151; }
+/* Body */
+body {
+  background: #c0c0c0;
+  padding: 20px;
+  margin: 0;
+}
+/* --- REGRAS EXCLUSIVAS DE IMPRESSÃO (A4) --- */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+  body {
+    background: #fff;
+    padding: 0;
+    margin: 0;
+  }
+  .actions { display: none !important; }
+  .comprovante-cnpj {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto;
+    padding: 5mm 8mm;
+    box-shadow: none;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }
 </style>
 </head>
 <body>
-<div class="page">
 
-<!-- Header com brasão -->
-<div class="hdr">
-  <img class="brasao" src="https://bmfarme.vercel.app/brasao2.gif" alt="Brasão"/>
-  <div class="hdr-text">
-    <h1>REPÚBLICA FEDERATIVA DO BRASIL</h1>
-    <h2>CADASTRO NACIONAL DA PESSOA JURÍDICA</h2>
+<div class="comprovante-cnpj">
+  <!-- Cabeçalho -->
+  <div class="row header-principal">
+    <div class="col centralizado">
+      <p class="titulo-topo">REPÚBLICA FEDERATIVA DO BRASIL</p>
+      <p class="subtitulo-topo">CADASTRO NACIONAL DA PESSOA JURÍDICA</p>
+      <p class="nome-documento">COMPROVANTE DE INSCRIÇÃO E DE SITUAÇÃO CADASTRAL</p>
+    </div>
+  </div>
+
+  <!-- Nº Inscrição | Data Abertura -->
+  <div class="row">
+    <div class="col w-70">
+      <label>NÚMERO DE INSCRIÇÃO</label>
+      <div class="valor destaque">${esc(fmtCnpj(d.cnpj))} <span class="badge">MATRIZ</span></div>
+    </div>
+    <div class="col w-30">
+      <label>DATA DE ABERTURA</label>
+      <div class="valor destaque">${esc(d.dataAbertura||'')}</div>
+    </div>
+  </div>
+
+  <!-- Nome Empresarial -->
+  <div class="row">
+    <div class="col w-100">
+      <label>NOME EMPRESARIAL</label>
+      <div class="valor destaque">${razaoClean}</div>
+    </div>
+  </div>
+
+  <!-- Nome Fantasia | Porte -->
+  <div class="row">
+    <div class="col w-70">
+      <label>TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)</label>
+      <div class="valor">${esc(d.nomeFantasia||'********')}</div>
+    </div>
+    <div class="col w-30">
+      <label>PORTE</label>
+      <div class="valor">${esc(d.porte||'')}</div>
+    </div>
+  </div>
+
+  <!-- Atividade Principal -->
+  <div class="row">
+    <div class="col w-100">
+      <label>CÓDIGO E DESCRIÇÃO DA ATIVIDADE ECONÔMICA PRINCIPAL</label>
+      <div class="valor">${esc(d.atividadePrincipal||'Não informada')}</div>
+    </div>
+  </div>
+
+  <!-- Atividades Secundárias -->
+  <div class="row">
+    <div class="col w-100">
+      <label>CÓDIGO E DESCRIÇÃO DAS ATIVIDADES ECONÔMICAS SECUNDÁRIAS</label>
+      <div class="valor">Não informada</div>
+    </div>
+  </div>
+
+  <!-- Natureza Jurídica -->
+  <div class="row">
+    <div class="col w-100">
+      <label>CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA</label>
+      <div class="valor">${esc(d.naturezaJuridica||'')}</div>
+    </div>
+  </div>
+
+  <!-- Logradouro | Número | Complemento -->
+  <div class="row">
+    <div class="col w-50">
+      <label>LOGRADOURO</label>
+      <div class="valor">${esc(d.endereco||'')}</div>
+    </div>
+    <div class="col w-15">
+      <label>NÚMERO</label>
+      <div class="valor">${esc(d.numero||'S/N')}</div>
+    </div>
+    <div class="col w-35">
+      <label>COMPLEMENTO</label>
+      <div class="valor">${esc(d.complemento||'********')}</div>
+    </div>
+  </div>
+
+  <!-- CEP | Bairro | Município | UF -->
+  <div class="row">
+    <div class="col w-35">
+      <label>CEP</label>
+      <div class="valor">${esc(fmtCep(d.cep))}</div>
+    </div>
+    <div class="col w-35">
+      <label>BAIRRO/DISTRITO</label>
+      <div class="valor">${esc(d.bairro||'')}</div>
+    </div>
+    <div class="col w-20">
+      <label>MUNICÍPIO</label>
+      <div class="valor">${esc(d.municipio||'')}</div>
+    </div>
+    <div class="col w-10">
+      <label>UF</label>
+      <div class="valor">${esc(d.uf||'')}</div>
+    </div>
+  </div>
+
+  <!-- Email | Telefone -->
+  <div class="row">
+    <div class="col w-60">
+      <label>ENDEREÇO ELETRÔNICO</label>
+      <div class="valor">${esc(d.email||'')}</div>
+    </div>
+    <div class="col w-40">
+      <label>TELEFONE</label>
+      <div class="valor">${esc(phoneForCard)}</div>
+    </div>
+  </div>
+
+  <!-- Situação Cadastral | Data -->
+  <div class="row">
+    <div class="col w-60">
+      <label>SITUAÇÃO CADASTRAL</label>
+      <div class="valor destaque">${esc(d.situacao||'ATIVA')}</div>
+    </div>
+    <div class="col w-40">
+      <label>DATA DA SITUAÇÃO CADASTRAL</label>
+      <div class="valor">${esc(d.dataSituacao||'')}</div>
+    </div>
+  </div>
+
+  <!-- Rodapé normativa -->
+  <div class="rodape-normativa">
+    <p>Aprovado pela Instrução Normativa RFB nº 2.119, de 06 de dezembro de 2022.</p>
+    <p>Emitido no dia ${now} (data e hora de Brasília).</p>
   </div>
 </div>
 
-<table class="card">
-  <!-- Row 1: Nº Inscrição | Comprovante | Data Abertura -->
-  <tr>
-    <td style="width:200px;">
-      <span class="lbl">NÚMERO DE INSCRIÇÃO</span>
-      <span class="val">${esc(fmtCnpj(d.cnpj))}</span><br/>
-      <span class="val-sm">MATRIZ</span>
-    </td>
-    <td style="text-align:center;">
-      <span class="val">COMPROVANTE DE INSCRIÇÃO E DE SITUAÇÃO CADASTRAL</span>
-    </td>
-    <td style="width:140px;">
-      <span class="lbl">DATA DE ABERTURA</span>
-      <span class="val">${esc(d.dataAbertura||'')}</span>
-    </td>
-  </tr>
-  <!-- Row 2: Nome Empresarial -->
-  <tr>
-    <td colspan="3">
-      <span class="lbl">NOME EMPRESARIAL</span>
-      <span class="val">${razaoClean}</span>
-    </td>
-  </tr>
-  <!-- Row 3: Nome Fantasia | Porte -->
-  <tr>
-    <td colspan="2">
-      <span class="lbl">TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)</span>
-      <span class="val">${esc(d.nomeFantasia||'********')}</span>
-    </td>
-    <td>
-      <span class="lbl">PORTE</span>
-      <span class="val">${esc(d.porte||'')}</span>
-    </td>
-  </tr>
-  <!-- Row 4: Atividade Principal -->
-  <tr>
-    <td colspan="3">
-      <span class="lbl">CÓDIGO E DESCRIÇÃO DA ATIVIDADE ECONÔMICA PRINCIPAL</span>
-      <span class="val">${esc(d.atividadePrincipal||'Não informada')}</span>
-    </td>
-  </tr>
-  <!-- Row 5: Atividades Secundárias -->
-  <tr>
-    <td colspan="3">
-      <span class="lbl">CÓDIGO E DESCRIÇÃO DAS ATIVIDADES ECONÔMICAS SECUNDÁRIAS</span>
-      <span class="val">Não informada</span>
-    </td>
-  </tr>
-  <!-- Row 6: Natureza Jurídica -->
-  <tr>
-    <td colspan="3">
-      <span class="lbl">CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA</span>
-      <span class="val">${esc(d.naturezaJuridica||'')}</span>
-    </td>
-  </tr>
-  <!-- Row 7: Logradouro | Número | Complemento -->
-  <tr>
-    <td>
-      <span class="lbl">LOGRADOURO</span>
-      <span class="val">${esc(d.endereco||'')}</span>
-    </td>
-    <td style="width:80px;">
-      <span class="lbl">NÚMERO</span>
-      <span class="val">${esc(d.numero||'S/N')}</span>
-    </td>
-    <td>
-      <span class="lbl">COMPLEMENTO</span>
-      <span class="val">${esc(d.complemento||'')}</span>
-    </td>
-  </tr>
-  <!-- Row 8: CEP | Bairro | Município | UF -->
-  <tr>
-    <td colspan="3" style="padding:0;">
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="border:none;border-right:1px solid #000;padding:4px 6px;width:100px;">
-            <span class="lbl">CEP</span>
-            <span class="val">${esc(fmtCep(d.cep))}</span>
-          </td>
-          <td style="border:none;border-right:1px solid #000;padding:4px 6px;">
-            <span class="lbl">BAIRRO/DISTRITO</span>
-            <span class="val">${esc(d.bairro||'')}</span>
-          </td>
-          <td style="border:none;border-right:1px solid #000;padding:4px 6px;">
-            <span class="lbl">MUNICÍPIO</span>
-            <span class="val">${esc(d.municipio||'')}</span>
-          </td>
-          <td style="border:none;padding:4px 6px;width:50px;">
-            <span class="lbl">UF</span>
-            <span class="val">${esc(d.uf||'')}</span>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-  <!-- Row 9: Email | Telefone -->
-  <tr>
-    <td colspan="2">
-      <span class="lbl">ENDEREÇO ELETRÔNICO</span>
-      <span class="val">${esc(d.email||'')}</span>
-    </td>
-    <td>
-      <span class="lbl">TELEFONE</span>
-      <span class="val">${esc(phoneForCard)}</span>
-    </td>
-  </tr>
-  <!-- Row 10: EFR -->
-  <tr>
-    <td colspan="3">
-      <span class="lbl">ENTE FEDERATIVO RESPONSÁVEL (EFR)</span>
-      <span class="val">*****</span>
-    </td>
-  </tr>
-  <!-- Row 11: Situação Cadastral | Data -->
-  <tr>
-    <td colspan="2">
-      <span class="lbl">SITUAÇÃO CADASTRAL</span>
-      <span class="val">${esc(d.situacao||'ATIVA')}</span>
-    </td>
-    <td>
-      <span class="lbl">DATA DA SITUAÇÃO CADASTRAL</span>
-      <span class="val">${esc(d.dataSituacao||'')}</span>
-    </td>
-  </tr>
-  <!-- Row 12: Motivo -->
-  <tr>
-    <td colspan="3">
-      <span class="lbl">MOTIVO DE SITUAÇÃO CADASTRAL</span>
-      <span class="val">&nbsp;</span>
-    </td>
-  </tr>
-  <!-- Row 13: Situação Especial | Data -->
-  <tr>
-    <td colspan="2">
-      <span class="lbl">SITUAÇÃO ESPECIAL</span>
-      <span class="val">********</span>
-    </td>
-    <td>
-      <span class="lbl">DATA DA SITUAÇÃO ESPECIAL</span>
-      <span class="val">********</span>
-    </td>
-  </tr>
-</table>
-
-<div class="ftr">
-  <p>Aprovado pela Instrução Normativa RFB nº 2.119, de 06 de dezembro de 2022.</p>
-  <p>Emitido no dia ${now} (data e hora de Brasília).</p>
-</div>
-
+<!-- Botões (só aparecem na tela, ocultam na impressão) -->
 <div class="actions">
   <button class="btn btn-green" onclick="window.print()">Imprimir / Salvar PDF</button>
   <button class="btn btn-gray" onclick="window.close()">Fechar</button>
 </div>
 
-</div><!-- /page -->
 </body>
 </html>`;
 }
