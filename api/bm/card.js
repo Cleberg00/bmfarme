@@ -29,13 +29,13 @@ function buildCardHtml(d) {
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#c0c0c0;}
 .page{width:210mm;min-height:297mm;margin:0 auto;padding:15mm 20mm;background:#fff;}
-table.card{width:100%;border-collapse:collapse;}
-table.card td{border:1px solid #000;padding:4px 6px;vertical-align:top;}
+table.card{width:100%;border-collapse:separate;border-spacing:0 3px;}
+table.card td{border:1px solid #000;padding:5px 8px;vertical-align:top;background:#fff;}
 .lbl{font-size:8px;color:#555;text-transform:uppercase;font-weight:normal;display:block;margin-bottom:1px;}
 .val{font-size:12px;font-weight:bold;color:#000;}
 .val-sm{font-size:11px;font-weight:bold;color:#000;}
 /* Header */
-.hdr{display:flex;align-items:center;padding:8px 6px;border:1px solid #000;border-bottom:none;}
+.hdr{display:flex;align-items:center;padding:10px 8px;border:1px solid #000;margin-bottom:3px;}
 .brasao{width:50px;height:auto;margin-right:12px;}
 .hdr-text h1{font-size:14px;font-weight:bold;text-transform:uppercase;margin:0;}
 .hdr-text h2{font-size:11px;font-weight:bold;text-transform:uppercase;margin:2px 0 0;}
