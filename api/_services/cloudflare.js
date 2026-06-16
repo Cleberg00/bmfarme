@@ -119,7 +119,7 @@ RETORNE APENAS o HTML puro começando com <!DOCTYPE html>. SEM markdown, SEM exp
 
   try {
     const res = await axios.post(
-      `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
+      `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3-8b-instruct`,
       { messages: [{ role: 'user', content: prompt }], max_tokens: 4000 },
       { headers: { Authorization: `Bearer ${env.cloudflareAiToken}`, 'Content-Type': 'application/json' }, timeout: 30000 }
     );
