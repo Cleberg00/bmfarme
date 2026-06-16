@@ -27,8 +27,8 @@ function buildCardHtml(d) {
 <style>
 @page{size:A4 portrait;margin:10mm 15mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#fff;}
-.page{max-width:700px;margin:0 auto;padding:20px 0;}
+body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#c0c0c0;}
+.page{width:210mm;min-height:297mm;margin:0 auto;padding:15mm 20mm;background:#fff;}
 table.card{width:100%;border-collapse:collapse;}
 table.card td{border:1px solid #000;padding:4px 6px;vertical-align:top;}
 .lbl{font-size:8px;color:#555;text-transform:uppercase;font-weight:normal;display:block;margin-bottom:1px;}
@@ -50,6 +50,7 @@ table.card td{border:1px solid #000;padding:4px 6px;vertical-align:top;}
 @media print{
   .actions{display:none!important;}
   body{background:#fff;}
+  .page{width:100%;min-height:auto;padding:8mm 10mm;margin:0;}
 }
 </style>
 </head>
