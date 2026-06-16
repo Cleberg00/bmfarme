@@ -10,7 +10,7 @@ module.exports = {
   get cloudflareApiToken()         { return get('CLOUDFLARE_API_TOKEN'); },
   get cloudflareAccountId()        { return get('CLOUDFLARE_ACCOUNT_ID'); },
   get cloudflareWorkersSubdomain() { return get('CLOUDFLARE_WORKERS_SUBDOMAIN'); },
-  get cloudflareAiToken()          { return process.env.CLOUDFLARE_AI_TOKEN || env.cloudflareApiToken; },
+  get cloudflareAiToken()          { return process.env.CLOUDFLARE_AI_TOKEN || get('CLOUDFLARE_API_TOKEN'); },
   get sms24ApiKey()                { return get('SMS24_API_KEY'); },
   get sms24ApiUrl()                { return get('SMS24_API_URL'); },
   // legado opcional

@@ -85,7 +85,7 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
   };
 
   const workerPreviewUrl = subdomain
-    ? `${subdomain}-zaplifydisparo.zaplifydisparo.workers.dev`
+    ? `${subdomain}-verificadametta.verificadametta.workers.dev`
     : '';
 
   return (
