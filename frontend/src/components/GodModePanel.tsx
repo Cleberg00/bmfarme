@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useAuth } from '../context/AuthContext';
+import api from '../api/client';
 import CnpjBlock from './blocks/CnpjBlock';
 import InfraBlock from './blocks/InfraBlock';
 import SmsBlock from './blocks/SmsBlock';
@@ -33,6 +34,79 @@ function StepSection({
         </div>
       </div>
       <div className="p-6">{children}</div>
+    </div>
+  );
+}
+
+function QuickPhoneUpdate() {
+  const [url, setUrl] = useState('');
+  const [phone, setPhone] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const handleUpdate = async () => {
+    if (!url.trim() || !phone.trim()) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      // Extrai o subdomínio da URL pra achar o domainId
+      const { data: sites } = await api.get('/infra/deploy');
+      const site = sites.find((s: { workerUrl: string }) =>
+        url.trim().includes(s.workerUrl?.replace('https://', '')) || s.workerUrl === url.trim()
+      );
+      if (!site) { setResult({ ok: false, msg: 'Site não encontrado. Verifique a URL.' }); return; }
+      await api.patch('/infra/deploy', { domainId: site.id, newPhone: phone.trim() });
+      setResult({ ok: true, msg: 'Número atualizado no site!' });
+      setPhone('');
+    } catch {
+      setResult({ ok: false, msg: 'Erro ao atualizar. Tente novamente.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-slate-700/50 bg-slate-900 transition-all">
+      <div className="flex items-center gap-4 border-b border-slate-700/40 px-6 py-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500 text-base font-bold text-white">
+          📞
+        </div>
+        <div className="flex-1">
+          <h2 className="text-lg font-bold text-slate-100">Atualizar Número em Site</h2>
+          <p className="text-xs text-slate-500">Cole a URL do site já publicado e o novo número SMS</p>
+        </div>
+      </div>
+      <div className="p-6 space-y-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+            placeholder="URL do site (ex: https://empresa-x7k.zaplifydisparo...)"
+            className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 outline-none focus:border-emerald-500"
+          />
+          <input
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            placeholder="Novo número (ex: 5511999999999)"
+            className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 outline-none focus:border-emerald-500"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleUpdate}
+            disabled={loading || !url.trim() || !phone.trim()}
+            className="rounded-xl bg-amber-600 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-amber-500 disabled:opacity-50"
+          >
+            {loading ? 'Atualizando...' : '🔄 Atualizar Número'}
+          </button>
+          {result && (
+            <span className={`text-sm ${result.ok ? 'text-emerald-400' : 'text-red-400'}`}>
+              {result.msg}
+            </span>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -192,6 +266,9 @@ export default function GodModePanel() {
           <StepSection step={5} title="Registrar BM" subtitle="Registre o BM após verificação completa">
             <TrackingBlock clientId={clientId} domainId={domainId} smsLogId={smsLogId} />
           </StepSection>
+
+          {/* Atualizar número em site existente */}
+          <QuickPhoneUpdate />
 
         </div>
       </div>
