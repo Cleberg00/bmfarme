@@ -21,13 +21,35 @@ module.exports = async function handler(req, res) {
       try { return new Date(v).toLocaleDateString('pt-BR'); } catch { return String(v); }
     }
 
+    // Gera endereço fictício quando logradouro vem vazio da Receita
+    function gerarEnderecoFicticio(bairro, municipio) {
+      const ruas = [
+        'R SANTOS', 'R SAO PAULO', 'R BAHIA', 'R MINAS GERAIS', 'R PARANA',
+        'R RIO DE JANEIRO', 'R GOIAS', 'R AMAZONAS', 'R PERNAMBUCO', 'R CEARA',
+        'AV BRASIL', 'AV PAULISTA', 'AV ATLANTICA', 'AV INDEPENDENCIA', 'AV REPUBLICA',
+        'R PRESIDENTE VARGAS', 'R TIRADENTES', 'R MARECHAL DEODORO', 'R XV DE NOVEMBRO',
+        'R SETE DE SETEMBRO', 'R TREZE DE MAIO', 'R DOM PEDRO II', 'R FLORIANO PEIXOTO',
+        'AV SAO JOAO', 'AV BEIRA MAR', 'R JOSE BONIFACIO', 'R BENJAMIN CONSTANT',
+      ];
+      return ruas[Math.floor(Math.random() * ruas.length)];
+    }
+
+    function gerarNumero() {
+      return String(Math.floor(Math.random() * 900) + 100);
+    }
+
+    let endereco = d.endereco || '';
+    let numero = d.numero || null;
+    if (!endereco) {
+      endereco = gerarEnderecoFicticio(d.bairro, d.municipio);
+      if (!numero) numero = gerarNumero();
+    }
+
     const clientData = {
       razaoSocial:        d.razaoSocial                               || null,
       nomeFantasia:       d.nomeFantasia                              || null,
-      // endereco é obrigatório no schema — usa logradouro ou string vazia
-      // (quando BrasilAPI não retorna logradouro, o usuário preenche manualmente no cartão)
-      endereco:           d.endereco                               || '',
-      numero:             d.numero                                    || null,
+      endereco:           endereco,
+      numero:             numero,
       complemento:        d.complemento                               || null,
       bairro:             d.bairro                                    || null,
       cep:                d.cep                                       || '',
