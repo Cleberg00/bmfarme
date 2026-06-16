@@ -108,9 +108,9 @@ RETORNE APENAS HTML puro. SEM markdown. SEM backticks. SEM explicações. Começ
 
   try {
     const res = await axios.post(
-      `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3-8b-instruct`,
-      { messages: [{ role: 'user', content: prompt }], max_tokens: 4096, temperature: 0.9 },
-      { headers: { Authorization: `Bearer ${env.cloudflareAiToken}`, 'Content-Type': 'application/json' }, timeout: 45000 }
+      `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8-fast`,
+      { messages: [{ role: 'user', content: prompt }], max_tokens: 4096, temperature: 0.95 },
+      { headers: { Authorization: `Bearer ${env.cloudflareAiToken}`, 'Content-Type': 'application/json' }, timeout: 60000 }
     );
 
     let html = res.data?.result?.response || '';
