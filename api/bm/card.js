@@ -5,13 +5,19 @@ function buildCardHtml(d) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtCnpj(c) { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
   function fmtCep(c)  { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{5})(\d{3})$/,'$1-$2')||c; }
-  function fmtPhone(t){ if(!t) return ''; const n=String(t).replace(/\D/g,''); if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; return t; }
+  function fmtPhone(t){
+    if(!t) return '';
+    let n=String(t).replace(/\D/g,'');
+    if(n.startsWith('55') && n.length>=12) n=n.slice(2);
+    if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+    if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+    return t;
+  }
 
   const now = new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
 
-  // Formato do telefone para o cartão: +55XXXXXXXXXXX (como aparece no Meta)
-  const rawPhone = String(d.smsPhone || d.telefone || '').replace(/\D/g, '');
-  const phoneForCard = rawPhone ? '+55' + rawPhone.replace(/^55/, '') : '';
+  const phoneForCard = fmtPhone(d.smsPhone || d.telefone || '');
+  const razaoClean = esc(String(d.razaoSocial||'').replace(/^[\d.\s-]+/, '').replace(/[\d.\s-]+$/, '').trim());
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -21,261 +27,199 @@ function buildCardHtml(d) {
 <style>
 @page{size:A4 portrait;margin:10mm 15mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
-html{zoom:1;}
-body{font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#000;background:#c8c8c8;}
-.outer{display:flex;justify-content:center;padding:20px 0 40px;}
-.page-wrap{width:720px;background:#fff;padding:30px 35px;box-shadow:0 2px 12px rgba(0,0,0,0.3);}
-.wrap{width:100%;border:2px solid #333;}
+body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#fff;}
+.page{max-width:700px;margin:0 auto;padding:20px 0;}
+table.card{width:100%;border-collapse:collapse;}
+table.card td{border:1px solid #000;padding:4px 6px;vertical-align:top;}
+.lbl{font-size:8px;color:#555;text-transform:uppercase;font-weight:normal;display:block;margin-bottom:1px;}
+.val{font-size:12px;font-weight:bold;color:#000;}
+.val-sm{font-size:11px;font-weight:bold;color:#000;}
 /* Header */
-.hdr{padding:10px 14px 8px;text-align:center;border-bottom:2px solid #333;}
-.hdr-inner{display:flex;align-items:center;justify-content:center;gap:16px;}
-.brasao{width:64px;height:auto;}
-.hdr-text h1{font-size:17px;font-weight:bold;text-transform:uppercase;letter-spacing:0.3px;}
-.hdr-text h2{font-size:13px;font-weight:bold;text-transform:uppercase;margin-top:4px;}
-/* Linha do título doc */
-.title-row{display:flex;border-bottom:1px solid #333;}
-.title-left{padding:6px 12px;border-right:1px solid #333;min-width:185px;}
-.title-left .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
-.title-left .fv{font-size:14px;font-weight:bold;}
-.title-left .fv2{font-size:12px;}
-.title-mid{flex:1;padding:6px 12px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;font-weight:bold;text-transform:uppercase;line-height:1.4;}
-.title-right{padding:6px 12px;border-left:1px solid #333;min-width:130px;}
-.title-right .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
-.title-right .fv{font-size:13px;font-weight:bold;}
-/* Rows */
-.row{padding:6px 12px;border-bottom:1px solid #333;}
-.row .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
-.row .fv{font-size:13px;font-weight:bold;}
-.row-flex{display:flex;border-bottom:1px solid #333;}
-.cell{padding:6px 12px;flex:1;}
-.cell .fl{font-size:9px;color:#444;text-transform:uppercase;display:block;margin-bottom:2px;font-weight:normal;}
-.cell .fv{font-size:13px;font-weight:bold;}
-.bl{border-left:1px solid #333;}
-.w140{flex:0 0 140px;}
-.w110{flex:0 0 110px;}
-.w90{flex:0 0 90px;}
-.w70{flex:0 0 70px;}
-.w60{flex:0 0 60px;}
+.hdr{display:flex;align-items:center;padding:8px 6px;border:1px solid #000;border-bottom:none;}
+.brasao{width:50px;height:auto;margin-right:12px;}
+.hdr-text h1{font-size:14px;font-weight:bold;text-transform:uppercase;margin:0;}
+.hdr-text h2{font-size:11px;font-weight:bold;text-transform:uppercase;margin:2px 0 0;}
 /* Footer */
-.ftr{padding:14px 12px 10px;font-size:11px;color:#222;}
-.ftr-bottom{display:flex;justify-content:space-between;margin-top:3px;}
-.actions{display:flex;gap:14px;justify-content:center;margin:28px 0 20px;}
-.btn{padding:11px 32px;border:none;border-radius:6px;font-size:13px;font-weight:bold;cursor:pointer;}
-.btn-p{background:#1a7f4b;color:#fff;}
-.btn-c{background:#e5e7eb;color:#374151;}
+.ftr{margin-top:10px;font-size:11px;color:#222;padding:0 2px;}
+.ftr p{margin:2px 0;}
+/* Buttons */
+.actions{display:flex;gap:12px;justify-content:center;margin:24px 0 10px;}
+.btn{padding:10px 28px;border:none;border-radius:5px;font-size:12px;font-weight:bold;cursor:pointer;}
+.btn-green{background:#1a7f4b;color:#fff;}
+.btn-gray{background:#d1d5db;color:#374151;}
 @media print{
+  .actions{display:none!important;}
   body{background:#fff;}
-  .outer{padding:0;}
-  .page-wrap{width:100%;padding:0;box-shadow:none;}
-  .actions{display:none;}
 }
-/* Header */
-.hdr{padding:6px 10px 4px;text-align:center;border-bottom:1px solid #555;}
-.hdr-inner{display:flex;align-items:center;justify-content:center;gap:12px;}
-.brasao{width:48px;height:auto;}
-.hdr-text{}
-.hdr-text h1{font-size:12pt;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;}
-.hdr-text h2{font-size:10pt;font-weight:bold;text-transform:uppercase;margin-top:2px;}
-/* Linha do título doc */
-.title-row{display:flex;border-bottom:1px solid #555;}
-.title-left{padding:4px 8px;border-right:1px solid #555;min-width:155px;}
-.title-left .fl{font-size:7pt;color:#555;text-transform:uppercase;display:block;margin-bottom:1px;}
-.title-left .fv{font-size:10pt;font-weight:bold;}
-.title-left .fv2{font-size:8pt;}
-.title-mid{flex:1;padding:4px 8px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10pt;font-weight:bold;text-transform:uppercase;line-height:1.3;}
-.title-right{padding:4px 8px;border-left:1px solid #555;min-width:110px;}
-.title-right .fl{font-size:7pt;color:#555;text-transform:uppercase;display:block;margin-bottom:1px;}
-.title-right .fv{font-size:9pt;font-weight:bold;}
-/* Rows */
-.row{padding:4px 8px;border-bottom:1px solid #555;}
-.row .fl{font-size:7pt;color:#555;text-transform:uppercase;display:block;margin-bottom:1px;}
-.row .fv{font-size:9pt;font-weight:bold;}
-.row-flex{display:flex;border-bottom:1px solid #555;}
-.cell{padding:4px 8px;flex:1;}
-.cell .fl{font-size:7pt;color:#555;text-transform:uppercase;display:block;margin-bottom:1px;}
-.cell .fv{font-size:9pt;font-weight:bold;}
-.bl{border-left:1px solid #555;}
-.w120{flex:0 0 120px;}
-.w90{flex:0 0 90px;}
-.w70{flex:0 0 70px;}
-.w55{flex:0 0 55px;}
-.w50{flex:0 0 50px;}
-/* Footer */
-.ftr{padding:8px 10px 6px;font-size:8pt;color:#222;}
-.ftr-bottom{display:flex;justify-content:space-between;}
-.actions{display:flex;gap:10px;justify-content:center;margin:20px 0;}
-.btn{padding:9px 26px;border:none;border-radius:6px;font-size:9pt;font-weight:bold;cursor:pointer;}
-.btn-p{background:#1a7f4b;color:#fff;}
-.btn-c{background:#e5e7eb;color:#374151;}
-@media print{.actions{display:none;}}
 </style>
 </head>
 <body>
-<div class="outer">
-<div class="page-wrap">
-<div class="wrap">
+<div class="page">
 
-  <!-- Cabeçalho -->
-  <div class="hdr">
-    <div class="hdr-inner">
-      <img class="brasao" src="https://bmfarme.vercel.app/brasao2.gif" alt="Brasão"/>
-      <div class="hdr-text">
-        <h1>República Federativa do Brasil</h1>
-        <h2>Cadastro Nacional da Pessoa Jurídica</h2>
-      </div>
-    </div>
+<!-- Header com brasão -->
+<div class="hdr">
+  <img class="brasao" src="https://bmfarme.vercel.app/brasao2.gif" alt="Brasão"/>
+  <div class="hdr-text">
+    <h1>REPÚBLICA FEDERATIVA DO BRASIL</h1>
+    <h2>CADASTRO NACIONAL DA PESSOA JURÍDICA</h2>
   </div>
+</div>
 
-  <!-- Nº Inscrição / Título / Data Abertura -->
-  <div class="title-row">
-    <div class="title-left">
-      <span class="fl">Número de Inscrição</span>
-      <div class="fv">${esc(fmtCnpj(d.cnpj))}</div>
-      <div class="fv2">MATRIZ</div>
-    </div>
-    <div class="title-mid">Comprovante de Inscrição e de Situação Cadastral</div>
-    <div class="title-right">
-      <span class="fl">Data de Abertura</span>
-      <div class="fv">${esc(d.dataAbertura||'')}</div>
-    </div>
-  </div>
-
-  <!-- Nome Empresarial -->
-  <div class="row">
-    <span class="fl">Nome Empresarial</span>
-    <div class="fv">${esc(d.razaoSocial.replace(/^[\d.\s-]+/, '').replace(/[\d.\s-]+$/, '').trim())}</div>
-  </div>
-
-  <!-- Nome Fantasia / Porte -->
-  <div class="row-flex">
-    <div class="cell">
-      <span class="fl">Título do Estabelecimento (Nome de Fantasia)</span>
-      <div class="fv">${esc(d.nomeFantasia||'********')}</div>
-    </div>
-    <div class="cell bl w55">
-      <span class="fl">Porte</span>
-      <div class="fv">${esc(d.porte||'')}</div>
-    </div>
-  </div>
-
-  <!-- Atividade Principal -->
-  <div class="row">
-    <span class="fl">Código e Descrição da Atividade Econômica Principal</span>
-    <div class="fv">${esc(d.atividadePrincipal||'Não informada')}</div>
-  </div>
-
-  <!-- Atividades Secundárias -->
-  <div class="row">
-    <span class="fl">Código e Descrição das Atividades Econômicas Secundárias</span>
-    <div class="fv">Não informada</div>
-  </div>
-
-  <!-- Natureza Jurídica -->
-  <div class="row">
-    <span class="fl">Código e Descrição da Natureza Jurídica</span>
-    <div class="fv">${esc(d.naturezaJuridica||'')}</div>
-  </div>
-
-  <!-- Logradouro / Número / Complemento -->
-  <div class="row-flex">
-    <div class="cell">
-      <span class="fl">Logradouro</span>
-      <div class="fv">${esc(d.endereco||'')}</div>
-    </div>
-    <div class="cell bl w90">
-      <span class="fl">Número</span>
-      <div class="fv">${esc(d.numero||'S/N')}</div>
-    </div>
-    <div class="cell bl w140">
-      <span class="fl">Complemento</span>
-      <div class="fv">${esc(d.complemento||'********')}</div>
-    </div>
-  </div>
-
-  <!-- CEP / Bairro / Município / UF -->
-  <div class="row-flex">
-    <div class="cell w110">
-      <span class="fl">CEP</span>
-      <div class="fv">${esc(fmtCep(d.cep))}</div>
-    </div>
-    <div class="cell bl">
-      <span class="fl">Bairro/Distrito</span>
-      <div class="fv">${esc(d.bairro||'')}</div>
-    </div>
-    <div class="cell bl">
-      <span class="fl">Município</span>
-      <div class="fv">${esc(d.municipio||'')}</div>
-    </div>
-    <div class="cell bl w60">
-      <span class="fl">UF</span>
-      <div class="fv">${esc(d.uf||'')}</div>
-    </div>
-  </div>
-
-  <!-- Email / Telefone -->
-  <div class="row-flex">
-    <div class="cell">
-      <span class="fl">Endereço Eletrônico</span>
-      <div class="fv">${esc(d.email||'')}</div>
-    </div>
-    <div class="cell bl">
-      <span class="fl">Telefone</span>
-      <div class="fv">${esc(phoneForCard)}</div>
-    </div>
-  </div>
-
-  <!-- Ente Federativo -->
-  <div class="row">
-    <span class="fl">Ente Federativo Responsável (EFR)</span>
-    <div class="fv">*****</div>
-  </div>
-
-  <!-- Situação Cadastral / Data -->
-  <div class="row-flex">
-    <div class="cell">
-      <span class="fl">Situação Cadastral</span>
-      <div class="fv">${esc(d.situacao||'ATIVA')}</div>
-    </div>
-    <div class="cell bl">
-      <span class="fl">Data da Situação Cadastral</span>
-      <div class="fv">${esc(d.dataSituacao||'')}</div>
-    </div>
-  </div>
-
-  <!-- Motivo -->
-  <div class="row">
-    <span class="fl">Motivo de Situação Cadastral</span>
-    <div class="fv">&nbsp;</div>
-  </div>
-
-  <!-- Situação Especial / Data -->
-  <div class="row-flex" style="border-bottom:none;">
-    <div class="cell">
-      <span class="fl">Situação Especial</span>
-      <div class="fv">********</div>
-    </div>
-    <div class="cell bl">
-      <span class="fl">Data da Situação Especial</span>
-      <div class="fv">********</div>
-    </div>
-  </div>
-
-</div><!-- /wrap -->
+<table class="card">
+  <!-- Row 1: Nº Inscrição | Comprovante | Data Abertura -->
+  <tr>
+    <td style="width:200px;">
+      <span class="lbl">NÚMERO DE INSCRIÇÃO</span>
+      <span class="val">${esc(fmtCnpj(d.cnpj))}</span><br/>
+      <span class="val-sm">MATRIZ</span>
+    </td>
+    <td style="text-align:center;">
+      <span class="val">COMPROVANTE DE INSCRIÇÃO E DE SITUAÇÃO CADASTRAL</span>
+    </td>
+    <td style="width:140px;">
+      <span class="lbl">DATA DE ABERTURA</span>
+      <span class="val">${esc(d.dataAbertura||'')}</span>
+    </td>
+  </tr>
+  <!-- Row 2: Nome Empresarial -->
+  <tr>
+    <td colspan="3">
+      <span class="lbl">NOME EMPRESARIAL</span>
+      <span class="val">${razaoClean}</span>
+    </td>
+  </tr>
+  <!-- Row 3: Nome Fantasia | Porte -->
+  <tr>
+    <td colspan="2">
+      <span class="lbl">TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)</span>
+      <span class="val">${esc(d.nomeFantasia||'********')}</span>
+    </td>
+    <td>
+      <span class="lbl">PORTE</span>
+      <span class="val">${esc(d.porte||'')}</span>
+    </td>
+  </tr>
+  <!-- Row 4: Atividade Principal -->
+  <tr>
+    <td colspan="3">
+      <span class="lbl">CÓDIGO E DESCRIÇÃO DA ATIVIDADE ECONÔMICA PRINCIPAL</span>
+      <span class="val">${esc(d.atividadePrincipal||'Não informada')}</span>
+    </td>
+  </tr>
+  <!-- Row 5: Atividades Secundárias -->
+  <tr>
+    <td colspan="3">
+      <span class="lbl">CÓDIGO E DESCRIÇÃO DAS ATIVIDADES ECONÔMICAS SECUNDÁRIAS</span>
+      <span class="val">Não informada</span>
+    </td>
+  </tr>
+  <!-- Row 6: Natureza Jurídica -->
+  <tr>
+    <td colspan="3">
+      <span class="lbl">CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA</span>
+      <span class="val">${esc(d.naturezaJuridica||'')}</span>
+    </td>
+  </tr>
+  <!-- Row 7: Logradouro | Número | Complemento -->
+  <tr>
+    <td>
+      <span class="lbl">LOGRADOURO</span>
+      <span class="val">${esc(d.endereco||'')}</span>
+    </td>
+    <td style="width:80px;">
+      <span class="lbl">NÚMERO</span>
+      <span class="val">${esc(d.numero||'S/N')}</span>
+    </td>
+    <td>
+      <span class="lbl">COMPLEMENTO</span>
+      <span class="val">${esc(d.complemento||'')}</span>
+    </td>
+  </tr>
+  <!-- Row 8: CEP | Bairro | Município | UF -->
+  <tr>
+    <td colspan="3" style="padding:0;">
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="border:none;border-right:1px solid #000;padding:4px 6px;width:100px;">
+            <span class="lbl">CEP</span>
+            <span class="val">${esc(fmtCep(d.cep))}</span>
+          </td>
+          <td style="border:none;border-right:1px solid #000;padding:4px 6px;">
+            <span class="lbl">BAIRRO/DISTRITO</span>
+            <span class="val">${esc(d.bairro||'')}</span>
+          </td>
+          <td style="border:none;border-right:1px solid #000;padding:4px 6px;">
+            <span class="lbl">MUNICÍPIO</span>
+            <span class="val">${esc(d.municipio||'')}</span>
+          </td>
+          <td style="border:none;padding:4px 6px;width:50px;">
+            <span class="lbl">UF</span>
+            <span class="val">${esc(d.uf||'')}</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <!-- Row 9: Email | Telefone -->
+  <tr>
+    <td colspan="2">
+      <span class="lbl">ENDEREÇO ELETRÔNICO</span>
+      <span class="val">${esc(d.email||'')}</span>
+    </td>
+    <td>
+      <span class="lbl">TELEFONE</span>
+      <span class="val">${esc(phoneForCard)}</span>
+    </td>
+  </tr>
+  <!-- Row 10: EFR -->
+  <tr>
+    <td colspan="3">
+      <span class="lbl">ENTE FEDERATIVO RESPONSÁVEL (EFR)</span>
+      <span class="val">*****</span>
+    </td>
+  </tr>
+  <!-- Row 11: Situação Cadastral | Data -->
+  <tr>
+    <td colspan="2">
+      <span class="lbl">SITUAÇÃO CADASTRAL</span>
+      <span class="val">${esc(d.situacao||'ATIVA')}</span>
+    </td>
+    <td>
+      <span class="lbl">DATA DA SITUAÇÃO CADASTRAL</span>
+      <span class="val">${esc(d.dataSituacao||'')}</span>
+    </td>
+  </tr>
+  <!-- Row 12: Motivo -->
+  <tr>
+    <td colspan="3">
+      <span class="lbl">MOTIVO DE SITUAÇÃO CADASTRAL</span>
+      <span class="val">&nbsp;</span>
+    </td>
+  </tr>
+  <!-- Row 13: Situação Especial | Data -->
+  <tr>
+    <td colspan="2">
+      <span class="lbl">SITUAÇÃO ESPECIAL</span>
+      <span class="val">********</span>
+    </td>
+    <td>
+      <span class="lbl">DATA DA SITUAÇÃO ESPECIAL</span>
+      <span class="val">********</span>
+    </td>
+  </tr>
+</table>
 
 <div class="ftr">
-  <div>Aprovado pela Instrução Normativa RFB nº 2.119, de 06 de dezembro de 2022.</div>
-  <div class="ftr-bottom">
-    <div>Emitido no dia <strong>${now}</strong> (data e hora de Brasília).</div>
-    <div>Página: <strong>1/1</strong></div>
-  </div>
+  <p>Aprovado pela Instrução Normativa RFB nº 2.119, de 06 de dezembro de 2022.</p>
+  <p>Emitido no dia ${now} (data e hora de Brasília).</p>
 </div>
 
 <div class="actions">
-  <button class="btn btn-p" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
-  <button class="btn btn-c" onclick="window.close()">✕ Fechar</button>
+  <button class="btn btn-green" onclick="window.print()">Imprimir / Salvar PDF</button>
+  <button class="btn btn-gray" onclick="window.close()">Fechar</button>
 </div>
-</div><!-- /page-wrap -->
-</div><!-- /outer -->
+
+</div><!-- /page -->
 </body>
 </html>`;
 }
