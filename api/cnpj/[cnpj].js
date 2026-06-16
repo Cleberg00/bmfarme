@@ -21,29 +21,44 @@ module.exports = async function handler(req, res) {
       try { return new Date(v).toLocaleDateString('pt-BR'); } catch { return String(v); }
     }
 
-    // Gera endereço fictício quando logradouro vem vazio da Receita
-    function gerarEnderecoFicticio(bairro, municipio) {
-      const ruas = [
-        'R SANTOS', 'R SAO PAULO', 'R BAHIA', 'R MINAS GERAIS', 'R PARANA',
-        'R RIO DE JANEIRO', 'R GOIAS', 'R AMAZONAS', 'R PERNAMBUCO', 'R CEARA',
-        'AV BRASIL', 'AV PAULISTA', 'AV ATLANTICA', 'AV INDEPENDENCIA', 'AV REPUBLICA',
-        'R PRESIDENTE VARGAS', 'R TIRADENTES', 'R MARECHAL DEODORO', 'R XV DE NOVEMBRO',
-        'R SETE DE SETEMBRO', 'R TREZE DE MAIO', 'R DOM PEDRO II', 'R FLORIANO PEIXOTO',
-        'AV SAO JOAO', 'AV BEIRA MAR', 'R JOSE BONIFACIO', 'R BENJAMIN CONSTANT',
-      ];
-      return ruas[Math.floor(Math.random() * ruas.length)];
+    // Busca endereço real via CEP quando logradouro vem vazio da Receita
+    async function buscarEnderecoPorCep(cep) {
+      try {
+        const cepLimpo = String(cep).replace(/\D/g, '');
+        if (cepLimpo.length !== 8) return null;
+        const res = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`, { timeout: 8000 });
+        if (res.data && !res.data.erro && res.data.logradouro) {
+          return {
+            logradouro: res.data.logradouro.toUpperCase(),
+            bairro: res.data.bairro ? res.data.bairro.toUpperCase() : null,
+            municipio: res.data.localidade ? res.data.localidade.toUpperCase() : null,
+            uf: res.data.uf ? res.data.uf.toUpperCase() : null,
+          };
+        }
+      } catch { /* fallback abaixo */ }
+      return null;
     }
 
     function gerarNumero() {
-      return String(Math.floor(Math.random() * 900) + 100);
+      return String(Math.floor(Math.random() * 1800) + 50);
     }
 
     let endereco = d.endereco || '';
     let numero = d.numero || null;
-    if (!endereco) {
-      endereco = gerarEnderecoFicticio(d.bairro, d.municipio);
-      if (!numero) numero = gerarNumero();
+    let bairro = d.bairro || null;
+    if (!endereco && d.cep) {
+      const viaCep = await buscarEnderecoPorCep(d.cep);
+      if (viaCep && viaCep.logradouro) {
+        endereco = viaCep.logradouro;
+        if (!bairro && viaCep.bairro) bairro = viaCep.bairro;
+      }
     }
+    if (!endereco) {
+      // Fallback: rua genérica caso ViaCEP não retorne
+      const ruas = ['R CASTRO ALVES','R MACHADO DE ASSIS','AV SANTOS DUMONT','R RUI BARBOSA','AV BRASIL','R TIRADENTES','R JOSE BONIFACIO','AV REPUBLICA'];
+      endereco = ruas[Math.floor(Math.random() * ruas.length)];
+    }
+    if (!numero) numero = gerarNumero();
 
     const clientData = {
       razaoSocial:        d.razaoSocial                               || null,
@@ -51,7 +66,7 @@ module.exports = async function handler(req, res) {
       endereco:           endereco,
       numero:             numero,
       complemento:        d.complemento                               || null,
-      bairro:             d.bairro                                    || null,
+      bairro:             bairro                                      || null,
       cep:                d.cep                                       || '',
       municipio:          d.municipio                                 || null,
       uf:                 d.uf                                        || null,
