@@ -72,44 +72,54 @@ async function generateFullSiteHtml(params) {
 
   const enderecoParts = [endereco, numero ? `nº ${numero}` : '', bairro, municipio && uf ? `${municipio}/${uf}` : municipio || uf || ''].filter(Boolean).join(', ');
 
-  // Gera parametros aleatórios pra forçar variação na IA
-  const palettes = ['azul marinho e dourado','verde esmeralda e branco','roxo escuro e prata','vermelho bordô e creme','teal e coral','índigo e laranja','cinza grafite e amarelo','azul petróleo e rosa','marrom terra e verde oliva','preto e dourado','turquesa e cinza','vinho e bege','azul royal e pêssego','verde musgo e terracota','lilás e menta'];
-  const fonts = ['Roboto e Playfair Display','Inter e Lora','Poppins e Merriweather','Open Sans e Crimson Pro','Montserrat e Cormorant','Nunito e DM Serif','Work Sans e Libre Baskerville','Outfit e Spectral','Manrope e Fraunces','Source Sans 3 e Sora','Karla e Bitter','Raleway e Vollkorn','IBM Plex Sans e PT Serif','DM Sans e Noto Serif','Rubik e EB Garamond'];
-  const layouts = ['sidebar esquerda fixa com conteúdo scrollável à direita','hero banner grande no topo com cards abaixo','split screen 50/50 com lado esquerdo colorido','card centralizado flutuante com background sutil','layout minimalista empilhado com tipografia grande','grid de 2 colunas tipo dashboard','estilo magazine editorial com header grande e seções em blocos','painéis flutuantes com sombras empilhados verticalmente','background escuro com card branco overlay','layout com navegação lateral e conteúdo em abas visuais'];
-
-  const chosenPalette = palettes[Math.floor(Math.random() * palettes.length)];
-  const chosenFont = fonts[Math.floor(Math.random() * fonts.length)];
-  const chosenLayout = layouts[Math.floor(Math.random() * layouts.length)];
+  // Tipos de sistema/dashboard pra variar
+  const systemTypes = [
+    'Torre de Controle Operacional','Central de Monitoramento','Painel de Gestão Empresarial',
+    'Hub de Comunicação Corporativa','Plataforma de Operações','Centro de Controle e Telemetria',
+    'Gateway de Mensageria','Portal de Operações Integradas','Sistema de Gestão e Monitoramento',
+    'Núcleo de Atendimento Digital','Central de Operações e Logística','Painel Administrativo',
+    'Plataforma de Dados Corporativos','Hub Operacional de Serviços','Centro de Inteligência Empresarial'
+  ];
+  const badges = ['OPERACIONAL','ATIVO','ONLINE','EM PRODUÇÃO','VERIFICADO','AUTORIZADO','HOMOLOGADO'];
+  const chosenSystem = systemTypes[Math.floor(Math.random() * systemTypes.length)];
+  const chosenBadge = badges[Math.floor(Math.random() * badges.length)];
   const seed = Math.floor(Math.random() * 99999);
 
-  const prompt = `[SEED:${seed}] Crie um site HTML COMPLETO usando EXATAMENTE estas escolhas de design:
-- PALETA DE CORES: ${chosenPalette}
-- FONTES GOOGLE: ${chosenFont}
-- LAYOUT: ${chosenLayout}
+  const prompt = `[SEED:${seed}] Crie um site HTML no estilo PAINEL TÉCNICO / DASHBOARD CORPORATIVO para esta empresa.
+O site deve parecer um SISTEMA INTERNO real, como um painel de controle de operações (NÃO um site institucional genérico).
+
+ESTILO VISUAL OBRIGATÓRIO:
+- Background ESCURO (#0f172a, #1a1a2e, #0d1117 ou similar)
+- Cards com bordas sutis e fundo levemente mais claro
+- Badge "${chosenBadge}" com bolinha verde no header
+- Tipografia técnica (monospace pra dados, sans-serif pro resto)
+- Visual de DASHBOARD/SISTEMA, não de site marketing
 
 EMPRESA: ${displayName}
-RAZÃO SOCIAL: ${cleanName(razaoSocial)}
+TIPO DE SISTEMA: ${chosenSystem}
 CNPJ: ${fmtCnpj(cnpj)}
 ENDEREÇO: ${enderecoParts}${cep ? `, CEP: ${cep}` : ''}
 EMAIL: ${email || 'contato@empresa.com.br'}
 
-SEÇÕES OBRIGATÓRIAS:
-1. HEADER com nome e navegação (Home, Quem Somos, Atendimento, Privacidade, Termos, Contato)
-2. HOME: "Atendimento informativo e sob demanda. Somos uma empresa que atua exclusivamente no atendimento de pessoas que entram em contato conosco de forma voluntária. Não realizamos contatos não solicitados."
-3. QUEM SOMOS: "A ${displayName} atua de forma ética e transparente, oferecendo atendimento informativo e suporte personalizado apenas para pessoas que demonstram interesse prévio em nossos serviços."
-4. COMO FUNCIONA: lista com 5 bullets (contato iniciado pelo usuário, canais oficiais, sem listas compradas, pode parar quando quiser, segue políticas WhatsApp/Meta)
-5. POLÍTICA DE PRIVACIDADE: dados só pra responder solicitações, sem compartilhar com terceiros, sem envios automáticos
-6. TERMOS DE USO: comunicação espontânea, sem promoções não solicitadas
-7. CONTATO: email + formulário (nome, email, mensagem) com onsubmit="event.preventDefault();alert('Mensagem enviada.')"
-8. RODAPÉ: CNPJ, razão social, links Termos e Privacidade, endereço
+ESTRUTURA DO PAINEL:
+1. HEADER escuro com nome "${displayName} ${chosenSystem}" + badge verde "${chosenBadge}"
+2. CARD "Matriz de Operações" com:
+   - LICENÇA / CNPJ: ${fmtCnpj(cnpj)} - ${cleanName(razaoSocial)}
+   - MODALIDADE: ${atividadePrincipal || 'Serviços Empresariais'}
+   - PÁTIO BASE / DESPACHO FÍSICO: ${enderecoParts}${cep ? ', CEP: ' + cep : ''}
+3. CARD "Gateway de Mensageria (WABA)" com:
+   - "A operação da ${displayName} é circunscrita à cidade de ${municipio || 'São Paulo'} (${uf || 'SP'}). Nossa comunicação é operada exclusivamente de forma receptiva."
+   - "Este gateway é dedicado EXCLUSIVAMENTE ao roteamento de mensagens de sistema, alertas preventivos de manutenção e comprovantes. É uma via transacional (Utility), sem escopo comercial ou de varejo."
+   - Botão "Testar Ping WABA (Utility)" com onclick="alert('Ping enviado com sucesso.')"
+4. RODAPÉ discreto com CNPJ e razão social
 
-REGRAS: HTML completo com DOCTYPE. CSS inline no <style>. @import Google Fonts. Responsivo. NÃO mostrar WhatsApp. Mínimo 1000px conteúdo.
+REGRAS: HTML completo com DOCTYPE. CSS inline no <style>. @import Google Fonts (JetBrains Mono + Inter). Responsivo. Mínimo 600px de conteúdo. NÃO parecer site institucional genérico.
 RETORNE APENAS HTML puro. SEM markdown. SEM backticks. SEM explicações. Começa com <!DOCTYPE html>.`;
 
   try {
     const res = await axios.post(
       `https://api.cloudflare.com/client/v4/accounts/${env.cloudflareAccountId}/ai/run/@cf/meta/llama-3.3-70b-instruct-fp8-fast`,
-      { messages: [{ role: 'user', content: prompt }], max_tokens: 4096, temperature: 0.95 },
+      { messages: [{ role: 'user', content: prompt }], max_tokens: 4096, temperature: 0.9 },
       { headers: { Authorization: `Bearer ${env.cloudflareAiToken}`, 'Content-Type': 'application/json' }, timeout: 60000 }
     );
 
