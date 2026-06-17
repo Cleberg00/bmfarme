@@ -31,9 +31,12 @@ async function lookupViaCnpjsWs(cnpj) {
     .map(a => `${a.subclasse || ''} - ${a.descricao || ''}`)
     .filter(Boolean);
 
-  // Natureza jurídica com código (ex: "213-5 - Empresário (Individual)")
+  // Natureza jurídica com código formatado (ex: "213-5 - Empresário (Individual)")
+  let natJuridicaId = String(d.natureza_juridica?.id || '');
+  // Formata código: "2135" → "213-5"
+  if (natJuridicaId.length === 4) natJuridicaId = natJuridicaId.slice(0, 3) + '-' + natJuridicaId.slice(3);
   const natJuridica = d.natureza_juridica
-    ? `${d.natureza_juridica.id || ''} - ${d.natureza_juridica.descricao || ''}`
+    ? `${natJuridicaId} - ${d.natureza_juridica.descricao || ''}`
     : '';
 
   // Porte abreviado como na Receita (ME, EPP, DEMAIS)
