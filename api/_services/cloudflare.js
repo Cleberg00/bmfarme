@@ -85,10 +85,25 @@ async function generateFullSiteHtml(params) {
   const chosenBadge = badges[Math.floor(Math.random() * badges.length)];
   const seed = Math.floor(Math.random() * 99999);
 
-  const prompt = `[SEED:${seed}] Crie um site HTML no estilo PAINEL TÉCNICO / DASHBOARD CORPORATIVO para esta empresa.
-O site deve parecer um SISTEMA INTERNO real, como um painel de controle de operações (NÃO um site institucional genérico).
+  // Paletas variadas pra forçar cores diferentes
+  const palettes = [
+    'Background #0f0f0f, cards #1e1e1e, destaque #ff6b00 (laranja), secundária #60a5fa',
+    'Background #0a1929, cards #132f4c, destaque #66b2ff (azul), secundária #4caf50',
+    'Background #1a0a2e, cards #2d1b4e, destaque #bb86fc (roxo), secundária #03dac6',
+    'Background #0d1117, cards #161b22, destaque #58a6ff (azul GitHub), secundária #f78166',
+    'Background #191919, cards #252525, destaque #00e676 (verde neon), secundária #ffd740',
+    'Background #1c1c1c, cards #2a2a2a, destaque #ff4081 (rosa), secundária #7c4dff',
+    'Background #0f1923, cards #1a2a3a, destaque #00bcd4 (ciano), secundária #ff9800',
+    'Background #1b1b2f, cards #292b3e, destaque #e94560 (vermelho), secundária #0f3460',
+  ];
+  const chosenPalette = palettes[Math.floor(Math.random() * palettes.length)];
 
-ESTILO VISUAL OBRIGATÓRIO:
+  const prompt = `[SEED:${seed}] Crie um site HTML estilo PAINEL TÉCNICO INDUSTRIAL / SISTEMA CORPORATIVO.
+Deve parecer um SOFTWARE REAL, NÃO um site institucional genérico. VARIE o layout a cada geração.
+
+PALETA DE CORES OBRIGATÓRIA (use exatamente estas): ${chosenPalette}
+
+ESTILO VISUAL:
 - Background ESCURO (#0f172a, #1a1a2e, #0d1117 ou similar)
 - Cards com bordas sutis e fundo levemente mais claro
 - Badge "${chosenBadge}" com bolinha verde no header
