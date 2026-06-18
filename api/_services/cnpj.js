@@ -52,24 +52,29 @@ async function lookupViaCnpjsWs(cnpj) {
   let telefone = '';
   if (estab.ddd1 && estab.telefone1) telefone = `(${estab.ddd1}) ${estab.telefone1}`;
 
+  // Remove acentos e coloca em MAIÚSCULO (padrão Receita Federal)
+  function semAcento(str) {
+    return String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+  }
+
   return {
     cnpj,
-    razaoSocial:          d.razao_social || '',
-    nomeFantasia:         estab.nome_fantasia || '',
-    endereco:             logradouro,
-    numero:               estab.numero || '',
-    complemento:          estab.complemento || '',
-    bairro:               (estab.bairro || '').toUpperCase(),
+    razaoSocial:          semAcento(d.razao_social),
+    nomeFantasia:         semAcento(estab.nome_fantasia),
+    endereco:             semAcento(logradouro),
+    numero:               (estab.numero || '').toUpperCase(),
+    complemento:          semAcento(estab.complemento),
+    bairro:               semAcento(estab.bairro),
     cep:                  (estab.cep || '').replace(/\D/g, ''),
-    municipio:            (estab.cidade?.nome || '').toUpperCase(),
+    municipio:            semAcento(estab.cidade?.nome),
     uf:                   (estab.estado?.sigla || '').toUpperCase(),
-    situacao:             (estab.situacao_cadastral || '').toUpperCase(),
+    situacao:             semAcento(estab.situacao_cadastral),
     atividadePrincipal:   cnaePrincipal,
     cnaesSecundarias:     cnaesSecundarias,
     naturezaJuridica:     natJuridica,
     porte:                porte,
     telefone:             telefone,
-    email:                (estab.email || '').toUpperCase(),
+    email:                semAcento(estab.email),
     raw:                  d
   };
 }
