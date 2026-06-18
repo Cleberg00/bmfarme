@@ -19,7 +19,18 @@ async function lookupViaCnpjsWs(cnpj) {
   if (!d || d.status === 404) throw new Error('CNPJ não encontrado');
 
   const estab = d.estabelecimento || {};
-  const logradouro = [estab.tipo_logradouro, estab.logradouro].filter(Boolean).join(' ') || '';
+
+  // Abreviações de logradouro padrão Receita Federal
+  const abrevLogradouro = {
+    'rua': 'R', 'avenida': 'AV', 'alameda': 'AL', 'travessa': 'TV',
+    'praca': 'PC', 'praça': 'PC', 'rodovia': 'ROD', 'estrada': 'EST',
+    'largo': 'LGO', 'beco': 'BC', 'viela': 'VL', 'vila': 'VL',
+    'passagem': 'PSG', 'quadra': 'QD', 'conjunto': 'CJ',
+  };
+  let tipoLog = (estab.tipo_logradouro || '').trim();
+  const tipoLower = tipoLog.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (abrevLogradouro[tipoLower]) tipoLog = abrevLogradouro[tipoLower];
+  const logradouro = [tipoLog, estab.logradouro].filter(Boolean).join(' ') || '';
 
   // CNAE principal com código formatado (ex: "49.30-2-01 - Transporte rodoviário...")
   const cnaePrincipal = estab.atividade_principal

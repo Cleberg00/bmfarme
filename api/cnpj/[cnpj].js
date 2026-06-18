@@ -68,6 +68,13 @@ module.exports = async function handler(req, res) {
       create: { cnpj: d.cnpj, ...clientData },
     });
 
+    // Formata CEP pra exibição (XX.XXX-XXX)
+    function fmtCepResp(c) {
+      const n = String(c || '').replace(/\D/g, '');
+      if (n.length === 8) return n.replace(/^(\d{2})(\d{3})(\d{3})$/, '$1.$2-$3');
+      return c;
+    }
+
     return res.status(200).json({
       id:                 client.id,
       cnpj:               d.cnpj,
@@ -77,7 +84,7 @@ module.exports = async function handler(req, res) {
       numero:             client.numero,
       complemento:        client.complemento,
       bairro:             client.bairro,
-      cep:                client.cep,
+      cep:                fmtCepResp(client.cep),
       municipio:          client.municipio,
       uf:                 client.uf,
       situacao:           client.situacao,
