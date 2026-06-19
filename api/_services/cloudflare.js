@@ -136,6 +136,7 @@ RETORNE APENAS HTML puro. SEM markdown. SEM backticks. SEM explicações. Começ
   try {
     // Tenta Gemini primeiro (melhor qualidade e variação)
     const geminiKey = process.env.GEMINI_API_KEY;
+    console.log('[generateFullSiteHtml] GEMINI_API_KEY presente:', !!geminiKey);
     if (geminiKey) {
       try {
         const geminiRes = await axios.post(

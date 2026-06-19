@@ -117,8 +117,10 @@ module.exports = async function handler(req, res) {
 
     // Tenta IA primeiro (gera site 100% único), fallback pro template estático
     let html = await generateFullSiteHtml(siteParams);
+    let aiSource = 'gemini_or_cloudflare';
     if (!html) {
       html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
+      aiSource = 'fallback_static';
     }
 
     // Publica o worker (cria ou atualiza — a API do Cloudflare faz upsert)
@@ -156,6 +158,7 @@ module.exports = async function handler(req, res) {
       subdomain: cleanSubdomain,
       smsPhone,
       smsCode,
+      aiSource,
     });
   } catch (error) {
     if (deployedWorkerName) await deleteWorker(deployedWorkerName).catch(() => null);
