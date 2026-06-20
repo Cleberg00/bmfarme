@@ -41,19 +41,28 @@ module.exports = async function handler(req, res) {
       let html;
       try {
         const axios = require('axios');
-        const resp = await axios.get(workerUrl, { timeout: 10000 });
+        console.log(`[PATCH] Buscando HTML de: ${workerUrl}`);
+        const resp = await axios.get(workerUrl, { timeout: 15000, headers: { 'Accept': 'text/html' } });
         html = resp.data;
-      } catch { html = null; }
+        console.log(`[PATCH] HTML obtido: ${typeof html}, length=${String(html||'').length}`);
+      } catch (fetchErr) {
+        console.error(`[PATCH] Falha ao buscar HTML:`, fetchErr.message);
+        html = null;
+      }
 
-      if (html && typeof html === 'string') {
+      if (html && typeof html === 'string' && html.includes('<!DOCTYPE')) {
         // Substitui o número antigo pelo novo no HTML existente (preserva layout)
         const fmtNew = formatPhoneForReplace(newPhone);
         // Remove qualquer telefone formatado e coloca o novo
         html = html.replace(/\(\d{2}\)\s*\d{4,5}-\d{4}/g, fmtNew);
         // Também substitui números em formato raw (5511999999999)
         html = html.replace(/\b55\d{10,11}\b/g, newPhone.replace(/\D/g, ''));
+        console.log(`[PATCH] Número substituído, layout preservado`);
       } else {
-        // Fallback: regenera (perde layout, mas pelo menos funciona)
+        // Fallback: regenera com templateIndex baseado no CNPJ (determinístico)
+        console.log(`[PATCH] FALLBACK - regenerando HTML`);
+        const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
+        const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 16;
         const siteParams = {
           razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
           cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
@@ -62,6 +71,7 @@ module.exports = async function handler(req, res) {
           atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
           email: client.email, smsPhone: newPhone, smsCode: null,
           metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
+          forceTemplateIndex: fixedIndex,
         };
         html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
       }
