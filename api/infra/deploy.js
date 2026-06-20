@@ -37,25 +37,33 @@ module.exports = async function handler(req, res) {
       const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta');
       const workerUrl = `https://${existingWorker}.${targetSub}.workers.dev`;
 
-      // Busca o HTML atual do site pra preservar o layout
+      // Busca o HTML atual via API Cloudflare (source do worker) pra preservar o layout
       let html;
       try {
         const axios = require('axios');
-        console.log(`[PATCH] Buscando HTML de: ${workerUrl}`);
-        const resp = await axios.get(workerUrl, { timeout: 15000, headers: { 'Accept': 'text/html' } });
-        html = resp.data;
-        console.log(`[PATCH] HTML obtido: ${typeof html}, length=${String(html||'').length}`);
+        const cfToken = (targetSub === sub2) ? process.env.CLOUDFLARE_API_TOKEN_2 : process.env.CLOUDFLARE_API_TOKEN;
+        const cfAccount = (targetSub === sub2) ? process.env.CLOUDFLARE_ACCOUNT_ID_2 : process.env.CLOUDFLARE_ACCOUNT_ID;
+        console.log(`[PATCH] Buscando source do worker: ${existingWorker}`);
+        const resp = await axios.get(
+          `https://api.cloudflare.com/client/v4/accounts/${cfAccount}/workers/scripts/${existingWorker}`,
+          { headers: { Authorization: `Bearer ${cfToken}`, Accept: 'application/javascript' }, timeout: 15000 }
+        );
+        // O script contém: const financialPortalHTML = "...HTML...";
+        const scriptSource = resp.data || '';
+        const htmlMatch = scriptSource.match(/const financialPortalHTML\s*=\s*(".*?")\s*;/s);
+        if (htmlMatch) {
+          html = JSON.parse(htmlMatch[1]);
+          console.log(`[PATCH] HTML extraído do worker source, length=${html.length}`);
+        }
       } catch (fetchErr) {
-        console.error(`[PATCH] Falha ao buscar HTML:`, fetchErr.message);
+        console.error(`[PATCH] Falha ao buscar source:`, fetchErr.message);
         html = null;
       }
 
       if (html && typeof html === 'string' && html.includes('<!DOCTYPE')) {
         // Substitui o número antigo pelo novo no HTML existente (preserva layout)
         const fmtNew = formatPhoneForReplace(newPhone);
-        // Remove qualquer telefone formatado e coloca o novo
         html = html.replace(/\(\d{2}\)\s*\d{4,5}-\d{4}/g, fmtNew);
-        // Também substitui números em formato raw (5511999999999)
         html = html.replace(/\b55\d{10,11}\b/g, newPhone.replace(/\D/g, ''));
         console.log(`[PATCH] Número substituído, layout preservado`);
       } else {
