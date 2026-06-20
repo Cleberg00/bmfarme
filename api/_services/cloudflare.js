@@ -398,9 +398,19 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
  *  - html_file: serve arquivo em /.well-known/facebook-domain-verification.html
  * URL final: https://<workerName>.zaplifydisparo.workers.dev
  */
-async function deployWorker(subdomain, htmlContent, metaVerificationCode, verificationMethod) {
-  // Escolhe conta aleatoriamente (alterna entre as duas)
-  const account = env.getCloudflareAccount();
+async function deployWorker(subdomain, htmlContent, metaVerificationCode, verificationMethod, targetSubdomain) {
+  // Se targetSubdomain é fornecido, usa a conta correspondente. Senão, sorteia.
+  let account;
+  if (targetSubdomain) {
+    const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
+    if (targetSubdomain === sub2) {
+      account = { token: process.env.CLOUDFLARE_API_TOKEN_2, accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2, subdomain: sub2 };
+    } else {
+      account = { token: env.cloudflareApiToken, accountId: env.cloudflareAccountId, subdomain: env.cloudflareWorkersSubdomain };
+    }
+  } else {
+    account = env.getCloudflareAccount();
+  }
   const accountId = account.accountId;
   const workersDomain = account.subdomain;
   const apiToken = account.token;

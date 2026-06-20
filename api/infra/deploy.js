@@ -34,8 +34,13 @@ module.exports = async function handler(req, res) {
       };
       const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
 
-      // Republica o worker
-      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag');
+      // Detecta em qual conta o worker está pelo nome salvo
+      const existingWorker = domain.cloudflareZoneId || '';
+      const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
+      const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta');
+
+      // Republica o worker na mesma conta
+      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag', targetSub);
 
       return res.status(200).json({ success: true, workerUrl: url, newPhone, workerName });
     } catch (error) {
@@ -82,7 +87,11 @@ module.exports = async function handler(req, res) {
         html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
       }
 
-      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag');
+      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag',
+        (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 && (domain.cloudflareZoneId || '').endsWith(`-${process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2}`))
+          ? process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2
+          : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta')
+      );
 
       return res.status(200).json({ success: true, workerUrl: url, workerName, message: 'Layout alterado com sucesso!' });
     } catch (error) {
@@ -102,10 +111,19 @@ module.exports = async function handler(req, res) {
         },
       });
       const env = require('../_lib/env');
-      const items = domains.map(d => ({
-        ...d,
-        workerUrl: `https://${d.cloudflareZoneId}.${env.cloudflareWorkersSubdomain}.workers.dev`,
-      }));
+      const sub1 = env.cloudflareWorkersSubdomain;
+      const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
+      const items = domains.map(d => {
+        // Detecta em qual conta o worker está pelo sufixo no nome
+        const wName = d.cloudflareZoneId || '';
+        let workerUrl;
+        if (sub2 && wName.endsWith(`-${sub2}`)) {
+          workerUrl = `https://${wName}.${sub2}.workers.dev`;
+        } else {
+          workerUrl = `https://${wName}.${sub1}.workers.dev`;
+        }
+        return { ...d, workerUrl };
+      });
       return res.status(200).json(items);
     } catch (error) {
       return res.status(500).json({ error: error.message });
