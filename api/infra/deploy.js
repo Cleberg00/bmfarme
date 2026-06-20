@@ -32,8 +32,7 @@ module.exports = async function handler(req, res) {
         email: client.email, smsPhone: newPhone, smsCode: null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
       };
-      let html = await generateFullSiteHtml(siteParams);
-      if (!html) html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
+      const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
 
       // Republica o worker
       const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag');
@@ -115,13 +114,9 @@ module.exports = async function handler(req, res) {
       email: client.email, smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
-    // Tenta IA primeiro (gera site 100% único), fallback pro template estático
-    let html = await generateFullSiteHtml(siteParams);
-    let aiSource = 'gemini_or_cloudflare';
-    if (!html) {
-      html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
-      aiSource = 'fallback_static';
-    }
+    // Usa templates industriais de alta qualidade (sem IA)
+    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
+    const aiSource = 'templates_industriais';
 
     // Publica o worker (cria ou atualiza — a API do Cloudflare faz upsert)
     const { workerName, url } = await deployWorker(cleanSubdomain, html, metaVerificationCode, method);
