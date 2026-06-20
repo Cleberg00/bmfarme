@@ -5,10 +5,10 @@ function get(name) {
   return value;
 }
 
-// Multi-conta Cloudflare: alterna entre conta 1 e 2 aleatoriamente
+// Multi-conta Cloudflare: usa conta 2 (zaplifydisparo) como padrão, conta 1 como backup
 function getCloudflareAccount() {
   const hasAccount2 = process.env.CLOUDFLARE_API_TOKEN_2 && process.env.CLOUDFLARE_ACCOUNT_ID_2 && process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2;
-  if (hasAccount2 && Math.random() > 0.5) {
+  if (hasAccount2) {
     return {
       token: process.env.CLOUDFLARE_API_TOKEN_2,
       accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2,
