@@ -5,16 +5,8 @@ function get(name) {
   return value;
 }
 
-// Multi-conta Cloudflare: usa conta 2 (zaplifydisparo) como padrão, conta 1 como backup
+// Multi-conta Cloudflare: usa conta 1 (verificadametta) como padrão, conta 2 como backup
 function getCloudflareAccount() {
-  const hasAccount2 = process.env.CLOUDFLARE_API_TOKEN_2 && process.env.CLOUDFLARE_ACCOUNT_ID_2 && process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2;
-  if (hasAccount2) {
-    return {
-      token: process.env.CLOUDFLARE_API_TOKEN_2,
-      accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2,
-      subdomain: process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2,
-    };
-  }
   return {
     token: get('CLOUDFLARE_API_TOKEN'),
     accountId: get('CLOUDFLARE_ACCOUNT_ID'),

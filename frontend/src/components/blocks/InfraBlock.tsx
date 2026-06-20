@@ -86,7 +86,7 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
 
   // Preview do domínio que será gerado
   const previewDomain = subdomain
-    ? `${subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '')}-zaplifydisparo.zaplifydisparo.workers.dev`
+    ? `${subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '')}-verificadametta.verificadametta.workers.dev`
     : '';
 
   return (
