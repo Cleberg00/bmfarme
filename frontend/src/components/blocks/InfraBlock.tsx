@@ -84,6 +84,11 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
     await handleDeploy();
   };
 
+  // Preview do domínio que será gerado
+  const previewDomain = subdomain
+    ? `${subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '')}-zaplifydisparo.zaplifydisparo.workers.dev`
+    : '';
+
   return (
     <div className="space-y-5">
 
@@ -128,6 +133,12 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
             />
             <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">.workers.dev</span>
           </div>
+          {previewDomain && (
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-sm font-mono text-emerald-400 break-all">{previewDomain}</span>
+              <CopyButton value={previewDomain} label="Domínio" />
+            </div>
+          )}
         </div>
 
         {/* Meta Verification Code */}
