@@ -400,23 +400,25 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
  * URL final: https://<workerName>.zaplifydisparo.workers.dev
  */
 async function deployWorker(subdomain, htmlContent, metaVerificationCode, verificationMethod, targetSubdomain) {
-  // Se targetSubdomain é fornecido, usa a conta correspondente. Senão, sorteia.
+  // Seleciona a conta com base no targetSubdomain escolhido pelo usuario
   let account;
-  if (targetSubdomain) {
-    const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
-    if (targetSubdomain === sub2) {
-      account = { token: process.env.CLOUDFLARE_API_TOKEN_2, accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2, subdomain: sub2 };
-    } else {
-      account = { token: env.cloudflareApiToken, accountId: env.cloudflareAccountId, subdomain: env.cloudflareWorkersSubdomain };
-    }
+  const sub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta';
+  const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || 'zaplifydisparo';
+
+  if (targetSubdomain === sub2) {
+    account = { token: process.env.CLOUDFLARE_API_TOKEN_2, accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2, subdomain: sub2 };
+  } else if (targetSubdomain === sub1) {
+    account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: sub1 };
   } else {
-    account = env.getCloudflareAccount();
+    // Fallback: usa conta 1
+    account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: sub1 };
   }
+
   const accountId = account.accountId;
   const workersDomain = account.subdomain;
   const apiToken = account.token;
   const workerName = `${subdomain}-${workersDomain}`.slice(0, 64);
-  console.log(`[deployWorker] Conta: ${workersDomain}, Worker: ${workerName}`);
+  console.log(`[deployWorker] targetSubdomain=${targetSubdomain}, Conta: ${workersDomain}, Worker: ${workerName}`);
 
   // Extrai só o código de verificação se vier como HTML completo
   let cleanCode = metaVerificationCode || '';
