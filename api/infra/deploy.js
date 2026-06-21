@@ -187,8 +187,8 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'subdomain, metaVerificationCode e clientId são obrigatórios.' });
 
     const method = verificationMethod || 'meta_tag';
-    // Conta selecionada pelo usuario (verificadametta ou zaplifydisparo)
-    const targetSub = cfAccount === 'zaplifydisparo' ? (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || 'zaplifydisparo') : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta');
+    // Conta selecionada pelo usuario — passa o nome direto pro deployWorker
+    const targetSub = cfAccount || 'verificadametta';
 
     // Valida o subdomínio
     const cleanSubdomain = subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30);

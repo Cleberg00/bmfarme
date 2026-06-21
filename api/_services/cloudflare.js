@@ -400,25 +400,32 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
  * URL final: https://<workerName>.zaplifydisparo.workers.dev
  */
 async function deployWorker(subdomain, htmlContent, metaVerificationCode, verificationMethod, targetSubdomain) {
-  // Seleciona a conta com base no targetSubdomain escolhido pelo usuario
+  // Seleciona a conta pelo nome que o usuario escolheu
   let account;
-  const sub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta';
-  const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || 'zaplifydisparo';
+  const envSub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || '';
+  const envSub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
 
-  if (targetSubdomain === sub2) {
-    account = { token: process.env.CLOUDFLARE_API_TOKEN_2, accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2, subdomain: sub2 };
-  } else if (targetSubdomain === sub1) {
-    account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: sub1 };
+  // Encontra qual env var corresponde ao subdomain escolhido
+  if (targetSubdomain && targetSubdomain === envSub1) {
+    account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: envSub1 };
+  } else if (targetSubdomain && targetSubdomain === envSub2) {
+    account = { token: process.env.CLOUDFLARE_API_TOKEN_2, accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2, subdomain: envSub2 };
+  } else if (targetSubdomain) {
+    // Tenta achar pelo nome em qualquer posição
+    if (envSub1.includes(targetSubdomain) || targetSubdomain.includes(envSub1)) {
+      account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: envSub1 };
+    } else {
+      account = { token: process.env.CLOUDFLARE_API_TOKEN_2, accountId: process.env.CLOUDFLARE_ACCOUNT_ID_2, subdomain: envSub2 };
+    }
   } else {
-    // Fallback: usa conta 1
-    account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: sub1 };
+    account = { token: process.env.CLOUDFLARE_API_TOKEN, accountId: process.env.CLOUDFLARE_ACCOUNT_ID, subdomain: envSub1 };
   }
 
   const accountId = account.accountId;
   const workersDomain = account.subdomain;
   const apiToken = account.token;
   const workerName = `${subdomain}-${workersDomain}`.slice(0, 64);
-  console.log(`[deployWorker] targetSubdomain=${targetSubdomain}, Conta: ${workersDomain}, Worker: ${workerName}`);
+  console.log(`[deployWorker] target=${targetSubdomain}, envSub1=${envSub1}, envSub2=${envSub2}, usando=${workersDomain}`);
 
   // Extrai só o código de verificação se vier como HTML completo
   let cleanCode = metaVerificationCode || '';
