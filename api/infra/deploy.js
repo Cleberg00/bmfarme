@@ -181,12 +181,14 @@ module.exports = async function handler(req, res) {
   let deployedWorkerName = null;
 
   try {
-    const { subdomain, metaVerificationCode, verificationMethod, clientId } = req.body;
+    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount } = req.body;
 
     if (!subdomain || !metaVerificationCode || !clientId)
       return res.status(400).json({ error: 'subdomain, metaVerificationCode e clientId são obrigatórios.' });
 
     const method = verificationMethod || 'meta_tag';
+    // Conta selecionada pelo usuario (verificadametta ou zaplifydisparo)
+    const targetSub = cfAccount === 'zaplifydisparo' ? (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || 'zaplifydisparo') : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta');
 
     // Valida o subdomínio
     const cleanSubdomain = subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30);
@@ -235,7 +237,7 @@ module.exports = async function handler(req, res) {
     const aiSource = html.includes('Gemini') ? 'gemini' : 'templates_industriais';
 
     // Publica o worker (cria ou atualiza — a API do Cloudflare faz upsert)
-    const { workerName, url } = await deployWorker(cleanSubdomain, html, metaVerificationCode, method);
+    const { workerName, url } = await deployWorker(cleanSubdomain, html, metaVerificationCode, method, targetSub);
     deployedWorkerName = workerName;
 
     // Salva ou atualiza no banco
