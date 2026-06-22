@@ -32,6 +32,8 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
   const [cfAccount, setCfAccount] = useState<'verificadametta' | 'zaplifydisparo'>('verificadametta');
+  const [customRazao, setCustomRazao] = useState('');
+  const [customFantasia, setCustomFantasia] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
@@ -63,6 +65,8 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
         verificationMethod: method,
         clientId,
         cfAccount,
+        customRazao: customRazao.trim() || undefined,
+        customFantasia: customFantasia.trim() || undefined,
       });
       const id: string = data.id ?? '';
       const url: string = data.workerUrl ?? '';
@@ -149,6 +153,28 @@ export default function InfraBlock({ clientId, razaoSocial, smsPhone, onDomainRe
               </div>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Nomes customizados pro site (opcional) */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <label className="text-sm font-semibold text-slate-300">Razão Social no site <span className="text-xs text-slate-500">(opcional)</span></label>
+          <input
+            value={customRazao}
+            onChange={(e) => setCustomRazao(e.target.value)}
+            placeholder="Deixe vazio pra usar do cadastro"
+            className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-sm font-semibold text-slate-300">Nome Fantasia no site <span className="text-xs text-slate-500">(opcional)</span></label>
+          <input
+            value={customFantasia}
+            onChange={(e) => setCustomFantasia(e.target.value)}
+            placeholder="Deixe vazio pra usar do cadastro"
+            className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30"
+          />
         </div>
       </div>
 

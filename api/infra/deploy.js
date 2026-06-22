@@ -122,21 +122,16 @@ module.exports = async function handler(req, res) {
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
       };
 
-      // Tenta IA primeiro, fallback pra template estático com índice forçado diferente
-      let html;
-      try {
-        html = await generateFullSiteHtml(siteParams);
-      } catch { /* fallback */ }
-      if (!html) {
-        // Força um template diferente usando random
-        html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
-      }
+      // Gera novo template (random dos 16 layouts)
+      const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
 
-      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag',
-        (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 && (domain.cloudflareZoneId || '').endsWith(`-${process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2}`))
-          ? process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2
-          : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta')
-      );
+      // Detecta conta do worker existente
+      const wName = domain.cloudflareZoneId || '';
+      const envSub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || '';
+      const envSub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
+      const putTarget = (envSub2 && wName.endsWith(`-${envSub2}`)) ? envSub2 : (envSub1 && wName.endsWith(`-${envSub1}`)) ? envSub1 : envSub1;
+
+      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag', putTarget);
 
       return res.status(200).json({ success: true, workerUrl: url, workerName, message: 'Layout alterado com sucesso!' });
     } catch (error) {
@@ -181,7 +176,7 @@ module.exports = async function handler(req, res) {
   let deployedWorkerName = null;
 
   try {
-    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount } = req.body;
+    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount, customRazao, customFantasia } = req.body;
 
     if (!subdomain || !metaVerificationCode || !clientId)
       return res.status(400).json({ error: 'subdomain, metaVerificationCode e clientId são obrigatórios.' });
@@ -218,7 +213,8 @@ module.exports = async function handler(req, res) {
 
     // Gera HTML via IA (100% único) com fallback pro template estático
     const siteParams = {
-      razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
+      razaoSocial: customRazao || client.razaoSocial,
+      nomeFantasia: customFantasia || client.nomeFantasia,
       cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
       bairro: client.bairro, cep: client.cep,
       municipio: client.municipio, uf: client.uf, situacao: client.situacao,
@@ -226,15 +222,8 @@ module.exports = async function handler(req, res) {
       email: client.email, smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
-    // Gera HTML via IA (Gemini) com fallback pro template estático (16 layouts)
-    let html;
-    try {
-      html = await generateFullSiteHtml(siteParams);
-    } catch { /* fallback */ }
-    if (!html) {
-      html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
-    }
-    const aiSource = html.includes('Gemini') ? 'gemini' : 'templates_industriais';
+    // Gera HTML com templates variados (16 layouts diferentes)
+    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
 
     // Publica o worker (cria ou atualiza — a API do Cloudflare faz upsert)
     const { workerName, url } = await deployWorker(cleanSubdomain, html, metaVerificationCode, method, targetSub);
