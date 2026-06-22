@@ -260,7 +260,6 @@ module.exports = async function handler(req, res) {
       subdomain: cleanSubdomain,
       smsPhone,
       smsCode,
-      aiSource,
     });
   } catch (error) {
     if (deployedWorkerName) await deleteWorker(deployedWorkerName).catch(() => null);
