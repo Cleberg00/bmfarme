@@ -57,8 +57,10 @@ async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider) 
     try {
       // HeroSMS usa padrão SMS-Activate: Brasil = 12, fb = fb
       // SMS24h usa: Brasil = 73, fb = fb
+      // HeroSMS: maxPrice pra pegar o mais barato disponível
       const countryCode = (provider.name === 'HEROSMS') ? 12 : effectiveCountry;
-      const raw = await makeRequest(provider, { action: 'getNumber', service, country: countryCode });
+      const extraParams = (provider.name === 'HEROSMS') ? { maxPrice: '0.05' } : {};
+      const raw = await makeRequest(provider, { action: 'getNumber', service, country: countryCode, ...extraParams });
 
       if (raw.startsWith('ACCESS_NUMBER:')) {
         const parts = raw.split(':');
