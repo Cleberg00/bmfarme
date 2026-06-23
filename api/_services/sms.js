@@ -24,7 +24,7 @@ function getProviders() {
   if (process.env.HEROSMS_API_KEY) {
     providers.push({
       name: 'HEROSMS',
-      baseURL: process.env.HEROSMS_API_URL || 'https://hero-sms.com/api/v1',
+      baseURL: process.env.HEROSMS_API_URL || 'https://hero-sms.com/stubs/handler_api.php',
       apiKey: process.env.HEROSMS_API_KEY,
       timeout: 15000,
     });
