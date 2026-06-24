@@ -22,14 +22,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Só faz logout se o 401 vier de uma rota que requer autenticação
-    // e não for uma rota de email temporário ou outras rotas auxiliares
+    // Só faz logout se o 401 vier da NOSSA API de autenticação (token JWT expirado)
+    // NÃO desloga por erros de Cloudflare, SMS ou outros serviços
     const url = err.config?.url || '';
-    const isAuthRoute = !url.includes('/auth/register');
-    if (err.response?.status === 401 && isAuthRoute) {
-      localStorage.removeItem('bmfarm.token');
-      localStorage.removeItem('bmfarm.user');
-      window.location.reload();
+    const isOurApi = url.includes('/api/') || url.startsWith('/');
+    const isNotExternalError = !err.response?.data?.error?.includes('Worker') && !err.response?.data?.error?.includes('Cloudflare');
+    const isAuthRoute = !url.includes('/auth/register') && !url.includes('/auth/login');
+    
+    if (err.response?.status === 401 && isOurApi && isNotExternalError && isAuthRoute) {
+      // Verifica se a mensagem é realmente sobre token expirado
+      const msg = err.response?.data?.error || '';
+      if (msg.includes('Token') || msg.includes('token') || msg.includes('autorização')) {
+        localStorage.removeItem('bmfarm.token');
+        localStorage.removeItem('bmfarm.user');
+        window.location.reload();
+      }
     }
     return Promise.reject(err);
   }
