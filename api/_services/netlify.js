@@ -62,11 +62,16 @@ async function deployNetlifySite(subdomain, htmlContent) {
     if (CUSTOM_DOMAIN) {
       axios.put(`${NETLIFY_API}/sites/${siteId}`, {
         custom_domain: customDomain,
-        force_ssl: true,
       }, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         timeout: 15000,
-      }).catch(e => console.log(`[Netlify] Custom domain setup (non-fatal): ${e.message}`));
+      }).then(() => {
+        // Provisiona SSL após vincular domínio
+        return axios.post(`${NETLIFY_API}/sites/${siteId}/ssl`, {}, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          timeout: 15000,
+        });
+      }).catch(e => console.log(`[Netlify] Custom domain/SSL setup (non-fatal): ${e.message}`));
     }
 
     // 3. Deploy com arquivo único (index.html) via file digest
