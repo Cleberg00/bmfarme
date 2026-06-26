@@ -32,7 +32,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
-  const [cfAccount] = useState<'netlify'>('netlify');
+  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo'>('empresasverrificada');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
@@ -96,21 +96,33 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   return (
     <div className="space-y-5">
 
-      {/* Seletor de conta — CF fora do ar, Netlify ativo */}
+      {/* Seletor de conta Cloudflare */}
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-300">Publicar em</label>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <button type="button" disabled className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left opacity-40 cursor-not-allowed">
-            <p className="text-sm font-semibold text-slate-500">empresasverrificada</p>
-            <p className="text-xs text-slate-600 mt-0.5">Indisponível</p>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => setCfAccount('empresasverrificada')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              cfAccount === 'empresasverrificada'
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${cfAccount === 'empresasverrificada' ? 'text-emerald-300' : 'text-slate-200'}`}>empresasverrificada</p>
+            <p className="text-xs text-slate-500 mt-0.5">.empresasverrificada.workers.dev</p>
           </button>
-          <button type="button" disabled className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left opacity-40 cursor-not-allowed">
-            <p className="text-sm font-semibold text-slate-500">zaplifydisparo</p>
-            <p className="text-xs text-slate-600 mt-0.5">Indisponível</p>
-          </button>
-          <button type="button" className="rounded-xl border border-cyan-500 bg-cyan-500/10 px-4 py-3 text-left">
-            <p className="text-sm font-semibold text-cyan-300">Netlify ✓</p>
-            <p className="text-xs text-slate-500 mt-0.5">.netlify.app — ativo</p>
+          <button
+            type="button"
+            onClick={() => setCfAccount('zaplifydisparo')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              cfAccount === 'zaplifydisparo'
+                ? 'border-purple-500 bg-purple-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${cfAccount === 'zaplifydisparo' ? 'text-purple-300' : 'text-slate-200'}`}>zaplifydisparo</p>
+            <p className="text-xs text-slate-500 mt-0.5">.zaplifydisparo.workers.dev</p>
           </button>
         </div>
       </div>
