@@ -92,7 +92,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   // Preview do domínio que será gerado
   const cleanSub = subdomain ? subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '') : '';
   const previewDomain = cleanSub
-    ? (cfAccount === 'netlify' ? `${cleanSub}.nexusmktlucro.shop` : `${cleanSub}-${cfAccount}.${cfAccount}.workers.dev`)
+    ? (cfAccount === 'netlify' ? `${cleanSub}.(domínio aleatório)` : `${cleanSub}-${cfAccount}.${cfAccount}.workers.dev`)
     : '';
 
   return (
