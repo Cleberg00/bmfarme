@@ -32,7 +32,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
-  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo'>('empresasverrificada');
+  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify'>('empresasverrificada');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
@@ -91,7 +91,9 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
 
   // Preview do domínio que será gerado
   const cleanSub = subdomain ? subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '') : '';
-  const previewDomain = cleanSub ? `${cleanSub}.nexusmktlucro.shop` : '';
+  const previewDomain = cleanSub
+    ? (cfAccount === 'netlify' ? `${cleanSub}.nexusmktlucro.shop` : `${cleanSub}-${cfAccount}.${cfAccount}.workers.dev`)
+    : '';
 
   return (
     <div className="space-y-5">
@@ -99,7 +101,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
       {/* Seletor de conta Cloudflare */}
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-300">Publicar em</label>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-3">
           <button
             type="button"
             onClick={() => setCfAccount('empresasverrificada')}
@@ -123,6 +125,18 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           >
             <p className={`text-sm font-semibold ${cfAccount === 'zaplifydisparo' ? 'text-purple-300' : 'text-slate-200'}`}>zaplifydisparo</p>
             <p className="text-xs text-slate-500 mt-0.5">.zaplifydisparo.workers.dev</p>
+          </button>
+          <button
+            type="button"
+            onClick={() => setCfAccount('netlify')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              cfAccount === 'netlify'
+                ? 'border-cyan-500 bg-cyan-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${cfAccount === 'netlify' ? 'text-cyan-300' : 'text-slate-200'}`}>Netlify</p>
+            <p className="text-xs text-slate-500 mt-0.5">.nexusmktlucro.shop</p>
           </button>
         </div>
       </div>
@@ -166,7 +180,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               maxLength={30}
               className="flex-1 bg-transparent px-4 py-3 text-slate-100 outline-none"
             />
-            <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">.nexusmktlucro.shop</span>
+            <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">{cfAccount === 'netlify' ? '.nexusmktlucro.shop' : '.workers.dev'}</span>
           </div>
           {previewDomain && (
             <div className="flex items-center gap-2 mt-1">
