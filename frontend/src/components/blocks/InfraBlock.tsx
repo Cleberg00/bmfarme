@@ -33,6 +33,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
   const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify'>('empresasverrificada');
+  const netlifyDomains = ['verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
+  const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
@@ -64,6 +66,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
         verificationMethod: method,
         clientId,
         cfAccount,
+        netlifyDomain: cfAccount === 'netlify' ? selectedNetlifyDomain : undefined,
         customRazao: razaoSocial || undefined,
         customFantasia: nomeFantasia || undefined,
       });
@@ -92,7 +95,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   // Preview do domínio que será gerado
   const cleanSub = subdomain ? subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '') : '';
   const previewDomain = cleanSub
-    ? (cfAccount === 'netlify' ? `${cleanSub}.(domínio aleatório)` : `${cleanSub}-${cfAccount}.${cfAccount}.workers.dev`)
+    ? (cfAccount === 'netlify' ? `${cleanSub}.${selectedNetlifyDomain}` : `${cleanSub}-${cfAccount}.${cfAccount}.workers.dev`)
     : '';
 
   return (
@@ -140,6 +143,29 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           </button>
         </div>
       </div>
+
+      {/* Seletor de domínio Netlify */}
+      {cfAccount === 'netlify' && (
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-slate-300">Domínio</label>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {netlifyDomains.map(d => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => setSelectedNetlifyDomain(d)}
+                className={`rounded-xl border px-3 py-2 text-left transition ${
+                  selectedNetlifyDomain === d
+                    ? 'border-cyan-500 bg-cyan-500/10'
+                    : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+                }`}
+              >
+                <p className={`text-xs font-semibold ${selectedNetlifyDomain === d ? 'text-cyan-300' : 'text-slate-300'}`}>{d}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Método de verificação */}
       <div className="space-y-2">

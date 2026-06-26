@@ -217,7 +217,7 @@ module.exports = async function handler(req, res) {
   let deployedWorkerName = null;
 
   try {
-    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount, customRazao, customFantasia } = req.body;
+    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount, customRazao, customFantasia, netlifyDomain } = req.body;
 
     if (!subdomain || !metaVerificationCode || !clientId)
       return res.status(400).json({ error: 'subdomain, metaVerificationCode e clientId são obrigatórios.' });
@@ -269,7 +269,7 @@ module.exports = async function handler(req, res) {
     // Publica o site (Cloudflare Workers ou Netlify)
     let workerName, url;
     if (targetSub === 'netlify') {
-      const result = await deployNetlifySite(cleanSubdomain, html);
+      const result = await deployNetlifySite(cleanSubdomain, html, netlifyDomain);
       workerName = result.siteName;
       url = result.url;
     } else {

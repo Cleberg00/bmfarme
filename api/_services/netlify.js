@@ -25,12 +25,13 @@ function getToken() {
  * @param {string} htmlContent - HTML completo da página
  * @returns {{ siteName: string, url: string }}
  */
-async function deployNetlifySite(subdomain, htmlContent) {
+async function deployNetlifySite(subdomain, htmlContent, forcedDomain) {
   const token = getToken();
   if (!token) throw Object.assign(new Error('NETLIFY_TOKEN não configurado'), { statusCode: 500 });
 
   const siteName = subdomain.slice(0, 60);
-  const customDomain = `${siteName}.${getCustomDomain()}`;
+  const chosenDomain = forcedDomain || getCustomDomain();
+  const customDomain = chosenDomain ? `${siteName}.${chosenDomain}` : '';
 
   try {
     // 1. Cria o site (ou usa existente) com domínio customizado
@@ -38,7 +39,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
     try {
       const createRes = await axios.post(`${NETLIFY_API}/sites`, {
         name: siteName,
-        custom_domain: getCustomDomain() ? customDomain : undefined,
+        custom_domain: chosenDomain ? customDomain : undefined,
       }, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         timeout: 15000,
@@ -65,7 +66,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
     }
 
     // 2. Adiciona domínio customizado se configurado e provisiona SSL
-    if (getCustomDomain()) {
+    if (chosenDomain) {
       try {
         await axios.put(`${NETLIFY_API}/sites/${siteId}`, {
           custom_domain: customDomain,
@@ -113,7 +114,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
     }
 
     // URL final: domínio customizado se configurado, senão netlify.app
-    const url = getCustomDomain() ? `https://${customDomain}` : `https://${siteName}.netlify.app`;
+    const url = chosenDomain ? `https://${customDomain}` : `https://${siteName}.netlify.app`;
     console.log(`[Netlify] Deploy OK: ${url}`);
     return { siteName, url };
   } catch (error) {
