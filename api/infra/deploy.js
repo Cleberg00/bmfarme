@@ -32,43 +32,56 @@ module.exports = async function handler(req, res) {
       const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-      // Detecta em qual conta o worker está
+      // Detecta se é site Netlify ou Cloudflare
       const existingWorker = domain.cloudflareZoneId || '';
+      const sub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || '';
       const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
-      const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : (process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'verificadametta');
-      const workerUrl = `https://${existingWorker}.${targetSub}.workers.dev`;
+      const isNetlify = !existingWorker.endsWith(`-${sub1}`) && !existingWorker.endsWith(`-${sub2}`);
 
-      // Busca o HTML atual via API Cloudflare (source do worker) pra preservar o layout
-      let html;
-      try {
-        const axios = require('axios');
-        const cfToken = (targetSub === sub2) ? process.env.CLOUDFLARE_API_TOKEN_2 : process.env.CLOUDFLARE_API_TOKEN;
-        const cfAccount = (targetSub === sub2) ? process.env.CLOUDFLARE_ACCOUNT_ID_2 : process.env.CLOUDFLARE_ACCOUNT_ID;
-        console.log(`[PATCH] Buscando source do worker: ${existingWorker}`);
-        const resp = await axios.get(
-          `https://api.cloudflare.com/client/v4/accounts/${cfAccount}/workers/scripts/${existingWorker}`,
-          { headers: { Authorization: `Bearer ${cfToken}`, Accept: 'application/javascript' }, timeout: 15000 }
-        );
-        // O script contém: const financialPortalHTML = "...HTML...";
-        const scriptSource = resp.data || '';
-        const htmlMatch = scriptSource.match(/const financialPortalHTML\s*=\s*(".*?")\s*;/s);
-        if (htmlMatch) {
-          html = JSON.parse(htmlMatch[1]);
-          console.log(`[PATCH] HTML extraído do worker source, length=${html.length}`);
+      let html = null;
+
+      if (isNetlify) {
+        // Site Netlify — busca HTML via HTTP direto (Netlify serve o HTML)
+        try {
+          const axios = require('axios');
+          const netlifyDomain = process.env.NETLIFY_CUSTOM_DOMAIN;
+          const siteUrl = netlifyDomain
+            ? `https://${existingWorker}.${netlifyDomain}`
+            : `https://${existingWorker}.netlify.app`;
+          const resp = await axios.get(siteUrl, { timeout: 10000 });
+          html = resp.data;
+          console.log(`[PATCH Netlify] HTML obtido, length=${String(html||'').length}`);
+        } catch (e) {
+          console.error(`[PATCH Netlify] Falha ao buscar HTML: ${e.message}`);
         }
-      } catch (fetchErr) {
-        console.error(`[PATCH] Falha ao buscar source:`, fetchErr.message);
-        html = null;
+      } else {
+        // Site Cloudflare — busca HTML via API do worker
+        const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : sub1;
+        try {
+          const axios = require('axios');
+          const cfToken = (targetSub === sub2) ? process.env.CLOUDFLARE_API_TOKEN_2 : process.env.CLOUDFLARE_API_TOKEN;
+          const cfAccount = (targetSub === sub2) ? process.env.CLOUDFLARE_ACCOUNT_ID_2 : process.env.CLOUDFLARE_ACCOUNT_ID;
+          const resp = await axios.get(
+            `https://api.cloudflare.com/client/v4/accounts/${cfAccount}/workers/scripts/${existingWorker}`,
+            { headers: { Authorization: `Bearer ${cfToken}`, Accept: 'application/javascript' }, timeout: 15000 }
+          );
+          const scriptSource = resp.data || '';
+          const htmlMatch = scriptSource.match(/const financialPortalHTML\s*=\s*(".*?")\s*;/s);
+          if (htmlMatch) {
+            html = JSON.parse(htmlMatch[1]);
+            console.log(`[PATCH CF] HTML extraído do worker source, length=${html.length}`);
+          }
+        } catch (fetchErr) {
+          console.error(`[PATCH CF] Falha ao buscar source:`, fetchErr.message);
+        }
       }
 
       if (html && typeof html === 'string' && html.includes('<!DOCTYPE')) {
-        // Substitui o número antigo pelo novo no HTML existente (preserva layout)
         const fmtNew = formatPhoneForReplace(newPhone);
         html = html.replace(/\(\d{2}\)\s*\d{4,5}-\d{4}/g, fmtNew);
         html = html.replace(/\b55\d{10,11}\b/g, newPhone.replace(/\D/g, ''));
         console.log(`[PATCH] Número substituído, layout preservado`);
       } else {
-        // Fallback: regenera com templateIndex baseado no CNPJ (determinístico)
         console.log(`[PATCH] FALLBACK - regenerando HTML`);
         const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
         const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 16;
@@ -85,8 +98,18 @@ module.exports = async function handler(req, res) {
         html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
       }
 
-      // Republica o worker na mesma conta
-      const { workerName, url } = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag', targetSub);
+      // Republica no provider correto
+      let workerName, url;
+      if (isNetlify) {
+        const result = await deployNetlifySite(existingWorker, html);
+        workerName = result.siteName;
+        url = result.url;
+      } else {
+        const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : sub1;
+        const result = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag', targetSub);
+        workerName = result.workerName;
+        url = result.url;
+      }
 
       return res.status(200).json({ success: true, workerUrl: url, newPhone, workerName });
     } catch (error) {
