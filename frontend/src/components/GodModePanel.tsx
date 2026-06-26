@@ -69,8 +69,9 @@ function QuickPhoneUpdate() {
       await api.patch('/infra/deploy', { domainId: site.id, newPhone: phone.trim() });
       setResult({ ok: true, msg: 'Número atualizado no site!' });
       setPhone('');
-    } catch {
-      setResult({ ok: false, msg: 'Erro ao atualizar. Tente novamente.' });
+    } catch (e: unknown) {
+      const msg = (e as { response?: { data?: { error?: string } } })?.response?.data?.error || (e instanceof Error ? e.message : 'Erro ao atualizar.');
+      setResult({ ok: false, msg });
     } finally {
       setLoading(false);
     }
