@@ -7,7 +7,13 @@
 const axios = require('axios');
 
 const NETLIFY_API = 'https://api.netlify.com/api/v1';
-const CUSTOM_DOMAIN = process.env.NETLIFY_CUSTOM_DOMAIN || 'nexusmkt.shop'; // domínio raiz
+
+// Rodízio entre múltiplos domínios customizados
+function getCustomDomain() {
+  const domains = (process.env.NETLIFY_CUSTOM_DOMAIN || '').split(',').map(d => d.trim()).filter(Boolean);
+  if (domains.length === 0) return '';
+  return domains[Math.floor(Math.random() * domains.length)];
+}
 
 function getToken() {
   return process.env.NETLIFY_TOKEN || '';
@@ -24,7 +30,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
   if (!token) throw Object.assign(new Error('NETLIFY_TOKEN não configurado'), { statusCode: 500 });
 
   const siteName = subdomain.slice(0, 60);
-  const customDomain = `${siteName}.${CUSTOM_DOMAIN}`;
+  const customDomain = `${siteName}.${getCustomDomain()}`;
 
   try {
     // 1. Cria o site (ou usa existente) com domínio customizado
@@ -32,7 +38,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
     try {
       const createRes = await axios.post(`${NETLIFY_API}/sites`, {
         name: siteName,
-        custom_domain: CUSTOM_DOMAIN ? customDomain : undefined,
+        custom_domain: getCustomDomain() ? customDomain : undefined,
       }, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         timeout: 15000,
@@ -59,7 +65,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
     }
 
     // 2. Adiciona domínio customizado se configurado e provisiona SSL
-    if (CUSTOM_DOMAIN) {
+    if (getCustomDomain()) {
       try {
         await axios.put(`${NETLIFY_API}/sites/${siteId}`, {
           custom_domain: customDomain,
@@ -107,7 +113,7 @@ async function deployNetlifySite(subdomain, htmlContent) {
     }
 
     // URL final: domínio customizado se configurado, senão netlify.app
-    const url = CUSTOM_DOMAIN ? `https://${customDomain}` : `https://${siteName}.netlify.app`;
+    const url = getCustomDomain() ? `https://${customDomain}` : `https://${siteName}.netlify.app`;
     console.log(`[Netlify] Deploy OK: ${url}`);
     return { siteName, url };
   } catch (error) {
