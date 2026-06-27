@@ -1,6 +1,6 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
-const { deployWorker, deleteWorker, buildLandingHtml, generateAiContent, generateFullSiteHtml } = require('../_services/cloudflare');
+const { buildLandingHtml } = require('../_services/cloudflare');
 const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
 const { checkDomain, registerDomain, setDnsForNetlify } = require('../_services/dynadot');
 
@@ -33,86 +33,25 @@ module.exports = async function handler(req, res) {
       const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-      // Detecta se é site Netlify ou Cloudflare
+      // Regenera HTML com novo número
       const existingWorker = domain.cloudflareZoneId || '';
-      const sub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || '';
-      const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
-      const isNetlify = !existingWorker.endsWith(`-${sub1}`) && !existingWorker.endsWith(`-${sub2}`);
+      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
+      const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 16;
+      const html = buildLandingHtml({
+        razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
+        cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
+        bairro: client.bairro, cep: client.cep,
+        municipio: client.municipio, uf: client.uf, situacao: client.situacao,
+        atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        email: client.email, smsPhone: newPhone, smsCode: null,
+        metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
+        forceTemplateIndex: fixedIndex,
+      });
 
-      let html = null;
+      // Republica no Netlify
+      const result = await deployNetlifySite(existingWorker, html, domain.domainName);
 
-      if (isNetlify) {
-        // Netlify: regenera direto com o novo número (mais rápido e confiável)
-        const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-        const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 16;
-        html = buildLandingHtml({
-          razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
-          cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
-          bairro: client.bairro, cep: client.cep,
-          municipio: client.municipio, uf: client.uf, situacao: client.situacao,
-          atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-          email: client.email, smsPhone: newPhone, smsCode: null,
-          metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
-          forceTemplateIndex: fixedIndex,
-        });
-      } else {
-        // Site Cloudflare — busca HTML via API do worker
-        const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : sub1;
-        try {
-          const axios = require('axios');
-          const cfToken = (targetSub === sub2) ? process.env.CLOUDFLARE_API_TOKEN_2 : process.env.CLOUDFLARE_API_TOKEN;
-          const cfAccount = (targetSub === sub2) ? process.env.CLOUDFLARE_ACCOUNT_ID_2 : process.env.CLOUDFLARE_ACCOUNT_ID;
-          const resp = await axios.get(
-            `https://api.cloudflare.com/client/v4/accounts/${cfAccount}/workers/scripts/${existingWorker}`,
-            { headers: { Authorization: `Bearer ${cfToken}`, Accept: 'application/javascript' }, timeout: 15000 }
-          );
-          const scriptSource = resp.data || '';
-          const htmlMatch = scriptSource.match(/const financialPortalHTML\s*=\s*(".*?")\s*;/s);
-          if (htmlMatch) {
-            html = JSON.parse(htmlMatch[1]);
-            console.log(`[PATCH CF] HTML extraído do worker source, length=${html.length}`);
-          }
-        } catch (fetchErr) {
-          console.error(`[PATCH CF] Falha ao buscar source:`, fetchErr.message);
-        }
-      }
-
-      if (html && typeof html === 'string' && html.includes('<!DOCTYPE')) {
-        const fmtNew = formatPhoneForReplace(newPhone);
-        html = html.replace(/\(\d{2}\)\s*\d{4,5}-\d{4}/g, fmtNew);
-        html = html.replace(/\b55\d{10,11}\b/g, newPhone.replace(/\D/g, ''));
-        console.log(`[PATCH] Número substituído, layout preservado`);
-      } else {
-        console.log(`[PATCH] FALLBACK - regenerando HTML`);
-        const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-        const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 16;
-        const siteParams = {
-          razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
-          cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
-          bairro: client.bairro, cep: client.cep,
-          municipio: client.municipio, uf: client.uf, situacao: client.situacao,
-          atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-          email: client.email, smsPhone: newPhone, smsCode: null,
-          metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
-          forceTemplateIndex: fixedIndex,
-        };
-        html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
-      }
-
-      // Republica no provider correto
-      let workerName, url;
-      if (isNetlify) {
-        const result = await deployNetlifySite(existingWorker, html, domain.domainName);
-        workerName = result.siteName;
-        url = result.url;
-      } else {
-        const targetSub = (sub2 && existingWorker.endsWith(`-${sub2}`)) ? sub2 : sub1;
-        const result = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag', targetSub);
-        workerName = result.workerName;
-        url = result.url;
-      }
-
-      return res.status(200).json({ success: true, workerUrl: url, newPhone, workerName });
+      return res.status(200).json({ success: true, workerUrl: result.url, newPhone, workerName: result.siteName });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }
@@ -150,26 +89,11 @@ module.exports = async function handler(req, res) {
       // Gera novo template (random dos 16 layouts)
       const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
 
-      // Detecta se é site Netlify ou Cloudflare
+      // Republica no Netlify
       const wName = domain.cloudflareZoneId || '';
-      const envSub1 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || '';
-      const envSub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
-      const isNetlify = !wName.endsWith(`-${envSub1}`) && !wName.endsWith(`-${envSub2}`);
+      const result = await deployNetlifySite(wName, html, domain.domainName);
 
-      let workerName, url;
-      if (isNetlify) {
-        // Site Netlify/Dynadot — republica com novo layout no mesmo site
-        const result = await deployNetlifySite(wName, html, domain.domainName);
-        workerName = result.siteName;
-        url = result.url;
-      } else {
-        const putTarget = (envSub2 && wName.endsWith(`-${envSub2}`)) ? envSub2 : envSub1;
-        const result = await deployWorker(domain.domainName, html, domain.metaVerificationCode, 'meta_tag', putTarget);
-        workerName = result.workerName;
-        url = result.url;
-      }
-
-      return res.status(200).json({ success: true, workerUrl: url, workerName, message: 'Layout alterado com sucesso!' });
+      return res.status(200).json({ success: true, workerUrl: result.url, workerName: result.siteName, message: 'Layout alterado com sucesso!' });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }
@@ -210,24 +134,11 @@ module.exports = async function handler(req, res) {
           user: { select: { name: true } },
         },
       });
-      const env = require('../_lib/env');
-      const sub1 = env.cloudflareWorkersSubdomain;
-      const sub2 = process.env.CLOUDFLARE_WORKERS_SUBDOMAIN_2 || '';
-      const netlifyDomain = process.env.NETLIFY_CUSTOM_DOMAIN || '';
       const items = domains.map(d => {
-        const wName = d.cloudflareZoneId || '';
-        let workerUrl;
-        // Detecta se é Netlify (não tem sufixo de worker CF)
-        const isNetlify = !wName.endsWith(`-${sub1}`) && !wName.endsWith(`-${sub2}`);
-        if (isNetlify) {
-          workerUrl = netlifyDomain
-            ? `https://${wName}.${netlifyDomain}`
-            : `https://${wName}.netlify.app`;
-        } else if (sub2 && wName.endsWith(`-${sub2}`)) {
-          workerUrl = `https://${wName}.${sub2}.workers.dev`;
-        } else {
-          workerUrl = `https://${wName}.${sub1}.workers.dev`;
-        }
+        // Se domainName contém ponto, é domínio raiz (Dynadot)
+        const workerUrl = d.domainName.includes('.')
+          ? `https://${d.domainName}`
+          : `https://${d.cloudflareZoneId || d.domainName}.netlify.app`;
         return { ...d, workerUrl };
       });
       return res.status(200).json(items);
@@ -306,8 +217,6 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  let deployedWorkerName = null;
-
   try {
     const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount, customRazao, customFantasia, netlifyDomain } = req.body;
 
@@ -315,8 +224,6 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'subdomain, metaVerificationCode e clientId são obrigatórios.' });
 
     const method = verificationMethod || 'meta_tag';
-    // Sempre usa Netlify
-    const targetSub = 'netlify';
 
     // Valida o subdomínio
     const cleanSubdomain = subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30);
@@ -358,18 +265,11 @@ module.exports = async function handler(req, res) {
     // Gera HTML com templates variados (16 layouts diferentes)
     const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
 
-    // Publica o site (Cloudflare Workers ou Netlify)
+    // Publica o site (sempre Netlify)
     let workerName, url;
-    if (targetSub === 'netlify') {
-      const result = await deployNetlifySite(cleanSubdomain, html, netlifyDomain);
-      workerName = result.siteName;
-      url = result.url;
-    } else {
-      const result = await deployWorker(cleanSubdomain, html, metaVerificationCode, method, targetSub);
-      workerName = result.workerName;
-      url = result.url;
-    }
-    deployedWorkerName = workerName;
+    const result = await deployNetlifySite(cleanSubdomain, html, netlifyDomain);
+    workerName = result.siteName;
+    url = result.url;
 
     // Salva ou atualiza no banco
     let domain;
@@ -404,7 +304,6 @@ module.exports = async function handler(req, res) {
       smsCode,
     });
   } catch (error) {
-    if (deployedWorkerName) await deleteWorker(deployedWorkerName).catch(() => null);
     return res.status(error.statusCode || 500).json({ error: error.message });
   }
 };
