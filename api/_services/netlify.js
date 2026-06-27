@@ -76,13 +76,20 @@ async function deployNetlifySite(subdomain, htmlContent, forcedDomain) {
           headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
           timeout: 15000,
         });
-        // Aguarda DNS propagar um pouco antes de pedir SSL
-        await new Promise(r => setTimeout(r, 3000));
-        // Provisiona SSL
-        await axios.post(`${NETLIFY_API}/sites/${siteId}/ssl`, {}, {
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          timeout: 15000,
-        }).catch(() => {}); // ignora erro se SSL ainda não pronto
+        // Tenta provisionar SSL múltiplas vezes (DNS pode demorar)
+        for (let attempt = 0; attempt < 3; attempt++) {
+          await new Promise(r => setTimeout(r, 5000));
+          try {
+            await axios.post(`${NETLIFY_API}/sites/${siteId}/ssl`, {}, {
+              headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+              timeout: 15000,
+            });
+            console.log(`[Netlify] SSL provisionado na tentativa ${attempt + 1}`);
+            break;
+          } catch (sslErr) {
+            console.log(`[Netlify] SSL tentativa ${attempt + 1} falhou: ${sslErr.message}`);
+          }
+        }
       } catch (e) {
         console.log(`[Netlify] Custom domain setup (non-fatal): ${e.message}`);
       }
@@ -147,4 +154,28 @@ async function deleteNetlifySite(siteName) {
   } catch { /* silencioso */ }
 }
 
-module.exports = { deployNetlifySite, deleteNetlifySite };
+/**
+ * Força provisionamento de SSL em um site existente
+ * Útil quando o DNS já propagou mas o SSL não foi emitido no deploy
+ */
+async function provisionSsl(siteName) {
+  const token = getToken();
+  if (!token) throw new Error('NETLIFY_TOKEN não configurado');
+
+  // Busca o site pelo nome
+  const listRes = await axios.get(`${NETLIFY_API}/sites?name=${siteName}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    timeout: 15000,
+  });
+  const site = listRes.data?.find(s => s.name === siteName);
+  if (!site) throw new Error(`Site ${siteName} não encontrado no Netlify`);
+
+  const res = await axios.post(`${NETLIFY_API}/sites/${site.id}/ssl`, {}, {
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    timeout: 15000,
+  });
+  console.log(`[Netlify] SSL provisionado para ${siteName}`);
+  return res.data;
+}
+
+module.exports = { deployNetlifySite, deleteNetlifySite, provisionSsl };

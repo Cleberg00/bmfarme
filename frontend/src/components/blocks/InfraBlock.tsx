@@ -326,6 +326,32 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             🎲 Trocar Layout
           </button>
         )}
+        {deployed && (
+          <button
+            type="button"
+            disabled={loading}
+            onClick={async () => {
+              if (!deployed.subdomain) return;
+              setLoading(true);
+              setError('');
+              try {
+                await api.get(`/infra/deploy?action=provision_ssl&siteName=${deployed.subdomain}`);
+                alert('✅ SSL provisionado! Aguarde 1-2 min pro HTTPS ativar.');
+              } catch (err) {
+                setError(
+                  axios.isAxiosError(err)
+                    ? err.response?.data?.error || err.message
+                    : 'Erro ao provisionar SSL.'
+                );
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="rounded-xl border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/20 disabled:opacity-50"
+          >
+            🔒 Forçar SSL
+          </button>
+        )}
       </div>
 
       {error && (

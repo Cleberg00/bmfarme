@@ -1,7 +1,7 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
 const { deployWorker, deleteWorker, buildLandingHtml, generateAiContent, generateFullSiteHtml } = require('../_services/cloudflare');
-const { deployNetlifySite } = require('../_services/netlify');
+const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
 const { checkDomain, registerDomain, setDnsForNetlify } = require('../_services/dynadot');
 
 // Formata telefone pra exibição (41) 96347-5267
@@ -182,6 +182,18 @@ module.exports = async function handler(req, res) {
       if (!domain) return res.status(400).json({ error: 'domain é obrigatório.' });
       const result = await checkDomain(domain);
       return res.status(200).json(result);
+    } catch (error) {
+      return res.status(error.statusCode || 500).json({ error: error.message });
+    }
+  }
+
+  // ── GET ?action=provision_ssl — força SSL em site existente ────
+  if (req.method === 'GET' && req.query?.action === 'provision_ssl') {
+    try {
+      const { siteName } = req.query;
+      if (!siteName) return res.status(400).json({ error: 'siteName é obrigatório.' });
+      const result = await provisionSsl(siteName);
+      return res.status(200).json({ success: true, ssl: result });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }
