@@ -161,8 +161,9 @@ module.exports = async function handler(req, res) {
       const client = await prisma.client.findUnique({ where: { id: clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-      // Escolhe o registrador (porkbun = padrão, dynadot = fallback)
-      const reg = registrar === 'dynadot' ? dynadot : porkbun;
+      // Escolhe o registrador baseado no domínio ou parâmetro
+      const useDynadot = registrar === 'dynadot' || domainName.endsWith('.cfd');
+      const reg = useDynadot ? dynadot : porkbun;
 
       // Verifica se o domínio já existe no banco (já registrado antes)
       const existing = await prisma.domain.findFirst({ where: { domainName } });
