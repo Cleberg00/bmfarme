@@ -2,7 +2,8 @@ const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
 const { buildLandingHtml } = require('../_services/cloudflare');
 const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
-const { checkDomain, registerDomain, setDnsForNetlify } = require('../_services/porkbun');
+const porkbun = require('../_services/porkbun');
+const dynadot = require('../_services/dynadot');
 
 // Formata telefone pra exibição (41) 96347-5267
 function formatPhoneForReplace(phone) {
@@ -150,15 +151,18 @@ module.exports = async function handler(req, res) {
   // ── POST — publicar novo site (existente) ──────────────────────────────
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
-  // Registro de domínio automático (Dynadot + Netlify)
+  // Registro de domínio automático (Porkbun ou Dynadot + Netlify)
   if (req.body?.action === 'register_domain') {
     try {
-      const { domainName, clientId, metaVerificationCode, customRazao, customFantasia } = req.body;
+      const { domainName, clientId, metaVerificationCode, customRazao, customFantasia, registrar } = req.body;
       if (!domainName || !clientId || !metaVerificationCode)
         return res.status(400).json({ error: 'domainName, clientId e metaVerificationCode são obrigatórios.' });
 
       const client = await prisma.client.findUnique({ where: { id: clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
+
+      // Escolhe o registrador (porkbun = padrão, dynadot = fallback)
+      const reg = registrar === 'dynadot' ? dynadot : porkbun;
 
       // Verifica se o domínio já existe no banco (já registrado antes)
       const existing = await prisma.domain.findFirst({ where: { domainName } });
@@ -166,14 +170,14 @@ module.exports = async function handler(req, res) {
 
       if (needsRegistration) {
         // 1. Verifica disponibilidade
-        const check = await checkDomain(domainName);
+        const check = await reg.checkDomain(domainName);
         if (!check.available) return res.status(422).json({ error: `Domínio ${domainName} não está disponível.` });
 
         // 2. Registra o domínio
-        await registerDomain(domainName);
+        await reg.registerDomain(domainName);
 
         // 3. Configura DNS pra Netlify
-        await setDnsForNetlify(domainName);
+        await reg.setDnsForNetlify(domainName);
       }
 
       // 4. Busca SMS mais recente

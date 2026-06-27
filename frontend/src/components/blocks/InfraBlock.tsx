@@ -32,7 +32,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
-  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot'>('dynadot');
+  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun'>('porkbun');
   const netlifyDomains = ['verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
@@ -71,12 +71,14 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     setError('');
     try {
       let data;
-      if (cfAccount === 'dynadot') {
+      if (cfAccount === 'porkbun' || cfAccount === 'dynadot') {
         // Registra domínio + publica site
-        const domainName = `${customDomainName}.xyz`;
+        const ext = cfAccount === 'porkbun' ? '.xyz' : '.cfd';
+        const domainName = `${customDomainName}${ext}`;
         const res = await api.post('/infra/deploy', {
           action: 'register_domain',
           domainName,
+          registrar: cfAccount,
           clientId,
           metaVerificationCode: metaCode.trim(),
           customRazao: razaoSocial || undefined,
@@ -100,8 +102,9 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
       const url: string = data.workerUrl ?? '';
       setDeployed({ subdomain: data.subdomain ?? subdomain, workerUrl: url, domainId: id });
       onDomainReady(id, url);
-      // Inicia countdown de propagação DNS (1 min - Porkbun DNS é rápido)
-      if (cfAccount === 'dynadot') setDnsCountdown(60);
+      // Countdown: Porkbun=60s (rápido), Dynadot=300s (lento)
+      if (cfAccount === 'porkbun') setDnsCountdown(60);
+      else if (cfAccount === 'dynadot') setDnsCountdown(300);
     } catch (err) {
       setError(
         axios.isAxiosError(err)
@@ -129,6 +132,18 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
         <div className="grid gap-2 sm:grid-cols-2">
           <button
             type="button"
+            onClick={() => setCfAccount('porkbun')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              cfAccount === 'porkbun'
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${cfAccount === 'porkbun' ? 'text-emerald-300' : 'text-slate-200'}`}>⚡ Porkbun .xyz</p>
+            <p className="text-xs text-slate-500 mt-0.5">~R$6 • DNS instantâneo • SSL rápido</p>
+          </button>
+          <button
+            type="button"
             onClick={() => setCfAccount('dynadot')}
             className={`rounded-xl border px-4 py-3 text-left transition ${
               cfAccount === 'dynadot'
@@ -136,8 +151,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
                 : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
             }`}
           >
-            <p className={`text-sm font-semibold ${cfAccount === 'dynadot' ? 'text-orange-300' : 'text-slate-200'}`}>🌐 Domínio Próprio</p>
-            <p className="text-xs text-slate-500 mt-0.5">Registra .xyz (~R$6) + DNS instantâneo</p>
+            <p className={`text-sm font-semibold ${cfAccount === 'dynadot' ? 'text-orange-300' : 'text-slate-200'}`}>🌐 Dynadot .cfd</p>
+            <p className="text-xs text-slate-500 mt-0.5">~R$1 • DNS lento (5-15 min)</p>
           </button>
           <button
             type="button"
@@ -152,11 +167,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             <p className="text-xs text-slate-500 mt-0.5">Subdomínio (domínios existentes)</p>
           </button>
           <button type="button" disabled className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left opacity-40 cursor-not-allowed">
-            <p className="text-sm font-semibold text-slate-500">empresasverrificada</p>
-            <p className="text-xs text-slate-600 mt-0.5">Indisponível</p>
-          </button>
-          <button type="button" disabled className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left opacity-40 cursor-not-allowed">
-            <p className="text-sm font-semibold text-slate-500">zaplifydisparo</p>
+            <p className="text-sm font-semibold text-slate-500">Cloudflare</p>
             <p className="text-xs text-slate-600 mt-0.5">Indisponível</p>
           </button>
         </div>
@@ -216,14 +227,14 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
         {/* Nome do domínio / Subdomínio */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold text-slate-300">
-            {cfAccount === 'dynadot' ? 'Nome do domínio' : 'Subdomínio'}
+            {(cfAccount === 'porkbun' || cfAccount === 'dynadot') ? 'Nome do domínio' : 'Subdomínio'}
           </label>
           <div className="flex items-center rounded-xl border border-slate-700 bg-slate-800/80 overflow-hidden focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/30">
             <input
-              value={cfAccount === 'dynadot' ? customDomainName : subdomain}
+              value={(cfAccount === 'porkbun' || cfAccount === 'dynadot') ? customDomainName : subdomain}
               onChange={(e) => {
                 const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-                if (cfAccount === 'dynadot') setCustomDomainName(val);
+                if (cfAccount === 'porkbun' || cfAccount === 'dynadot') setCustomDomainName(val);
                 else setSubdomain(val);
               }}
               placeholder="nomedapessoa"
@@ -231,16 +242,16 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               className="flex-1 bg-transparent px-4 py-3 text-slate-100 outline-none"
             />
             <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">
-              {cfAccount === 'dynadot' ? '.xyz' : `.${selectedNetlifyDomain}`}
+              {cfAccount === 'porkbun' ? '.xyz' : cfAccount === 'dynadot' ? '.cfd' : `.${selectedNetlifyDomain}`}
             </span>
           </div>
-          {((cfAccount === 'dynadot' && customDomainName) || (cfAccount !== 'dynadot' && subdomain)) && (
+          {(((cfAccount === 'porkbun' || cfAccount === 'dynadot') && customDomainName) || (cfAccount !== 'porkbun' && cfAccount !== 'dynadot' && subdomain)) && (
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm font-mono text-emerald-400 break-all">
-                {cfAccount === 'dynadot' ? `${customDomainName}.xyz` : `${subdomain}.${selectedNetlifyDomain}`}
+                {cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : `${subdomain}.${selectedNetlifyDomain}`}
               </span>
-              <CopyButton value={cfAccount === 'dynadot' ? `${customDomainName}.xyz` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
-              {cfAccount === 'dynadot' && <span className="text-xs text-slate-500">← cole no Meta</span>}
+              <CopyButton value={cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
+              {(cfAccount === 'porkbun' || cfAccount === 'dynadot') && <span className="text-xs text-slate-500">← cole no Meta</span>}
             </div>
           )}
         </div>
@@ -285,7 +296,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
         <button
           type="button"
           onClick={handleDeploy}
-          disabled={loading || (!subdomain && cfAccount !== 'dynadot') || (!customDomainName && cfAccount === 'dynadot') || !metaCode || !clientId}
+          disabled={loading || (!subdomain && cfAccount !== 'dynadot' && cfAccount !== 'porkbun') || (!customDomainName && (cfAccount === 'dynadot' || cfAccount === 'porkbun')) || !metaCode || !clientId}
           className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {loading ? (
@@ -388,7 +399,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               </div>
             </div>
           )}
-          {dnsCountdown === 0 && cfAccount === 'dynadot' && (
+          {dnsCountdown === 0 && (cfAccount === 'dynadot' || cfAccount === 'porkbun') && (
             <div className="rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-2 text-xs text-green-300">
               ✅ DNS propagado — o site já deve estar acessível. Se mostrar erro de SSL, clique em "Forçar SSL" abaixo.
             </div>
