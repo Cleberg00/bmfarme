@@ -102,7 +102,7 @@ module.exports = async function handler(req, res) {
       // Republica no provider correto
       let workerName, url;
       if (isNetlify) {
-        const result = await deployNetlifySite(existingWorker, html);
+        const result = await deployNetlifySite(existingWorker, html, domain.domainName);
         workerName = result.siteName;
         url = result.url;
       } else {
@@ -158,8 +158,8 @@ module.exports = async function handler(req, res) {
 
       let workerName, url;
       if (isNetlify) {
-        // Site Netlify — republica com novo layout no mesmo site
-        const result = await deployNetlifySite(wName, html);
+        // Site Netlify/Dynadot — republica com novo layout no mesmo site
+        const result = await deployNetlifySite(wName, html, domain.domainName);
         workerName = result.siteName;
         url = result.url;
       } else {

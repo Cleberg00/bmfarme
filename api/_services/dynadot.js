@@ -64,29 +64,26 @@ async function setDnsForNetlify(domain) {
   const key = getKey();
   if (!key) throw new Error('DYNADOT_API_KEY não configurado');
 
-  // Configura CNAME wildcard apontando pro Netlify
+  // Configura registro A apontando pro Netlify load balancer
   const res = await axios.get(DYNADOT_API, {
     params: {
       key,
       command: 'set_dns2',
       domain,
-      main_record_type0: 'cname',
-      main_record0: 'apex-loadbalancer.netlify.com',
-      subdomain0: '*',
-      sub_record_type0: 'cname',
-      sub_record0: 'apex-loadbalancer.netlify.com',
+      main_record_type0: 'a',
+      main_record0: '75.2.60.5',
     },
     timeout: 15000,
   });
 
   const data = res.data;
-  if (data?.SetDnsResponse?.Status === 'success' || data?.Response?.ResponseCode === '0') {
+  if (data?.SetDnsResponse?.Status === 'success' || data?.SetDnsResponse?.ResponseCode === 0) {
     console.log(`[Dynadot] DNS configurado pra Netlify: ${domain}`);
     return true;
   }
 
   console.log('[Dynadot] DNS response:', JSON.stringify(data));
-  return true; // ignora erro — DNS pode demorar
+  return true;
 }
 
 module.exports = { checkDomain, registerDomain, setDnsForNetlify };
