@@ -299,20 +299,32 @@ module.exports = async function handler(req, res) {
       workerName = result.workerName;
       url = result.url;
 
-      // Adiciona TXT record no Cloudflare pra verificação Meta via DNS
+      // Cria CNAME + configura domínio customizado no Cloudflare pra subdomínio acessível
       try {
-        let cleanCode = metaVerificationCode || '';
-        const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
-        if (codeMatch) cleanCode = codeMatch[1];
+        // Detecta zona baseada no netlifyDomain passado pelo frontend
+        const domainZones = {
+          'helixprobet.com': process.env.CLOUDFLARE_ZONE_HELIXPROBET,
+          'verificaativos.shop': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS,
+        };
+        const chosenDomain = netlifyDomain || 'helixprobet.com';
+        const zoneId = domainZones[chosenDomain] || process.env.CLOUDFLARE_ZONE_HELIXPROBET || '';
 
-        // Detecta qual zona usar baseado no domínio do Netlify ou padrão
-        const zoneId = process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS || '';
-        if (zoneId && cleanCode) {
-          await addDnsTxtRecord(zoneId, `${cleanSubdomain}.verificaativos.shop`, `facebook-domain-verification=${cleanCode}`);
-          console.log(`[TXT] Adicionado verificação Meta pra ${cleanSubdomain}.verificaativos.shop`);
+        if (zoneId) {
+          const axios = require('axios');
+          const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
+          
+          // Cria CNAME: subdomain.helixprobet.com -> workerName.empresasverrificada.workers.dev (proxied pra SSL)
+          await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+            { type: 'CNAME', name: cleanSubdomain, content: `${workerName}.${process.env.CLOUDFLARE_WORKERS_SUBDOMAIN || 'empresasverrificada'}.workers.dev`, ttl: 1, proxied: true },
+            { headers: cfHeaders, timeout: 15000 }
+          ).catch(e => console.log(`[CF CNAME] ${e.response?.data?.errors?.[0]?.message || e.message}`));
+
+          // URL final é o subdomínio do .com (com SSL via Cloudflare proxy)
+          url = `https://${cleanSubdomain}.${chosenDomain}`;
+          console.log(`[CF] CNAME criado: ${cleanSubdomain}.${chosenDomain} -> ${workerName}.workers.dev`);
         }
-      } catch (txtErr) {
-        console.log(`[TXT] Erro (não fatal): ${txtErr.message}`);
+      } catch (cfErr) {
+        console.log(`[CF] CNAME erro (não fatal): ${cfErr.message}`);
       }
     } else {
       const result = await deployNetlifySite(cleanSubdomain, html, netlifyDomain);

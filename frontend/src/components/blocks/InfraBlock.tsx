@@ -33,7 +33,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
   const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun'>('dynadot');
-  const netlifyDomains = ['verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
+  const netlifyDomains = ['helixprobet.com', 'verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           verificationMethod: method,
           clientId,
           cfAccount,
-          netlifyDomain: cfAccount === 'netlify' ? selectedNetlifyDomain : undefined,
+          netlifyDomain: (cfAccount === 'netlify' || cfAccount === 'empresasverrificada') ? selectedNetlifyDomain : undefined,
           customRazao: razaoSocial || undefined,
           customFantasia: nomeFantasia || undefined,
         });
@@ -160,8 +160,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
         </div>
       </div>
 
-      {/* Seletor de domínio Netlify */}
-      {cfAccount === 'netlify' && (
+      {/* Seletor de domínio */}
+      {(cfAccount === 'netlify' || cfAccount === 'empresasverrificada') && (
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-300">Domínio</label>
           <div className="grid gap-2 sm:grid-cols-3">
