@@ -154,7 +154,7 @@ module.exports = async function handler(req, res) {
   // Registro de domínio automático (Porkbun ou Dynadot + Netlify)
   if (req.body?.action === 'register_domain') {
     try {
-      const { domainName, clientId, metaVerificationCode, customRazao, customFantasia, registrar } = req.body;
+      const { domainName, clientId, metaVerificationCode, customRazao, customFantasia } = req.body;
       if (!domainName || !clientId || !metaVerificationCode)
         return res.status(400).json({ error: 'domainName, clientId e metaVerificationCode são obrigatórios.' });
 
@@ -165,38 +165,14 @@ module.exports = async function handler(req, res) {
       const existing = await prisma.domain.findFirst({ where: { domainName } });
       const needsRegistration = !existing;
 
-      // Extrai código de verificação limpo
-      let cleanCode = metaVerificationCode || '';
-      const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
-      if (codeMatch) cleanCode = codeMatch[1];
-
-      let zoneId = existing?.cloudflareZoneId || '';
-
       if (needsRegistration) {
-        // 1. Registra domínio no Dynadot (mais barato)
+        // 1. Verifica disponibilidade e registra no Dynadot
         const check = await dynadot.checkDomain(domainName);
         if (!check.available) return res.status(422).json({ error: `Domínio ${domainName} não está disponível.` });
         await dynadot.registerDomain(domainName);
 
-        // 2. Cria zona no Cloudflare
-        const zone = await createZone(domainName);
-        zoneId = zone.id;
-        const nameservers = zone.name_servers || [];
-
-        // 3. Adiciona DNS TXT pra verificação Meta
-        const txtValue = `facebook-domain-verification=${cleanCode}`;
-        await addDnsTxtRecord(zoneId, domainName, txtValue);
-
-        // 4. Muda nameservers no Dynadot pro Cloudflare
-        if (nameservers.length > 0) {
-          await dynadot.setNameservers(domainName, nameservers);
-        }
-      } else if (zoneId) {
-        // Domínio já existe — só atualiza TXT se necessário
-        try {
-          const txtValue = `facebook-domain-verification=${cleanCode}`;
-          await addDnsTxtRecord(zoneId, domainName, txtValue);
-        } catch { /* pode já existir */ }
+        // 2. Configura DNS A record pro Netlify (75.2.60.5)
+        await dynadot.setDnsForNetlify(domainName);
       }
 
       // 5. Busca SMS mais recente
@@ -205,7 +181,7 @@ module.exports = async function handler(req, res) {
         orderBy: { createdAt: 'desc' },
       });
 
-      // 6. Gera HTML
+      // 3. Gera HTML
       const html = buildLandingHtml({
         razaoSocial: customRazao || client.razaoSocial,
         nomeFantasia: customFantasia || client.nomeFantasia,
@@ -217,31 +193,28 @@ module.exports = async function handler(req, res) {
         metaVerificationCode, verificationMethod: 'meta_tag',
       });
 
-      // 7. Deploy no Cloudflare Workers (SSL instantâneo)
-      const workerName = domainName.replace(/\./g, '-');
-      const workerResult = await deployWorker(workerName, html, cleanCode, 'meta_tag');
-      const workerUrl = workerResult.url;
+      // 4. Deploy no Netlify com domínio customizado
+      const siteName = domainName.replace(/\./g, '-');
+      const result = await deployNetlifySite(siteName, html, domainName);
 
-      // 8. Salva no banco
+      // 5. Salva no banco
       let domain;
       if (existing) {
         domain = await prisma.domain.update({
           where: { id: existing.id },
-          data: { cloudflareZoneId: zoneId, metaVerificationCode, status: 'ACTIVE', userId: user.id }
+          data: { cloudflareZoneId: siteName, metaVerificationCode, status: 'ACTIVE', userId: user.id }
         });
       } else {
         domain = await prisma.domain.create({
-          data: { domainName, cloudflareZoneId: zoneId, metaVerificationCode, status: 'ACTIVE', clientId, userId: user.id }
+          data: { domainName, cloudflareZoneId: siteName, metaVerificationCode, status: 'ACTIVE', clientId, userId: user.id }
         });
       }
 
       return res.status(existing ? 200 : 201).json({
         ...domain,
-        workerUrl,
-        subdomain: workerName,
-        message: needsRegistration
-          ? `Domínio ${domainName} registrado! Site no Workers: ${workerUrl}. DNS TXT configurado pra verificação Meta. Nameservers propagando pro Cloudflare.`
-          : `Site republicado! ${workerUrl}`,
+        workerUrl: `https://${domainName}`,
+        subdomain: siteName,
+        message: needsRegistration ? `Domínio ${domainName} registrado e site publicado!` : `Site republicado em ${domainName}!`,
       });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
