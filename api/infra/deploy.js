@@ -171,8 +171,30 @@ module.exports = async function handler(req, res) {
         if (!check.available) return res.status(422).json({ error: `Domínio ${domainName} não está disponível.` });
         await dynadot.registerDomain(domainName);
 
-        // 2. Configura DNS A record pro Netlify (75.2.60.5)
-        await dynadot.setDnsForNetlify(domainName);
+        // 2. Cria zona no Cloudflare (DNS instantâneo) + configura A record
+        try {
+          const zone = await createZone(domainName);
+          const zoneId = zone.id;
+          const nameservers = zone.name_servers || [];
+
+          // Adiciona A record pro Netlify na zona Cloudflare
+          const axios = require('axios');
+          await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`, 
+            { type: 'A', name: domainName, content: '75.2.60.5', ttl: 300, proxied: false },
+            { headers: { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' }, timeout: 15000 }
+          );
+          console.log(`[CF] A record criado: ${domainName} -> 75.2.60.5`);
+
+          // Muda nameservers no Dynadot pro Cloudflare
+          if (nameservers.length > 0) {
+            await dynadot.setNameservers(domainName, nameservers);
+            console.log(`[CF] NS alterados pro Cloudflare: ${nameservers.join(', ')}`);
+          }
+        } catch (cfErr) {
+          console.log(`[CF] Zona/NS falhou (fallback pra DNS Dynadot): ${cfErr.message}`);
+          // Fallback: configura DNS direto no Dynadot
+          await dynadot.setDnsForNetlify(domainName);
+        }
       }
 
       // 5. Busca SMS mais recente
