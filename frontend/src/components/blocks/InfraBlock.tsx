@@ -65,7 +65,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
       let data;
       if (cfAccount === 'dynadot') {
         // Registra domínio + publica site
-        const domainName = `${customDomainName}.sbs`;
+        const domainName = `${customDomainName}.cfd`;
         const res = await api.post('/infra/deploy', {
           action: 'register_domain',
           domainName,
@@ -113,7 +113,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   // Preview do domínio que será gerado
   const cleanSub = subdomain ? subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '') : '';
   const previewDomain = cfAccount === 'dynadot'
-    ? (customDomainName ? `${customDomainName}.sbs` : '')
+    ? (customDomainName ? `${customDomainName}.cfd` : '')
     : cleanSub
       ? (cfAccount === 'netlify' ? `${cleanSub}.${selectedNetlifyDomain}` : `${cleanSub}-${cfAccount}.${cfAccount}.workers.dev`)
       : '';
@@ -135,7 +135,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             }`}
           >
             <p className={`text-sm font-semibold ${cfAccount === 'dynadot' ? 'text-orange-300' : 'text-slate-200'}`}>🌐 Domínio Próprio</p>
-            <p className="text-xs text-slate-500 mt-0.5">Registra .sbs (~R$5) + publica</p>
+            <p className="text-xs text-slate-500 mt-0.5">Registra .cfd (~R$1) + publica</p>
           </button>
           <button
             type="button"
@@ -194,12 +194,12 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               placeholder="gabrielybarbosa"
               className="flex-1 rounded-xl border border-slate-700 bg-slate-800/80 px-4 py-3 text-slate-100 outline-none focus:border-orange-500"
             />
-            <span className="text-sm text-slate-500 whitespace-nowrap">.sbs</span>
+            <span className="text-sm text-slate-500 whitespace-nowrap">.cfd</span>
           </div>
           {customDomainName && (
             <div className="flex items-center gap-2 mt-1 p-2 rounded-lg border border-orange-500/30 bg-orange-500/5">
-              <span className="text-sm font-mono text-orange-300 break-all">{customDomainName}.sbs</span>
-              <CopyButton value={`${customDomainName}.sbs`} label="Domínio" />
+              <span className="text-sm font-mono text-orange-300 break-all">{customDomainName}.cfd</span>
+              <CopyButton value={`${customDomainName}.cfd`} label="Domínio" />
               <span className="text-xs text-slate-500">← cole no Meta pra gerar a tag</span>
             </div>
           )}
