@@ -37,7 +37,7 @@ module.exports = async function handler(req, res) {
       // Regenera HTML com novo número
       const existingWorker = domain.cloudflareZoneId || '';
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 16;
+      const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 24;
       const html = buildLandingHtml({
         razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
         cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
@@ -49,10 +49,18 @@ module.exports = async function handler(req, res) {
         forceTemplateIndex: fixedIndex,
       });
 
-      // Republica no Netlify
-      const result = await deployNetlifySite(existingWorker, html, domain.domainName);
+      // Republica no provider correto (Workers se nome termina com -empresasverrificada)
+      const isWorker = existingWorker.endsWith('-empresasverrificada') || existingWorker.endsWith('-zaplifydisparo');
+      let resultUrl;
+      if (isWorker) {
+        const result = await deployWorker(existingWorker.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
+        resultUrl = result.url;
+      } else {
+        const result = await deployNetlifySite(existingWorker, html, domain.domainName);
+        resultUrl = result.url;
+      }
 
-      return res.status(200).json({ success: true, workerUrl: result.url, newPhone, workerName: result.siteName });
+      return res.status(200).json({ success: true, workerUrl: resultUrl, newPhone });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }
@@ -90,11 +98,19 @@ module.exports = async function handler(req, res) {
       // Gera novo template (random dos 16 layouts)
       const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
 
-      // Republica no Netlify
+      // Republica no provider correto
       const wName = domain.cloudflareZoneId || '';
-      const result = await deployNetlifySite(wName, html, domain.domainName);
+      const isWorker = wName.endsWith('-empresasverrificada') || wName.endsWith('-zaplifydisparo');
+      let resultUrl;
+      if (isWorker) {
+        const result = await deployWorker(wName.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
+        resultUrl = result.url;
+      } else {
+        const result = await deployNetlifySite(wName, html, domain.domainName);
+        resultUrl = result.url;
+      }
 
-      return res.status(200).json({ success: true, workerUrl: result.url, workerName: result.siteName, message: 'Layout alterado com sucesso!' });
+      return res.status(200).json({ success: true, workerUrl: resultUrl, message: 'Layout alterado com sucesso!' });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }
