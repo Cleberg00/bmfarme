@@ -1,6 +1,6 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
-const { buildLandingHtml } = require('../_services/cloudflare');
+const { buildLandingHtml, createZone, addDnsTxtRecord, getZoneNameservers, deployWorker } = require('../_services/cloudflare');
 const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
 const porkbun = require('../_services/porkbun');
 const dynadot = require('../_services/dynadot');
@@ -161,33 +161,51 @@ module.exports = async function handler(req, res) {
       const client = await prisma.client.findUnique({ where: { id: clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-      // Escolhe o registrador baseado no domínio ou parâmetro
-      const useDynadot = registrar === 'dynadot' || domainName.endsWith('.cfd');
-      const reg = useDynadot ? dynadot : porkbun;
-
       // Verifica se o domínio já existe no banco (já registrado antes)
       const existing = await prisma.domain.findFirst({ where: { domainName } });
       const needsRegistration = !existing;
 
+      // Extrai código de verificação limpo
+      let cleanCode = metaVerificationCode || '';
+      const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
+      if (codeMatch) cleanCode = codeMatch[1];
+
+      let zoneId = existing?.cloudflareZoneId || '';
+
       if (needsRegistration) {
-        // 1. Verifica disponibilidade
-        const check = await reg.checkDomain(domainName);
+        // 1. Registra domínio no Dynadot (mais barato)
+        const check = await dynadot.checkDomain(domainName);
         if (!check.available) return res.status(422).json({ error: `Domínio ${domainName} não está disponível.` });
+        await dynadot.registerDomain(domainName);
 
-        // 2. Registra o domínio
-        await reg.registerDomain(domainName);
+        // 2. Cria zona no Cloudflare
+        const zone = await createZone(domainName);
+        zoneId = zone.id;
+        const nameservers = zone.name_servers || [];
 
-        // 3. Configura DNS pra Netlify
-        await reg.setDnsForNetlify(domainName);
+        // 3. Adiciona DNS TXT pra verificação Meta
+        const txtValue = `facebook-domain-verification=${cleanCode}`;
+        await addDnsTxtRecord(zoneId, domainName, txtValue);
+
+        // 4. Muda nameservers no Dynadot pro Cloudflare
+        if (nameservers.length > 0) {
+          await dynadot.setNameservers(domainName, nameservers);
+        }
+      } else if (zoneId) {
+        // Domínio já existe — só atualiza TXT se necessário
+        try {
+          const txtValue = `facebook-domain-verification=${cleanCode}`;
+          await addDnsTxtRecord(zoneId, domainName, txtValue);
+        } catch { /* pode já existir */ }
       }
 
-      // 4. Busca SMS mais recente
+      // 5. Busca SMS mais recente
       const smsLog = await prisma.smsLog.findFirst({
         where: { clientId, status: { in: ['WAITING', 'RECEIVED'] } },
         orderBy: { createdAt: 'desc' },
       });
 
-      // 5. Gera HTML
+      // 6. Gera HTML
       const html = buildLandingHtml({
         razaoSocial: customRazao || client.razaoSocial,
         nomeFantasia: customFantasia || client.nomeFantasia,
@@ -199,24 +217,32 @@ module.exports = async function handler(req, res) {
         metaVerificationCode, verificationMethod: 'meta_tag',
       });
 
-      // 6. Deploy no Netlify com domínio customizado
-      const siteName = domainName.replace(/\./g, '-');
-      const result = await deployNetlifySite(siteName, html, domainName);
+      // 7. Deploy no Cloudflare Workers (SSL instantâneo)
+      const workerName = domainName.replace(/\./g, '-');
+      const workerResult = await deployWorker(workerName, html, cleanCode, 'meta_tag');
+      const workerUrl = workerResult.url;
 
-      // 7. Salva ou atualiza no banco
+      // 8. Salva no banco
       let domain;
       if (existing) {
         domain = await prisma.domain.update({
           where: { id: existing.id },
-          data: { metaVerificationCode, status: 'ACTIVE', userId: user.id }
+          data: { cloudflareZoneId: zoneId, metaVerificationCode, status: 'ACTIVE', userId: user.id }
         });
       } else {
         domain = await prisma.domain.create({
-          data: { domainName, cloudflareZoneId: siteName, metaVerificationCode, status: 'ACTIVE', clientId, userId: user.id }
+          data: { domainName, cloudflareZoneId: zoneId, metaVerificationCode, status: 'ACTIVE', clientId, userId: user.id }
         });
       }
 
-      return res.status(existing ? 200 : 201).json({ ...domain, workerUrl: `https://${domainName}`, subdomain: siteName, message: needsRegistration ? `Domínio ${domainName} registrado e site publicado!` : `Site republicado em ${domainName}!` });
+      return res.status(existing ? 200 : 201).json({
+        ...domain,
+        workerUrl,
+        subdomain: workerName,
+        message: needsRegistration
+          ? `Domínio ${domainName} registrado! Site no Workers: ${workerUrl}. DNS TXT configurado pra verificação Meta. Nameservers propagando pro Cloudflare.`
+          : `Site republicado! ${workerUrl}`,
+      });
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }

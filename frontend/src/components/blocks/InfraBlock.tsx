@@ -32,7 +32,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
-  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun'>('porkbun');
+  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun'>('dynadot');
   const netlifyDomains = ['verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
@@ -63,13 +63,12 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     try {
       let data;
       if (cfAccount === 'porkbun' || cfAccount === 'dynadot') {
-        // Registra domínio + publica site
-        const ext = cfAccount === 'porkbun' ? '.xyz' : '.cfd';
-        const domainName = `${customDomainName}${ext}`;
+        // Registra domínio + Cloudflare zona + DNS TXT + Workers deploy
+        const domainName = `${customDomainName}.cfd`;
         const res = await api.post('/infra/deploy', {
           action: 'register_domain',
           domainName,
-          registrar: cfAccount,
+          registrar: 'dynadot',
           clientId,
           metaVerificationCode: metaCode.trim(),
           customRazao: razaoSocial || undefined,
@@ -114,33 +113,21 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   return (
     <div className="space-y-5">
 
-      {/* Seletor de conta Cloudflare */}
+      {/* Seletor de conta */}
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-300">Publicar em</label>
         <div className="grid gap-2 sm:grid-cols-2">
           <button
             type="button"
-            onClick={() => setCfAccount('porkbun')}
+            onClick={() => setCfAccount('dynadot')}
             className={`rounded-xl border px-4 py-3 text-left transition ${
-              cfAccount === 'porkbun'
+              cfAccount === 'dynadot'
                 ? 'border-emerald-500 bg-emerald-500/10'
                 : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
             }`}
           >
-            <p className={`text-sm font-semibold ${cfAccount === 'porkbun' ? 'text-emerald-300' : 'text-slate-200'}`}>⚡ Porkbun .xyz</p>
-            <p className="text-xs text-slate-500 mt-0.5">~R$6 • DNS instantâneo • SSL rápido</p>
-          </button>
-          <button
-            type="button"
-            onClick={() => setCfAccount('dynadot')}
-            className={`rounded-xl border px-4 py-3 text-left transition ${
-              cfAccount === 'dynadot'
-                ? 'border-orange-500 bg-orange-500/10'
-                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
-            }`}
-          >
-            <p className={`text-sm font-semibold ${cfAccount === 'dynadot' ? 'text-orange-300' : 'text-slate-200'}`}>🌐 Dynadot .cfd</p>
-            <p className="text-xs text-slate-500 mt-0.5">~R$1 • DNS lento (5-15 min)</p>
+            <p className={`text-sm font-semibold ${cfAccount === 'dynadot' ? 'text-emerald-300' : 'text-slate-200'}`}>⚡ Domínio Próprio</p>
+            <p className="text-xs text-slate-500 mt-0.5">.cfd ~R$1 • Cloudflare + DNS TXT • SSL instantâneo</p>
           </button>
           <button
             type="button"
@@ -153,6 +140,10 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           >
             <p className={`text-sm font-semibold ${cfAccount === 'netlify' ? 'text-cyan-300' : 'text-slate-200'}`}>Netlify</p>
             <p className="text-xs text-slate-500 mt-0.5">Subdomínio (domínios existentes)</p>
+          </button>
+          <button type="button" disabled className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left opacity-40 cursor-not-allowed">
+            <p className="text-sm font-semibold text-slate-500">Porkbun .xyz</p>
+            <p className="text-xs text-slate-600 mt-0.5">Sem saldo</p>
           </button>
           <button type="button" disabled className="rounded-xl border border-slate-800 bg-slate-900/50 px-4 py-3 text-left opacity-40 cursor-not-allowed">
             <p className="text-sm font-semibold text-slate-500">Cloudflare</p>

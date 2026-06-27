@@ -100,4 +100,25 @@ async function setDnsForNetlify(domain) {
   return true;
 }
 
-module.exports = { checkDomain, registerDomain, setDnsForNetlify };
+/**
+ * Configura nameservers customizados no domínio (pra apontar pro Cloudflare)
+ */
+async function setNameservers(domain, nameservers) {
+  const key = getKey();
+  if (!key) throw new Error('DYNADOT_API_KEY não configurado');
+
+  const params = { key, command: 'set_ns', domain };
+  nameservers.forEach((ns, i) => { params[`ns${i}`] = ns; });
+
+  const res = await axios.get(DYNADOT_API, { params, timeout: 15000 });
+  const data = res.data;
+  console.log('[Dynadot] set_ns response:', JSON.stringify(data));
+  
+  if (data?.SetNsResponse?.Status === 'success' || data?.SetNsResponse?.ResponseCode === 0) {
+    console.log(`[Dynadot] Nameservers configurados: ${domain} -> ${nameservers.join(', ')}`);
+    return true;
+  }
+  return true; // não falha silenciosamente mas continua
+}
+
+module.exports = { checkDomain, registerDomain, setDnsForNetlify, setNameservers };

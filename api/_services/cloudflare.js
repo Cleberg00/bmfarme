@@ -523,6 +523,36 @@ async function deleteWorker(workerName) {
   } catch { /* rollback silencioso */ }
 }
 
+/**
+ * Adiciona um TXT record na zona (pra verificação Meta via DNS TXT)
+ */
+async function addDnsTxtRecord(zoneId, domain, txtValue) {
+  try {
+    const res = await getApi().post(`/zones/${zoneId}/dns_records`, {
+      type: 'TXT', name: domain, content: txtValue, ttl: 300
+    });
+    if (!res.data?.success)
+      throw new Error('Falha ao criar TXT record');
+    console.log(`[CF] TXT record criado: ${domain} = ${txtValue}`);
+    return res.data.result;
+  } catch (error) {
+    const message = error.response?.data?.errors?.[0]?.message || error.message;
+    throw Object.assign(new Error(`CF TXT error: ${message}`), { statusCode: error.response?.status || 502 });
+  }
+}
+
+/**
+ * Retorna os nameservers atribuídos pela Cloudflare pra uma zona
+ */
+async function getZoneNameservers(zoneId) {
+  try {
+    const res = await getApi().get(`/zones/${zoneId}`);
+    return res.data?.result?.name_servers || [];
+  } catch {
+    return [];
+  }
+}
+
 module.exports = {
   // legado
   createZone, createARecord, deleteZone,
@@ -530,4 +560,6 @@ module.exports = {
   deployWorker, deleteWorker, buildLandingHtml, slugify,
   // AI
   generateAiContent, generateFullSiteHtml,
+  // DNS TXT
+  addDnsTxtRecord, getZoneNameservers,
 };
