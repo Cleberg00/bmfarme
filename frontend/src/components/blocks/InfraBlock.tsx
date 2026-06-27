@@ -229,15 +229,15 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               className="flex-1 bg-transparent px-4 py-3 text-slate-100 outline-none"
             />
             <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">
-              {cfAccount === 'porkbun' ? '.xyz' : cfAccount === 'dynadot' ? '.cfd' : cfAccount === 'empresasverrificada' ? '.verificaativos.shop' : `.${selectedNetlifyDomain}`}
+              {cfAccount === 'porkbun' ? '.xyz' : cfAccount === 'dynadot' ? '.cfd' : `.${selectedNetlifyDomain}`}
             </span>
           </div>
           {(((cfAccount === 'porkbun' || cfAccount === 'dynadot') && customDomainName) || (cfAccount !== 'porkbun' && cfAccount !== 'dynadot' && subdomain)) && (
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm font-mono text-emerald-400 break-all">
-                {cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : cfAccount === 'empresasverrificada' ? `${subdomain}.verificaativos.shop` : `${subdomain}.${selectedNetlifyDomain}`}
+                {cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : `${subdomain}.${selectedNetlifyDomain}`}
               </span>
-              <CopyButton value={cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : cfAccount === 'empresasverrificada' ? `${subdomain}.verificaativos.shop` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
+              <CopyButton value={cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
               {(cfAccount === 'porkbun' || cfAccount === 'dynadot' || cfAccount === 'empresasverrificada') && <span className="text-xs text-slate-500">← cole no Meta</span>}
             </div>
           )}
