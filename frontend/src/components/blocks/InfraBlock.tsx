@@ -33,7 +33,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
   const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun'>('dynadot');
-  const netlifyDomains = ['helixprobet.com', 'verificaativos.online', 'verifica.cfd', 'verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
+  const netlifyDomains = ['verificaconta.com', 'helixprobet.com', 'verificaativos.online', 'verifica.cfd', 'verificaativos.shop', 'ativosmeta.shop', 'verificadameta.shop'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
   const [loading, setLoading] = useState(false);

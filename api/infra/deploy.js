@@ -322,6 +322,7 @@ module.exports = async function handler(req, res) {
 
       // Cria Custom Domain no Cloudflare (em background, não bloqueia)
       const domainZones = {
+        'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
         'helixprobet.com': process.env.CLOUDFLARE_ZONE_HELIXPROBET,
         'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
         'verifica.cfd': process.env.CLOUDFLARE_ZONE_VERIFICA_CFD,
