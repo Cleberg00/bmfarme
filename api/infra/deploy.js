@@ -18,6 +18,48 @@ module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ── GET ?action=get_site — Worker wildcard busca HTML (sem auth JWT) ────
+  if (req.method === 'GET' && req.query?.action === 'get_site') {
+    try {
+      const workerKey = req.headers['x-worker-key'];
+      if (workerKey !== 'bmfarme-worker-2026')
+        return res.status(401).json({ error: 'Unauthorized' });
+
+      const { subdomain } = req.query;
+      if (!subdomain) return res.status(400).json({ error: 'subdomain é obrigatório.' });
+
+      const domain = await prisma.domain.findFirst({ where: { domainName: subdomain, status: 'ACTIVE' } });
+      if (!domain) return res.status(404).send('<html><body><h1>Site não encontrado</h1></body></html>');
+
+      const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
+      if (!client) return res.status(404).send('<html><body><h1>Cliente não encontrado</h1></body></html>');
+
+      const smsLog = await prisma.smsLog.findFirst({
+        where: { clientId: client.id, status: { in: ['WAITING', 'RECEIVED'] } },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
+      const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 24;
+
+      const html = buildLandingHtml({
+        razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
+        cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
+        bairro: client.bairro, cep: client.cep,
+        municipio: client.municipio, uf: client.uf, situacao: client.situacao,
+        atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        email: client.email, smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
+        metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
+        forceTemplateIndex: fixedIndex,
+      });
+
+      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+      return res.status(200).send(html);
+    } catch (error) {
+      return res.status(500).send('<html><body><h1>Erro interno</h1></body></html>');
+    }
+  }
+
   const user = verifyAuth(req, res);
   if (!user) return;
 
@@ -111,48 +153,6 @@ module.exports = async function handler(req, res) {
       }
 
       return res.status(200).json({ success: true, workerUrl: resultUrl, message: 'Layout alterado com sucesso!' });
-    } catch (error) {
-      return res.status(error.statusCode || 500).json({ error: error.message });
-    }
-  }
-
-  // ── GET ?action=get_site — wildcard Worker busca HTML do subdomínio ────
-  if (req.method === 'GET' && req.query?.action === 'get_site') {
-    try {
-      const workerKey = req.headers['x-worker-key'];
-      if (workerKey !== 'bmfarme-worker-2026')
-        return res.status(401).json({ error: 'Unauthorized' });
-
-      const { subdomain } = req.query;
-      if (!subdomain) return res.status(400).json({ error: 'subdomain é obrigatório.' });
-
-      const domain = await prisma.domain.findFirst({ where: { domainName: subdomain, status: 'ACTIVE' } });
-      if (!domain) return res.status(404).json({ error: 'Site não encontrado.' });
-
-      const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
-      if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
-
-      const smsLog = await prisma.smsLog.findFirst({
-        where: { clientId: client.id, status: { in: ['WAITING', 'RECEIVED'] } },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 24;
-
-      const html = buildLandingHtml({
-        razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
-        cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
-        bairro: client.bairro, cep: client.cep,
-        municipio: client.municipio, uf: client.uf, situacao: client.situacao,
-        atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-        email: client.email, smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
-        metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
-        forceTemplateIndex: fixedIndex,
-      });
-
-      res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-      return res.status(200).send(html);
     } catch (error) {
       return res.status(error.statusCode || 500).json({ error: error.message });
     }
