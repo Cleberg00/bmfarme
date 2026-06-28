@@ -370,11 +370,11 @@ module.exports = async function handler(req, res) {
     if (cfAccount === 'empresasverrificada' || cfAccount === 'zaplifydisparo') {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
-      // ── Wildcard verificaconta.com: sem Worker individual, sem Custom Domain ──
-      if (cfAccount === 'empresasverrificada' && chosenDomain === 'verificaconta.com') {
+      // ── Wildcard: sem Worker individual, sem Custom Domain ──
+      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificaativos.online')) {
         workerName = 'verificaconta-wildcard';
-        url = `https://${cleanSubdomain}.verificaconta.com`;
-        console.log(`[CF] Wildcard verificaconta.com — skip deploy, subdomain=${cleanSubdomain}`);
+        url = `https://${cleanSubdomain}.${chosenDomain}`;
+        console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
 
         // Cria TXT record pra verificação Meta via DNS
         try {
@@ -387,7 +387,12 @@ module.exports = async function handler(req, res) {
           if (cleanCode) {
             const axios = require('axios');
             const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
-            const zoneId = process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
+            const zoneIds = {
+              'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
+              'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
+              'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
+            };
+            const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
             if (zoneId) {
               // Cria A record proxied pro subdomínio (garante que DNS resolve mesmo com TXT)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
