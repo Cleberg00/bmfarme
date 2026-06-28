@@ -41,7 +41,8 @@ module.exports = async function handler(req, res) {
 
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : 0;
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + Math.floor(updatedSeed / 1000)) % 24;
+      const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 1000)) % 24;
 
       const html = buildLandingHtml({
         razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
