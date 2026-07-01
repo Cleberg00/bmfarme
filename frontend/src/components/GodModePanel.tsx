@@ -224,6 +224,23 @@ export default function GodModePanel() {
                   SMS: {smsCode}
                 </span>
               )}
+              {domainId && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const { data } = await api.put('/infra/deploy', { domainId });
+                      if (data.workerUrl) setWorkerUrl(data.workerUrl);
+                      alert('✅ Site republicado com dados atualizados!');
+                    } catch {
+                      alert('❌ Erro ao republicar site.');
+                    }
+                  }}
+                  className="rounded-full border border-orange-500/30 bg-orange-500/10 px-2 py-0.5 text-xs font-semibold text-orange-300 hover:bg-orange-500/20 transition"
+                >
+                  🔄 Republicar Site
+                </button>
+              )}
             </div>
           )}
 
