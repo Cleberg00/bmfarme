@@ -858,6 +858,23 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   </style>`;
   html = html.replace('</head>', cssOverride + '</head>');
 
+  // Injeta bloco de razão social explícito e óbvio logo após o <body> (pra IA da Meta identificar facilmente)
+  const razaoBlock = `<div id="empresa-info" style="width:100%;background:linear-gradient(90deg,#1e3a5f,#1a2e4a);border-bottom:3px solid #3b82f6;padding:16px 24px;font-family:Arial,sans-serif;box-sizing:border-box">
+    <div style="max-width:960px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;gap:16px">
+      <div>
+        <p style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#93c5fd;margin:0 0 3px">Razão Social</p>
+        <p style="font-size:1.25rem;font-weight:900;color:#ffffff;margin:0;letter-spacing:.3px">${razaoFmt}</p>
+      </div>
+      <div style="height:36px;width:1px;background:rgba(255,255,255,.15);flex-shrink:0"></div>
+      <div>
+        <p style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#93c5fd;margin:0 0 3px">CNPJ</p>
+        <p style="font-size:1rem;font-weight:700;color:#ffffff;font-family:'Courier New',monospace;margin:0">${esc(cnpjFmt)}</p>
+      </div>
+      ${phoneFmt ? `<div style="height:36px;width:1px;background:rgba(255,255,255,.15);flex-shrink:0"></div><div><p style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#93c5fd;margin:0 0 3px">WhatsApp</p><p style="font-size:1rem;font-weight:700;color:#ffffff;font-family:'Courier New',monospace;margin:0">${esc(phoneFmt)}</p></div>` : ''}
+    </div>
+  </div>`;
+  html = html.replace(/<body[^>]*>/, (m) => m + razaoBlock);
+
   // Injeta bloco de Privacidade/Termos antes de fechar o body
   html = html.replace('</body>', privacyTermsBlock + '</body>');
 
