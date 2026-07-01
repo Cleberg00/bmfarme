@@ -371,7 +371,7 @@ module.exports = async function handler(req, res) {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
       // ── Wildcard: sem Worker individual, sem Custom Domain ──
-      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online')) {
+      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificacontas.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online')) {
         workerName = 'verificaconta-wildcard';
         url = `https://${cleanSubdomain}.${chosenDomain}`;
         console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
@@ -392,6 +392,7 @@ module.exports = async function handler(req, res) {
               'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
               'verificativos.com': process.env.CLOUDFLARE_ZONE_VERIFICATIVOS,
               'ativoscontas.com': process.env.CLOUDFLARE_ZONE_ATIVOSCONTAS,
+              'verificacontas.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS,
               'verificametaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAMETAATIVOS,
               'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
             };
