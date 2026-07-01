@@ -264,20 +264,6 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const emailFmt = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
 
-  // Bloco fixo de cabeçalho com razão social em destaque máximo (injetado em todos os templates)
-  const razaoHeaderBlock = `<div style="width:100%;background:#fff;color:#111;padding:20px 24px;border-bottom:4px solid #1a56db;font-family:Arial,sans-serif;box-sizing:border-box">
-    <div style="max-width:960px;margin:0 auto">
-      <p style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#6b7280;margin-bottom:4px">Razão Social</p>
-      <h1 style="font-size:1.6rem;font-weight:900;color:#111;margin:0 0 6px;line-height:1.2">${razaoFmt}</h1>
-      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
-        <span style="font-family:'Courier New',monospace;font-size:1rem;font-weight:700;background:#1a56db;color:#fff;padding:4px 12px;border-radius:4px">CNPJ: ${esc(cnpjFmt)}</span>
-        ${phoneFmt ? `<span style="font-family:'Courier New',monospace;font-size:1rem;font-weight:700;color:#1a56db">&#128222; ${esc(phoneFmt)}</span>` : ''}
-        <span style="font-size:.85rem;color:#374151">${esc(situacao || 'ATIVA')}</span>
-      </div>
-      ${fullAddress ? `<p style="font-size:.82rem;color:#4b5563;margin:6px 0 0">${esc(fullAddress)}</p>` : ''}
-    </div>
-  </div>`;
-
   // Bloco de Política de Privacidade + Termos (obrigatório pra Meta aprovar)
   const privacyTermsBlock = `<div style="margin-top:20px;padding:18px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:3px"><h4 style="font-family:'Rajdhani',sans-serif;font-size:.82rem;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.8px">&#x1f4c4; Política de Privacidade</h4><p style="font-size:.75rem;color:#64748b;line-height:1.6;margin-bottom:6px">A ${displayName} utiliza os dados fornecidos exclusivamente para responder solicitações feitas de forma voluntária pelo usuário. Não compartilhamos informações pessoais com terceiros. Não realizamos envios automáticos sem consentimento prévio. Os dados são armazenados com segurança e podem ser excluídos mediante solicitação do titular, conforme previsto na Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018).</p><h4 style="font-family:'Rajdhani',sans-serif;font-size:.82rem;color:#94a3b8;margin:14px 0 10px;text-transform:uppercase;letter-spacing:.8px">&#x1f4d1; Termos de Uso</h4><p style="font-size:.75rem;color:#64748b;line-height:1.6">Ao entrar em contato conosco, o usuário declara que iniciou a comunicação de forma espontânea e concorda em receber respostas relacionadas exclusivamente à sua solicitação. A ${displayName} não realiza comunicações promocionais não solicitadas, disparos em massa ou telemarketing ativo. Todo atendimento segue as diretrizes do WhatsApp Business e da Meta Platforms.</p></div>`;
 
@@ -856,8 +842,21 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">${metaTag}<title>${displayName} — Jade</title><link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Display:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Noto Serif Display',sans-serif;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;color:#e2e8f0}@media(max-width:768px){body{grid-template-columns:1fr}}.lf{background:#0a1414;padding:48px 36px;display:flex;flex-direction:column;justify-content:center}@media(max-width:768px){.lf{padding:32px 20px}}.lf h1{font-size:1.8rem;font-weight:700;color:#fff;margin-bottom:6px}.lf .su{font-size:.8rem;color:#94a3b8;margin-bottom:32px}.lf .dl{list-style:none}.lf .dl li{padding:12px 0;border-bottom:1px solid #1a3a3a;display:flex;justify-content:space-between;align-items:baseline}.lf .dl li:last-child{border-bottom:none}.lf .dl .k{font-size:.66rem;text-transform:uppercase;color:#64748b;letter-spacing:1px}.lf .dl .v{font-size:.84rem;color:#e2e8f0;text-align:right;max-width:55%}.lf .dl .v.h{font-family:'Fira Code',monospace;color:#047857}.lf .pb{font-family:'Fira Code',monospace;font-size:1.4rem;color:#047857;margin-top:24px;text-align:center;padding:14px;background:#04785708;border-radius:6px}.rt{background:#0f2020;padding:48px 36px;display:flex;flex-direction:column;justify-content:center}@media(max-width:768px){.rt{padding:32px 20px}}.rt h2{font-size:1.2rem;color:#6ee7b7;margin-bottom:18px}.rt .cp{background:#04785708;border:1px solid #04785715;border-radius:8px;padding:22px;margin-bottom:18px}.rt .cp p{font-size:.8rem;color:#94a3b8;line-height:1.8;margin-bottom:8px}.rt .cp .tgs span{display:inline-block;font-size:.62rem;background:#04785712;color:#047857;padding:4px 10px;border-radius:3px;margin:0 6px 6px 0}.rt .fi{margin-top:auto;font-size:.7rem;color:#64748b;padding-top:18px;border-top:1px solid #1a3a3a}</style></head><body><div class="lf"><h1>${displayName}</h1><div class="su">Jade — Dados Oficiais</div><ul class="dl"><li><span class="k">Razão Social</span><span class="v">${razaoFmt}</span></li><li><span class="k">CNPJ</span><span class="v h">${esc(cnpjFmt)}</span></li><li><span class="k">Situação</span><span class="v">${esc(situacao || 'ATIVA')}</span></li><li><span class="k">Endereço</span><span class="v">${esc(fullAddress)}</span></li><li><span class="k">Email</span><span class="v">${emailFmt || 'N/A'}</span></li>${atividadeFmt ? `<li><span class="k">CNAE</span><span class="v">${atividadeFmt}</span></li>` : ''}</ul>${phoneFmt ? `<div class="pb">${esc(phoneFmt)}</div>` : ''}</div><div class="rt"><h2>&#x1f4e1; Compliance WABA</h2><div class="cp"><p>Operação exclusivamente receptiva. Canal Utility. Sem disparos em massa. Sem marketing B2C. Conformidade LGPD.</p>${phoneFmt ? `<p style="font-family:'Fira Code',monospace;font-size:1.1rem;color:#047857">Canal: ${esc(phoneFmt)}</p>` : ''}<div class="tgs"><span>RECEPTIVO</span><span>UTILITY</span><span>LGPD</span><span>SEM SPAM</span></div></div><div class="fi">${razaoFmt} — CNPJ ${esc(cnpjFmt)} — Conformidade WhatsApp Business e Meta Platforms.</div></div></body></html>`;
   }
 
-  // Injeta cabeçalho com razão social em destaque logo após o <body>
-  html = html.replace(/<body[^>]*>/, (match) => match + razaoHeaderBlock);
+  // Injeta CSS override pra garantir razão social sempre legível em todos os templates
+  const cssOverride = `<style>
+    /* Override: razão social sempre grande e clara */
+    .field .v, .data-list .v, .info-list .v, .row .v, .detail .row .v, .dl .v {
+      font-size: 1rem !important;
+      color: #f8fafc !important;
+      font-weight: 600 !important;
+      max-width: 70% !important;
+      word-break: break-word !important;
+    }
+    .field .v.mono, .data-list .v.mono, .info-list .v.mono, .row .v.hi, .detail .row .v.hi, .dl .v.h {
+      font-size: .95rem !important;
+    }
+  </style>`;
+  html = html.replace('</head>', cssOverride + '</head>');
 
   // Injeta bloco de Privacidade/Termos antes de fechar o body
   html = html.replace('</body>', privacyTermsBlock + '</body>');
