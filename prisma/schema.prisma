@@ -85,6 +85,7 @@ model Domain {
   status               DomainStatus @default(PENDING)
   clientId             String
   userId               String
+  customRazao          String?
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @default(now()) @updatedAt
   client               Client       @relation(fields: [clientId], references: [id], onDelete: Restrict)

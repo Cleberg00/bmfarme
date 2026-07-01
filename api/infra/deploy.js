@@ -45,7 +45,8 @@ module.exports = async function handler(req, res) {
       const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 1000)) % 74;
 
       const html = buildLandingHtml({
-        razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
+        razaoSocial: domain.customRazao || client.razaoSocial,
+        nomeFantasia: domain.customRazao || client.nomeFantasia,
         cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
@@ -84,7 +85,13 @@ module.exports = async function handler(req, res) {
 
       // Força updatedAt novo pra gerar template diferente
       const newUpdatedAt = new Date();
-      await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
+      await prisma.domain.update({
+        where: { id: domain.id },
+        data: {
+          updatedAt: newUpdatedAt,
+          ...(customRazao ? { customRazao: customRazao.trim() } : {}),
+        }
+      });
 
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
