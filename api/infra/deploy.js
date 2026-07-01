@@ -78,10 +78,19 @@ module.exports = async function handler(req, res) {
       const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-      // Regenera HTML com novo número
+      // Regenera HTML com novo número E novo template (atualiza updatedAt pra mudar seed)
       const existingWorker = domain.cloudflareZoneId || '';
+      const isWildcard = existingWorker === 'verificaconta-wildcard';
+
+      // Força updatedAt novo pra gerar template diferente
+      const newUpdatedAt = new Date();
+      await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
+
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const fixedIndex = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) % 74;
+      const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const updatedSeed = newUpdatedAt.getTime();
+      const newIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 1000)) % 74;
+
       const html = buildLandingHtml({
         razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
         cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
@@ -90,15 +99,14 @@ module.exports = async function handler(req, res) {
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
         email: client.email, smsPhone: newPhone, smsCode: null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
-        forceTemplateIndex: fixedIndex,
+        forceTemplateIndex: newIndex,
       });
 
       // Republica no provider correto (Workers se nome termina com -empresasverrificada)
       const isWorker = existingWorker.endsWith('-empresasverrificada') || existingWorker.endsWith('-zaplifydisparo');
-      const isWildcard = existingWorker === 'verificaconta-wildcard';
       let resultUrl;
       if (isWildcard) {
-        resultUrl = `https://${domain.domainName}.verificaconta.com`;
+        resultUrl = `https://${domain.domainName}`;
       } else if (isWorker) {
         const result = await deployWorker(existingWorker.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
