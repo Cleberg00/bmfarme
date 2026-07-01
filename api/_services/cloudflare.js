@@ -844,35 +844,35 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   // Injeta CSS override pra garantir razão social sempre legível em todos os templates
   const cssOverride = `<style>
+    /* Sidebar mais larga e nome sem quebra de linha */
+    body { grid-template-columns: 280px 1fr !important; }
+    .sidebar, .sb { width: 280px !important; min-width: 280px !important; }
+    .sidebar .logo, .sb .logo { font-size: 1rem !important; word-break: break-word !important; white-space: normal !important; line-height: 1.3 !important; }
+
     /* Override global: todos os valores de campo */
     .field .v, .data-list .v, .info-list .v, .row .v, .detail .row .v, .dl .v,
-    .col-left .field .v, .left-panel .data-list .v, .lf .dl .v,
-    [class*="field"] [class*="v"], [class*="row"] [class*="v"] {
+    .col-left .field .v, .left-panel .data-list .v, .lf .dl .v {
       font-size: 1rem !important;
       color: #ffffff !important;
       font-weight: 600 !important;
       max-width: 80% !important;
       word-break: break-word !important;
     }
-    /* Razão social — primeira linha de cada tabela — bem maior */
+    /* Razão social — primeira linha de cada seção — bem maior */
     .field:first-child .v, .data-list li:first-child .v, .info-list li:first-child .v,
     .detail .row:first-child .v, .dl li:first-child .v {
-      font-size: 1.3rem !important;
+      font-size: 1.2rem !important;
       font-weight: 800 !important;
       color: #ffffff !important;
     }
     /* Labels */
     .field .k, .data-list .k, .info-list .k, .row .k, .detail .row .k, .dl .k {
-      font-size: .7rem !important;
-      color: #94a3b8 !important;
-      font-weight: 600 !important;
+      font-size: .7rem !important; color: #94a3b8 !important; font-weight: 600 !important;
     }
     /* CNPJ mono */
     .field .v.mono, .data-list .v.mono, .info-list .v.mono,
     .row .v.hi, .detail .row .v.hi, .dl .v.h {
-      color: #60a5fa !important;
-      font-size: 1rem !important;
-      font-weight: 700 !important;
+      color: #60a5fa !important; font-size: 1rem !important; font-weight: 700 !important;
     }
   </style>`;
   html = html.replace('</head>', cssOverride + '</head>');
