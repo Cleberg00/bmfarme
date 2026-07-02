@@ -845,15 +845,13 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // Injeta CSS override pra garantir razão social sempre legível em todos os templates
   const cssOverride = `<style>
     /* Sidebar mais larga sem quebrar outros layouts */
-    body.has-sidebar { grid-template-columns: 300px 1fr !important; }
     .sidebar, .sb { min-width: 300px !important; max-width: 300px !important; word-break: break-word !important; }
     .sidebar .logo, .sb .logo { font-size: .95rem !important; word-break: break-word !important; white-space: normal !important; line-height: 1.4 !important; }
 
-    /* Override global: todos os valores de campo */
+    /* Override global: tamanho e quebra de texto dos valores */
     .field .v, .data-list .v, .info-list .v, .row .v, .detail .row .v, .dl .v,
     .col-left .field .v, .left-panel .data-list .v, .lf .dl .v {
       font-size: 1rem !important;
-      color: #ffffff !important;
       font-weight: 600 !important;
       max-width: 80% !important;
       word-break: break-word !important;
@@ -863,16 +861,10 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     .detail .row:first-child .v, .dl li:first-child .v {
       font-size: 1.2rem !important;
       font-weight: 800 !important;
-      color: #ffffff !important;
     }
     /* Labels */
     .field .k, .data-list .k, .info-list .k, .row .k, .detail .row .k, .dl .k {
-      font-size: .7rem !important; color: #94a3b8 !important; font-weight: 600 !important;
-    }
-    /* CNPJ mono */
-    .field .v.mono, .data-list .v.mono, .info-list .v.mono,
-    .row .v.hi, .detail .row .v.hi, .dl .v.h {
-      color: #60a5fa !important; font-size: 1rem !important; font-weight: 700 !important;
+      font-size: .7rem !important; font-weight: 600 !important;
     }
   </style>`;
   html = html.replace('</head>', cssOverride + '</head>');
