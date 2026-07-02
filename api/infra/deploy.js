@@ -387,7 +387,7 @@ module.exports = async function handler(req, res) {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
       // ── Wildcard: sem Worker individual, sem Custom Domain ──
-      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificacontas.com' || chosenDomain === 'zaplifyativos.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online' || chosenDomain === 'zaplifynegocios.com' || chosenDomain === 'zaplifytrabalho.com' || chosenDomain === 'centralativoss.com')) {
+      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificacontas.com' || chosenDomain === 'zaplifyativos.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online' || chosenDomain === 'zaplifynegocios.com' || chosenDomain === 'zaplifytrabalho.com' || chosenDomain === 'centralativoss.com' || chosenDomain === 'verificadapro1.com')) {
         workerName = 'verificaconta-wildcard';
         url = `https://${cleanSubdomain}.${chosenDomain}`;
         console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
@@ -415,6 +415,7 @@ module.exports = async function handler(req, res) {
               'zaplifynegocios.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYNEGOCIOS,
               'zaplifytrabalho.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYTRABALHO,
               'centralativoss.com': process.env.CLOUDFLARE_ZONE_CENTRALATIVOSS,
+              'verificadapro1.com': process.env.CLOUDFLARE_ZONE_VERIFICADAPRO1,
             };
             const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
             if (zoneId) {
