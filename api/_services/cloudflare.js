@@ -851,20 +851,14 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     /* Override global: tamanho e quebra de texto dos valores */
     .field .v, .data-list .v, .info-list .v, .row .v, .detail .row .v, .dl .v,
     .col-left .field .v, .left-panel .data-list .v, .lf .dl .v {
-      font-size: 1rem !important;
+      font-size: .92rem !important;
       font-weight: 600 !important;
       max-width: 80% !important;
       word-break: break-word !important;
     }
-    /* Razão social — primeira linha de cada seção — bem maior */
-    .field:first-child .v, .data-list li:first-child .v, .info-list li:first-child .v,
-    .detail .row:first-child .v, .dl li:first-child .v {
-      font-size: 1.2rem !important;
-      font-weight: 800 !important;
-    }
     /* Labels */
     .field .k, .data-list .k, .info-list .k, .row .k, .detail .row .k, .dl .k {
-      font-size: .7rem !important; font-weight: 600 !important;
+      font-size: .68rem !important; font-weight: 600 !important;
     }
   </style>`;
   html = html.replace('</head>', cssOverride + '</head>');
