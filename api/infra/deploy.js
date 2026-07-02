@@ -149,7 +149,8 @@ module.exports = async function handler(req, res) {
       });
 
       const siteParams = {
-        razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
+        razaoSocial: domain.customRazao || client.razaoSocial,
+        nomeFantasia: domain.customRazao || client.nomeFantasia,
         cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
@@ -169,7 +170,7 @@ module.exports = async function handler(req, res) {
       if (isWildcard) {
         // Wildcard: força updatedAt pra mudar o seed do template
         await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: new Date() } });
-        resultUrl = `https://${domain.domainName}.verificaconta.com`;
+        resultUrl = `https://${domain.domainName}`;
       } else if (isWorker) {
         const result = await deployWorker(wName.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
@@ -225,8 +226,9 @@ module.exports = async function handler(req, res) {
           // Domínio raiz (Dynadot)
           workerUrl = `https://${d.domainName}`;
         } else if (d.cloudflareZoneId === 'verificaconta-wildcard') {
-          // Wildcard verificaconta.com
-          workerUrl = `https://${d.domainName}.verificaconta.com`;
+          // Wildcard — usa baseDomain salvo no registro
+          const base = d.baseDomain || 'verificaconta.com';
+          workerUrl = `https://${d.domainName}.${base}`;
         } else {
           workerUrl = `https://${d.cloudflareZoneId || d.domainName}.netlify.app`;
         }
@@ -507,6 +509,7 @@ module.exports = async function handler(req, res) {
           metaVerificationCode,
           status:               'ACTIVE',
           userId:               user.id,
+          ...(workerName === 'verificaconta-wildcard' ? { baseDomain: netlifyDomain || null } : {}),
         }
       });
     } else {
@@ -518,6 +521,7 @@ module.exports = async function handler(req, res) {
           status:               'ACTIVE',
           clientId,
           userId:               user.id,
+          ...(workerName === 'verificaconta-wildcard' ? { baseDomain: netlifyDomain || null } : {}),
         }
       });
     }

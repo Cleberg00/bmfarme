@@ -86,6 +86,7 @@ model Domain {
   clientId             String
   userId               String
   customRazao          String?
+  baseDomain           String?
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @default(now()) @updatedAt
   client               Client       @relation(fields: [clientId], references: [id], onDelete: Restrict)
