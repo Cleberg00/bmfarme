@@ -42,11 +42,11 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const netlifyDomains = isRonaldo
     ? ['verificametaativos.com', 'centralativoss.com', 'verificadapro1.com', 'masterverificada.com', 'verificaperfilbm.com']
     : isAdmin
-    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifycontas.com', 'contaszaplify.com', 'farmezaplify.com', 'contasativas.com', 'zaplifybm.com.br']
+    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifycontas.com', 'contaszaplify.com', 'farmezaplify.com', 'contasativas.com', 'zaplifybm.com.br', 'verificaativos.com']
     : isMacumbinha
     ? ['contaszaplify.com', 'verificativos.com', 'ativoscontas.com', 'verificacontas.com']
     : isZaplify
-    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifybm.com']
+    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifybm.com', 'verificaativos.com']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
