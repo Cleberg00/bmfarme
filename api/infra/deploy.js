@@ -42,7 +42,8 @@ module.exports = async function handler(req, res) {
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : 0;
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 1000)) % 74;
+      // Usa milissegundos completos pra maximizar variação de índice
+      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,
@@ -96,7 +97,7 @@ module.exports = async function handler(req, res) {
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       const updatedSeed = newUpdatedAt.getTime();
-      const newIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 1000)) % 74;
+      const newIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
 
       const html = buildLandingHtml({
         razaoSocial: customRazao || client.razaoSocial, nomeFantasia: customRazao ? undefined : client.nomeFantasia,
@@ -168,9 +169,23 @@ module.exports = async function handler(req, res) {
       const isWildcard = wName === 'verificaconta-wildcard';
       let resultUrl;
       if (isWildcard) {
-        // Wildcard: força updatedAt pra mudar o seed do template
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: new Date() } });
-        resultUrl = `https://${domain.domainName}`;
+        // Wildcard: força updatedAt novo ANTES de gerar o HTML (pra seed ser diferente)
+        const newUpdatedAt = new Date();
+        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
+
+        // Recalcula índice com novo seed
+        const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
+        const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const newIndexPut = (cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeedPut + (newUpdatedAt.getTime() % 10000)) % 74;
+
+        // Gera HTML com novo índice
+        const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
+
+        const baseDom = domain.baseDomain || 'verificaconta.com';
+        resultUrl = `https://${domain.domainName}.${baseDom}`;
+        // HTML gerado mas não usado diretamente — worker serve do banco em tempo real
+        void htmlWildcard;
+      } else if (isWorker) {
       } else if (isWorker) {
         const result = await deployWorker(wName.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
