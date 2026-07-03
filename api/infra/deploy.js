@@ -40,12 +40,9 @@ module.exports = async function handler(req, res) {
       });
 
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : 0;
+      const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      // Usa templateIndex salvo no banco se existir, senão calcula
-      const fixedIndex = (domain.templateIndex !== null && domain.templateIndex !== undefined)
-        ? domain.templateIndex
-        : (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
+      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,
@@ -93,7 +90,6 @@ module.exports = async function handler(req, res) {
         where: { id: domain.id },
         data: {
           updatedAt: newUpdatedAt,
-          templateIndex: newIndex,
           ...(customRazao ? { customRazao: customRazao.trim() } : {}),
         }
       });
@@ -177,9 +173,8 @@ module.exports = async function handler(req, res) {
         const newUpdatedAt = new Date();
         await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
 
-        // Gera índice aleatório real e salva no banco
         const newIndexPut = Math.floor(Math.random() * 74);
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt, templateIndex: newIndexPut } });
+        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
 
         // Gera HTML com novo índice
         const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
