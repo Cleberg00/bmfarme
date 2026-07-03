@@ -42,8 +42,10 @@ module.exports = async function handler(req, res) {
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : 0;
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      // Usa milissegundos completos pra maximizar variação de índice
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
+      // Usa templateIndex salvo no banco se existir, senão calcula
+      const fixedIndex = (domain.templateIndex !== null && domain.templateIndex !== undefined)
+        ? domain.templateIndex
+        : (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,
@@ -86,10 +88,12 @@ module.exports = async function handler(req, res) {
 
       // Força updatedAt novo pra gerar template diferente
       const newUpdatedAt = new Date();
+      const newIndex = Math.floor(Math.random() * 74);
       await prisma.domain.update({
         where: { id: domain.id },
         data: {
           updatedAt: newUpdatedAt,
+          templateIndex: newIndex,
           ...(customRazao ? { customRazao: customRazao.trim() } : {}),
         }
       });
@@ -173,10 +177,9 @@ module.exports = async function handler(req, res) {
         const newUpdatedAt = new Date();
         await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
 
-        // Recalcula índice com novo seed
-        const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
-        const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-        const newIndexPut = (cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeedPut + (newUpdatedAt.getTime() % 10000)) % 74;
+        // Gera índice aleatório real e salva no banco
+        const newIndexPut = Math.floor(Math.random() * 74);
+        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt, templateIndex: newIndexPut } });
 
         // Gera HTML com novo índice
         const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
