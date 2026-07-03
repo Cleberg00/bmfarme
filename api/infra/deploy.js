@@ -59,7 +59,8 @@ module.exports = async function handler(req, res) {
       res.setHeader('Content-Type', 'text/html; charset=UTF-8');
       return res.status(200).send(html);
     } catch (error) {
-      return res.status(500).send('<html><body><h1>Erro interno</h1></body></html>');
+      console.error('[get_site] ERRO:', error?.message || error);
+      return res.status(500).send(`<html><body><h1>Erro interno</h1><p>${error?.message || ''}</p></body></html>`);
     }
   }
 
