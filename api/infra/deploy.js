@@ -86,7 +86,6 @@ module.exports = async function handler(req, res) {
 
       // Força updatedAt novo pra gerar template diferente
       const newUpdatedAt = new Date();
-      const newIndex = Math.floor(Math.random() * 74);
       await prisma.domain.update({
         where: { id: domain.id },
         data: {
