@@ -241,7 +241,7 @@ function slugify(razaoSocial) {
 function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, bairro, cep, municipio, uf, situacao, atividadePrincipal, telefone, email, smsPhone, smsCode, metaVerificationCode, verificationMethod, forceTemplateIndex }) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtCnpj(c) { const d=String(c||'').replace(/\D/g,''); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
-  function fmtCep(c) { const d=String(c||'').replace(/\D/g,''); return d.length===8 ? `${d.slice(0,2)}.${d.slice(2,5)}-${d.slice(5)}` : c; }
+  function fmtCep(c) { const d=String(c||'').replace(/\D/g,''); return d.length===8 ? `${d.slice(0,5)}-${d.slice(5)}` : c; }
   function fmtPhone(t) { if(!t) return ''; let n=String(t).replace(/\D/g,''); if(n.startsWith('55')&&n.length>=12) n=n.slice(2); if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; return t; }
   function cleanName(s) { return String(s||'').replace(/^[\d.\s-]+/,'').replace(/[\d.\s-]+$/,'').trim(); }
 
@@ -862,6 +862,10 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     }
   </style>`;
   html = html.replace('</head>', cssOverride + '</head>');
+
+  // Injeta meta tags OG com razão social para crawlers (Meta, Google, etc)
+  const ogTags = `<meta property="og:title" content="${razaoFmt}" /><meta property="og:description" content="${razaoFmt} — CNPJ ${esc(cnpjFmt)} — ${esc(situacao||'ATIVA')}" /><meta name="description" content="${razaoFmt}, CNPJ ${esc(cnpjFmt)}, ${esc(municipio||'')}/${esc(uf||'')}" /><meta name="keywords" content="${razaoFmt}, ${esc(cnpjFmt)}, empresa, CNPJ" />`;
+  html = html.replace(/<\/head>/i, ogTags + '</head>');
 
   // Injeta bloco de razão social com estilo variado por templateIndex (evita padrão detectável)
   const razaoStyles = [
