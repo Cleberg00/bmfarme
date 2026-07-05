@@ -44,7 +44,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     : isAdmin
     ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifycontas.com', 'contaszaplify.com', 'farmezaplify.com', 'contasativas.com', 'zaplifybm.com.br', 'verificaativos.com', 'contasativasbr.com', 'verificazapli.com', 'verificabm.com.br']
     : isMacumbinha
-    ? ['contaszaplify.com', 'contasativasfb.com', 'verificaperfil01.com', 'verificacontas.com.br', 'verificativos.com', 'ativoscontas.com', 'verificacontas.com']
+    ? ['verificabm.com.br']
     : isZaplify
     ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifybm.com', 'verificaativos.com', 'verificaperfil.com.br']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
