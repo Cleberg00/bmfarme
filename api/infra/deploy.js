@@ -402,7 +402,7 @@ module.exports = async function handler(req, res) {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
       // ── Wildcard: sem Worker individual, sem Custom Domain ──
-      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificacontas.com' || chosenDomain === 'zaplifyativos.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online' || chosenDomain === 'zaplifynegocios.com' || chosenDomain === 'zaplifytrabalho.com' || chosenDomain === 'centralativoss.com' || chosenDomain === 'verificadapro1.com' || chosenDomain === 'zaplifycontas.com' || chosenDomain === 'contaszaplify.com' || chosenDomain === 'masterverificada.com' || chosenDomain === 'farmezaplify.com' || chosenDomain === 'contasativas.com' || chosenDomain === 'verificaperfilbm.com' || chosenDomain === 'zaplifybm.com' || chosenDomain === 'zaplifybm.com.br' || chosenDomain === 'verificaativos.com' || chosenDomain === 'contasativasfb.com' || chosenDomain === 'contasativasbr.com' || chosenDomain === 'verificaperfil01.com' || chosenDomain === 'verificazapli.com' || chosenDomain === 'checkverifica.com.br' || chosenDomain === 'verificacontas.com.br')) {
+      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificacontas.com' || chosenDomain === 'zaplifyativos.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online' || chosenDomain === 'zaplifynegocios.com' || chosenDomain === 'zaplifytrabalho.com' || chosenDomain === 'centralativoss.com' || chosenDomain === 'verificadapro1.com' || chosenDomain === 'zaplifycontas.com' || chosenDomain === 'contaszaplify.com' || chosenDomain === 'masterverificada.com' || chosenDomain === 'farmezaplify.com' || chosenDomain === 'contasativas.com' || chosenDomain === 'verificaperfilbm.com' || chosenDomain === 'zaplifybm.com' || chosenDomain === 'zaplifybm.com.br' || chosenDomain === 'verificaativos.com' || chosenDomain === 'contasativasfb.com' || chosenDomain === 'contasativasbr.com' || chosenDomain === 'verificaperfil01.com' || chosenDomain === 'verificazapli.com' || chosenDomain === 'checkverifica.com.br' || chosenDomain === 'verificacontas.com.br' || chosenDomain === 'verificaperfil.com.br')) {
         workerName = 'verificaconta-wildcard';
         url = `https://${cleanSubdomain}.${chosenDomain}`;
         console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
@@ -446,6 +446,7 @@ module.exports = async function handler(req, res) {
               'verificazapli.com': process.env.CLOUDFLARE_ZONE_VERIFICAZAPLI,
               'checkverifica.com.br': process.env.CLOUDFLARE_ZONE_CHECKVERIFICA,
               'verificacontas.com.br': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS_BR,
+              'verificaperfil.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL_BR,
             };
             const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
             if (zoneId) {

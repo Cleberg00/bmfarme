@@ -46,7 +46,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     : isMacumbinha
     ? ['contaszaplify.com', 'contasativasfb.com', 'verificaperfil01.com', 'verificacontas.com.br', 'verificativos.com', 'ativoscontas.com', 'verificacontas.com']
     : isZaplify
-    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifybm.com', 'verificaativos.com']
+    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com', 'zaplifyativos.com', 'zaplifynegocios.com', 'zaplifytrabalho.com', 'zaplifybm.com', 'verificaativos.com', 'verificaperfil.com.br']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
