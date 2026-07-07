@@ -42,7 +42,8 @@ module.exports = async function handler(req, res) {
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
+      // Usa milissegundos truncados pra distribuir bem pelos 74 templates
+      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 13)) % 74;
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,

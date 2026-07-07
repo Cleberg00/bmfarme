@@ -269,7 +269,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   // Seleção de template: cicla sequencialmente por todos os 74 sem repetir
   // Usa timestamp em segundos % 74 pra distribuir melhor
-  const templateIndex = (typeof forceTemplateIndex === 'number') ? (forceTemplateIndex % 74) : (Math.floor(Date.now() / 1000) % 74);
+  const templateIndex = (typeof forceTemplateIndex === 'number') ? (forceTemplateIndex % 74) : (Math.floor(Date.now() / 13) % 74);
   console.log(`[buildLandingHtml] CNPJ=${cnpj} templateIndex=${templateIndex} forced=${typeof forceTemplateIndex === 'number'}`);
   let html = '';
 
