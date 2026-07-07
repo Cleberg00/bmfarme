@@ -46,7 +46,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     : isMacumbinha
     ? ['verificabm.com.br', 'zaplifyverifica.com.br']
     : isZaplify
-    ? ['zaplifyativos.com.br']
+    ? ['zaplifyativos.com.br', 'verificaperfil.com.br']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
