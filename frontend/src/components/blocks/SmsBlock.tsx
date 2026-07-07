@@ -59,6 +59,7 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
     setConfirmed(false);
     setStartTime(null);
     setElapsed(0);
+    setGeneratedPhone(null);
     lastDeliveredCodeRef.current = null;
     try {
       const { data } = await api.post('/sms/generate', { clientId, provider });
