@@ -85,20 +85,22 @@ module.exports = async function handler(req, res) {
       const existingWorker = domain.cloudflareZoneId || '';
       const isWildcard = existingWorker === 'verificaconta-wildcard';
 
-      // Força updatedAt novo pra gerar template diferente
-      const newUpdatedAt = new Date();
+      // Força updatedAt calculado para gerar template aleatório real
+      const newIndex = Math.floor(Math.random() * 74);
+      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
+      const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const cnpjSum = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0);
+      const neededTs = (newIndex - ((cnpjSum + nameSeed) % 74) + 74) % 74;
+      const fakeTs = new Date(neededTs * 13 + 1);
       await prisma.domain.update({
         where: { id: domain.id },
         data: {
-          updatedAt: newUpdatedAt,
+          updatedAt: fakeTs,
           ...(customRazao ? { customRazao: customRazao.trim() } : {}),
         }
       });
 
-      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const updatedSeed = newUpdatedAt.getTime();
-      const newIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + (updatedSeed % 10000)) % 74;
+      const updatedSeed = fakeTs.getTime();
 
       const html = buildLandingHtml({
         razaoSocial: customRazao || client.razaoSocial, nomeFantasia: customRazao ? undefined : client.nomeFantasia,
@@ -170,12 +172,16 @@ module.exports = async function handler(req, res) {
       const isWildcard = wName === 'verificaconta-wildcard';
       let resultUrl;
       if (isWildcard) {
-        // Wildcard: força updatedAt novo ANTES de gerar o HTML (pra seed ser diferente)
-        const newUpdatedAt = new Date();
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
-
+        // Wildcard: gera índice aleatório e salva updatedAt engenheirado pra produzir esse índice
         const newIndexPut = Math.floor(Math.random() * 74);
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: newUpdatedAt } });
+        const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
+        const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+        const cnpjSum = cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0);
+        // Calcula timestamp que produz o índice desejado
+        const baseVal = cnpjSum + nameSeedPut;
+        const neededTs = (newIndexPut - (baseVal % 74) + 74) % 74;
+        const fakeTimestamp = new Date(neededTs * 13 + 1);
+        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp } });
 
         // Gera HTML com novo índice
         const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
@@ -184,7 +190,6 @@ module.exports = async function handler(req, res) {
         resultUrl = `https://${domain.domainName}.${baseDom}`;
         // HTML gerado mas não usado diretamente — worker serve do banco em tempo real
         void htmlWildcard;
-      } else if (isWorker) {
       } else if (isWorker) {
         const result = await deployWorker(wName.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
