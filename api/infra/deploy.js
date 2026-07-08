@@ -118,7 +118,31 @@ module.exports = async function handler(req, res) {
       const isWorker = existingWorker.endsWith('-empresasverrificada') || existingWorker.endsWith('-zaplifydisparo');
       let resultUrl;
       if (isWildcard) {
-        resultUrl = `https://${domain.domainName}`;
+        // Para wildcard: salva o novo número atualizando o smsLog mais recente
+        // (o worker serve o HTML em tempo real buscando do smsLog)
+        if (newPhone) {
+          const existingSmsLog = await prisma.smsLog.findFirst({
+            where: { clientId: client.id },
+            orderBy: { createdAt: 'desc' },
+          });
+          if (existingSmsLog) {
+            await prisma.smsLog.update({
+              where: { id: existingSmsLog.id },
+              data: { phoneNumber: newPhone },
+            });
+          } else {
+            await prisma.smsLog.create({
+              data: {
+                clientId: client.id,
+                phoneNumber: newPhone,
+                status: 'WAITING',
+                smsCode: null,
+              },
+            });
+          }
+        }
+        const baseDom = domain.baseDomain || 'verificaconta.com';
+        resultUrl = `https://${domain.domainName}.${baseDom}`;
       } else if (isWorker) {
         const result = await deployWorker(existingWorker.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
