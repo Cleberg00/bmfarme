@@ -105,7 +105,7 @@ DADOS DA EMPRESA (inclua TODOS com labels visíveis):
 
 OBRIGATÓRIO incluir:
 1. Todos os dados acima com labels claros
-2. Seção WABA: "Canal de atendimento receptivo para regularização financeira e renegociação de débitos. Canal Utility. Sem disparos. Conformidade LGPD."
+2. Seção WABA: "Canal de atendimento receptivo para suporte ao cliente e esclarecimentos ao cliente. Canal Utility. Sem disparos. Conformidade LGPD."
 3. Telefone ${phone} em destaque grande (monospace, 1.3rem+)
 4. Privacidade: "Dados exclusivos para solicitações voluntárias. Não compartilhamos com terceiros. LGPD Lei 13.709/2018."
 5. Termos: "Comunicação espontânea. Sem promoções não solicitadas. Diretrizes WhatsApp Business e Meta."
@@ -272,7 +272,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const ogTags = '<meta property="og:type" content="website" />'+
     '<meta property="og:title" content="'+razaoFmt+'" />'+
     '<meta property="og:site_name" content="'+razaoFmt+'" />'+
-    '<meta property="og:description" content="'+razaoFmt+' — CNPJ '+cnpjFmt+'. Empresa registrada, canal oficial de atendimento." />'+
+    '<meta property="og:description" content="'+razaoFmt+' — CNPJ '+cnpjFmt+'. Empresa registrada, canal oficial de atendimento receptivo." />'+
     '<meta name="description" content="'+razaoFmt+' — CNPJ '+cnpjFmt+'. Empresa regularmente constituída." />'+
     '<meta name="author" content="'+razaoFmt+'" />'+
     '<meta name="company" content="'+razaoFmt+'" />';
@@ -280,17 +280,17 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const vi = templateIndex % 5;
 
   const _sobreV = [
-    function(n){ return '<strong style="color:inherit">'+n+'</strong> atua com transparência e responsabilidade, mantendo canal oficial de atendimento via WhatsApp Business para regularização financeira e renegociação de débitos, conforme políticas da Meta Platforms.'; },
-    function(n){ return 'A empresa <strong style="color:inherit">'+n+'</strong> oferece atendimento receptivo especializado em renegociação de dívidas e regularização cadastral, operando dentro das diretrizes da Meta e LGPD.'; },
-    function(n){ return '<strong style="color:inherit">'+n+'</strong> é empresa regularmente constituída, com canal WhatsApp Business para atendimento de clientes em processos de acordos, cobranças e regularização financeira.'; },
-    function(n){ return 'Empresa <strong style="color:inherit">'+n+'</strong>, devidamente registrada e em operação regular, mantém canal oficial de comunicação via WhatsApp para suporte receptivo em renegociações de dívidas.'; },
-    function(n){ return '<strong style="color:inherit">'+n+'</strong> mantém operações regulares de atendimento ao cliente para renegociação de débitos e esclarecimentos financeiros, sempre por iniciativa do próprio usuário.'; },
+    function(n){ return '<strong style="color:inherit">'+n+'</strong> atua com transparência e responsabilidade, mantendo canal oficial de atendimento via WhatsApp Business para suporte ao cliente e esclarecimentos ao cliente, conforme políticas da Meta Platforms.'; },
+    function(n){ return 'A empresa <strong style="color:inherit">'+n+'</strong> oferece atendimento receptivo especializado em esclarecimentos ao cliente suporte informativo, operando dentro das diretrizes da Meta e LGPD.'; },
+    function(n){ return '<strong style="color:inherit">'+n+'</strong> é empresa regularmente constituída, com canal WhatsApp Business para atendimento de clientes em processos de esclarecimentos, informações e suporte.'; },
+    function(n){ return 'Empresa <strong style="color:inherit">'+n+'</strong>, devidamente registrada e em operação regular, mantém canal oficial de comunicação via WhatsApp para suporte receptivo em esclarecimentos ao cliente.'; },
+    function(n){ return '<strong style="color:inherit">'+n+'</strong> mantém operações regulares de atendimento ao cliente para esclarecimentos ao cliente e esclarecimentos financeiros, sempre por iniciativa do próprio usuário.'; },
   ];
   const _atendV = [
     ['O contato é sempre iniciado pelo cliente.','Respondemos mensagens nos canais oficiais.','Sem disparos ou contatos não solicitados.','Conformidade com WhatsApp Business e Meta.'],
     ['Atendimento exclusivamente receptivo.','Apenas mensagens iniciadas pelo usuário.','Sem listas compradas ou contatos aleatórios.','Diretrizes WhatsApp Business e Meta Platforms.'],
-    ['Cliente sempre inicia o contato.','Canal para renegociações e acordos financeiros.','Sem spam ou comunicações não solicitadas.','Conformidade LGPD e Meta Platforms.'],
-    ['Atendemos apenas solicitações recebidas.','Foco em regularização financeira receptiva.','Não utilizamos bases de terceiros.','Seguimos todas as diretrizes da Meta.'],
+    ['Cliente sempre inicia o contato.','Canal para esclarecimentos e suporte.','Sem spam ou comunicações não solicitadas.','Conformidade LGPD e Meta Platforms.'],
+    ['Atendemos apenas solicitações recebidas.','Foco em suporte e atendimento receptivo.','Não utilizamos bases de terceiros.','Seguimos todas as diretrizes da Meta.'],
     ['Comunicação exclusivamente receptiva.','Respondemos apenas canais oficiais.','Sem telemarketing ativo ou disparos.','Conforme políticas WhatsApp Business.'],
   ];
   const _privV = [
@@ -422,7 +422,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // Sidebar comum (A e C)
   function sidebar(ac, hb) {
     const bgCard = hb || 'rgba(255,255,255,.05)';
-    return (phoneFmt?'<div class="scard"><div class="st">Canal de Atendimento</div><div class="ph">'+phoneFmt+'</div><p class="sp">Atendimento receptivo para regularização financeira e renegociação de débitos.</p></div>':'')+
+    return (phoneFmt?'<div class="scard"><div class="st">Canal de Atendimento</div><div class="ph">'+phoneFmt+'</div><p class="sp">Atendimento receptivo para suporte ao cliente e esclarecimentos ao cliente.</p></div>':'')+
       '<div class="scard"><div class="st">Identificação Fiscal</div>'+
       '<div class="si"><div class="sil">Razão Social</div><div class="siv">'+razaoFmt+'</div></div>'+
       '<div class="si"><div class="sil">CNPJ</div><div class="siv" style="font-family:monospace;color:'+ac+'">'+cnpjFmt+'</div></div>'+
@@ -534,7 +534,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="hero"><div class="hed">'+p.lbl+' — EDIÇÃO ESPECIAL</div><div class="hname2">'+razaoFmt+'</div><div class="hsub">'+p.sub+'</div></div>'+
       '<div class="wrap"><div id="dados">'+
       '<div class="intro"><h3>Empresa '+razaoFmt+'<br>Registrada e em Operação Regular</h3>'+
-      '<p>'+razaoFmt+', inscrita no CNPJ sob o número '+cnpjFmt+', encontra-se em situação ativa junto aos órgãos competentes. Mantém canal oficial de comunicação via WhatsApp Business para atendimento de clientes em renegociação, cobrança e regularização financeira, em conformidade com as políticas da Meta Platforms.</p></div>'+
+      '<p>'+razaoFmt+', inscrita no CNPJ sob o número '+cnpjFmt+', encontra-se em situação ativa junto aos órgãos competentes. Mantém canal oficial de comunicação via WhatsApp Business para atendimento de clientes em esclarecimentos, e suporte ao cliente, em conformidade com as políticas da Meta Platforms.</p></div>'+
       '<table><thead><tr><th>Campo</th><th>Informação</th></tr></thead><tbody>'+
       '<tr><td class="lbl">Razão Social</td><td class="val rs">'+razaoFmt+'</td></tr>'+
       '<tr><td class="lbl">CNPJ</td><td class="val ac">'+cnpjFmt+'</td></tr>'+
@@ -549,7 +549,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="sec2" id="termos"><h2>Termos de Uso</h2><p>'+term+'</p></div>'+
       '</div><div>'+
       (phoneFmt?'<div class="scard2"><div class="st2">Canal Oficial</div><div class="ph2">'+phoneFmt+'</div><p class="sp2">Atendimento receptivo via WhatsApp Business. Canal Utility verificado.</p></div>':'')+
-      '<div class="scard2"><div class="st2">Compliance WABA</div><p class="sp2">Canal destinado ao atendimento de clientes para acordos, renegociação e regularização financeira. Sem disparos. LGPD.</p></div>'+
+      '<div class="scard2"><div class="st2">Compliance WABA</div><p class="sp2">Canal destinado ao atendimento de clientes para acordos, esclarecimentos e suporte ao cliente. Sem disparos. LGPD.</p></div>'+
       '<div class="scard2"><div class="st2">Identificação</div>'+
       '<div class="si2"><div class="sil2">Razão Social</div><div class="siv2">'+razaoFmt+'</div></div>'+
       '<div class="si2"><div class="sil2">CNPJ</div><div class="siv2" style="font-family:monospace;color:'+p.ac+'">'+cnpjFmt+'</div></div>'+
@@ -609,7 +609,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="banner"><div class="blbl">RAZÃO SOCIAL DA EMPRESA</div><div class="btitle">CNPJ: '+cnpjFmt+'</div><div class="bname">'+razaoFmt+'</div><div class="bcnpj">CNPJ: '+cnpjFmt+'</div><div class="bstatus">SITUAÇÃO: '+situacaoFmt+'</div></div>'+
       '<div class="wrap"><div id="dados"><div class="panel"><div class="ptitle">Dados Cadastrais</div>'+dataGrid(p.ac)+'</div>'+textSections(p.ac)+'</div>'+
       '<div>'+
-      (phoneFmt?'<div class="scard"><div class="st">Canal de Atendimento</div><div class="ph">'+phoneFmt+'</div><p class="sp">Atendimento receptivo para regularização financeira e renegociação de débitos.</p></div>':'')+
+      (phoneFmt?'<div class="scard"><div class="st">Canal de Atendimento</div><div class="ph">'+phoneFmt+'</div><p class="sp">Atendimento receptivo para suporte ao cliente e esclarecimentos ao cliente.</p></div>':'')+
       '<div class="scard"><div class="st">Identificação</div>'+
       '<div class="si"><div class="sil">Razão Social</div><div class="siv">'+razaoFmt+'</div></div>'+
       '<div class="si"><div class="sil">CNPJ</div><div class="siv" style="font-family:monospace;color:'+p.ac+'">'+cnpjFmt+'</div></div>'+
