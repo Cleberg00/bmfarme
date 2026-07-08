@@ -268,6 +268,15 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const templateIndex = (typeof forceTemplateIndex === 'number') ? (forceTemplateIndex % 74) : (Math.floor(Date.now() / 13) % 74);
   console.log('[buildLandingHtml] CNPJ='+cnpj+' templateIndex='+templateIndex+' forced='+(typeof forceTemplateIndex === 'number'));
 
+  // Open Graph + meta tags adicionais para o crawler da Meta encontrar a razão social
+  const ogTags = '<meta property="og:type" content="website" />'+
+    '<meta property="og:title" content="'+razaoFmt+'" />'+
+    '<meta property="og:site_name" content="'+razaoFmt+'" />'+
+    '<meta property="og:description" content="'+razaoFmt+' — CNPJ '+cnpjFmt+'. Empresa registrada, canal oficial de atendimento." />'+
+    '<meta name="description" content="'+razaoFmt+' — CNPJ '+cnpjFmt+'. Empresa regularmente constituída." />'+
+    '<meta name="author" content="'+razaoFmt+'" />'+
+    '<meta name="company" content="'+razaoFmt+'" />';
+
   const vi = templateIndex % 5;
 
   const _sobreV = [
@@ -470,7 +479,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.si{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}.si:last-child{border-bottom:none}.sil{font-size:7px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:2px;letter-spacing:.8px}.siv{font-size:11px;color:#e2e8f0;font-weight:600}'+
       '.fbar{background:'+p.nb+';border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.45);text-align:center;padding:16px 22px;font-size:10px;line-height:1.9}.fbar a{color:rgba(255,255,255,.3);text-decoration:none}.fbar strong{color:rgba(255,255,255,.75)}';
 
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
       '<nav><div class="nlogo">'+razaoFmt+'</div><div class="ninfo"><span class="ncnpj">'+cnpjFmt+'</span>'+(phoneFmt?'<span class="nphone">'+phoneFmt+'</span>':'')+'</div></nav>'+
       '<div class="nav2"><span class="n2l">'+p.lbl+'</span><div class="n2r"><a href="#dados">Dados</a><a href="#sobre">Sobre</a><a href="#atendimento">Atendimento</a><a href="#privacidade">Privacidade</a><a href="#termos">Termos</a></div></div>'+
       '<div class="hero"><div class="badge">EMPRESA REGISTRADA</div><h1>'+razaoFmt+'</h1><div class="hmeta">CNPJ: '+cnpjFmt+'</div><div class="hstatus">SITUAÇÃO: '+situacaoFmt+'</div></div>'+
@@ -518,7 +527,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.si2{padding:7px 0;border-bottom:1px solid #f3f4f6}.si2:last-child{border-bottom:none}.sil2{font-size:7px;text-transform:uppercase;color:#9ca3af;margin-bottom:2px;letter-spacing:.8px}.siv2{font-size:11px;color:#374151;font-weight:600}'+
       'footer{background:'+p.hb+';color:rgba(255,255,255,.55);text-align:center;padding:14px 22px;font-size:10px;line-height:1.9;font-family:Arial,sans-serif}footer a{color:rgba(255,255,255,.35);text-decoration:none}footer strong{color:rgba(255,255,255,.8)}';
 
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
       '<header><div><div class="hlbl">'+p.lbl+'</div><div class="hname">'+razaoFmt+'</div></div>'+
       '<div class="hright"><span class="hcnpj">'+cnpjFmt+'</span>'+(phoneFmt?'<span class="hphone">'+phoneFmt+'</span>':'')+'</div></header>'+
       '<nav><span class="nname">'+razaoFmt+'</span><div class="nlinks"><a href="#dados">Dados</a><a href="#sobre">Sobre</a><a href="#atendimento">Atendimento</a><a href="#privacidade">Privacidade</a></div></nav>'+
@@ -593,7 +602,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.si{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}.si:last-child{border-bottom:none}.sil{font-size:7px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:2px;letter-spacing:.8px}.siv{font-size:11px;color:#e2e8f0;font-weight:600}'+
       'footer{background:'+p.hb+';border-top:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);text-align:center;padding:14px 22px;font-size:10px;line-height:1.9}footer a{color:rgba(255,255,255,.3);text-decoration:none}footer strong{color:rgba(255,255,255,.8)}';
 
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
       '<header><div><div class="hlbl">'+p.lbl+'</div><div class="hname">'+razaoFmt+'</div></div>'+
       '<div class="hright"><span class="hcnpj">'+cnpjFmt+'</span>'+(phoneFmt?'<span class="hphone">'+phoneFmt+'</span>':'')+'</div></header>'+
       '<nav><span class="nname2">'+razaoFmt+'</span><div class="nlinks2"><a href="#dados">Dados</a><a href="#sobre">Sobre</a><a href="#atendimento">Atendimento</a><a href="#privacidade">Privacidade</a></div><span class="ncnpj2">'+cnpjFmt+'</span></nav>'+
