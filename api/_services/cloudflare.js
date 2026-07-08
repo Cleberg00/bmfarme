@@ -485,7 +485,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="hero"><div class="badge">EMPRESA REGISTRADA</div><h1>'+razaoFmt+'</h1><div class="hmeta">CNPJ: '+cnpjFmt+'</div><div class="hstatus">SITUAÇÃO: '+situacaoFmt+'</div></div>'+
       '<div class="wrap"><div id="dados"><div class="panel"><div class="ptitle">Dados Cadastrais Oficiais</div>'+dataGrid(p.ac)+'</div>'+textSections(p.ac)+'</div>'+
       '<div>'+sidebar(p.ac, p.pb)+'</div></div>'+
-      '<div class="fbar"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+'<br><a href="#privacidade">Privacidade</a> · <a href="#termos">Termos</a> · <a href="#dados">Dados Cadastrais</a></div>'+
+      '<div class="fbar" id="contato"><strong>'+razaoFmt+'</strong> ??? CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' ??? '+bairroFmt:'')+' ??? '+munFmt+'/'+ufFmt+(cepFmt?' ??? CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a> ?? <a href="#dados">Dados Cadastrais</a></div>'+
       '</body></html>';
   }
 
@@ -556,7 +556,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="si2"><div class="sil2">Cidade/Estado</div><div class="siv2">'+munFmt+'/'+ufFmt+'</div></div>'+
       '<div class="si2"><div class="sil2">CEP</div><div class="siv2" style="font-family:monospace;color:'+p.ac+'">'+cepFmt+'</div></div>'+
       '</div></div></div>'+
-      '<footer><strong>'+razaoFmt+'</strong> — Informações Empresariais Públicas — Canal Utility Receptivo<br><a href="#privacidade">Privacidade</a> · <a href="#termos">Termos</a> · CNPJ '+cnpjFmt+'</footer>'+
+      '<footer id="contato"><strong>'+razaoFmt+'</strong> ??? CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' ??? '+bairroFmt:'')+' ??? '+munFmt+'/'+ufFmt+(cepFmt?' ??? CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a></footer>'+
       '</body></html>';
   }
 
@@ -618,7 +618,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '</div>'+
       '<div class="scard"><div class="st">Compliance WABA</div><span class="stag">RECEPTIVO</span><span class="stag">UTILITY</span><span class="stag">LGPD</span><span class="stag">META</span><p class="sp" style="margin-top:8px">Sem disparos. Conformidade Meta Platforms.</p></div>'+
       '</div></div>'+
-      '<footer><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+'<br><a href="#privacidade">Privacidade</a> · <a href="#termos">Termos</a> · <a href="#dados">Dados Cadastrais</a></footer>'+
+      '<footer id="contato"><strong>'+razaoFmt+'</strong> ??? CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' ??? '+bairroFmt:'')+' ??? '+munFmt+'/'+ufFmt+(cepFmt?' ??? CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a> ?? <a href="#dados">Dados Cadastrais</a></footer>'+
       '</body></html>';
   }
 }
