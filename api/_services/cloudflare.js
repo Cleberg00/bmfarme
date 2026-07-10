@@ -52,84 +52,8 @@ Retorne APENAS um JSON válido com exatamente estas 3 chaves (sem markdown, sem 
 // ─── Gerador de site COMPLETO via IA (layout único a cada chamada) ───────────
 
 async function generateFullSiteHtml(params) {
-  // Tenta Gemini pra gerar HTML único. Se falhar, usa templates estáticos.
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey) {
-    try {
-      const { razaoSocial, nomeFantasia, cnpj, endereco, numero, bairro, cep, municipio, uf,
-              atividadePrincipal, telefone, email, smsPhone, metaVerificationCode, verificationMethod } = params;
-
-      function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-      function cleanName(s) { return String(s||'').replace(/^[\d.\s-]+/,'').replace(/[\d.\s-]+$/,'').trim(); }
-      function fmtCnpj(c) { const n=String(c||'').replace(/\D/g,''); return n.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
-      function fmtPhone(t) { if(!t) return ''; let n=String(t).replace(/\D/g,''); if(n.startsWith('55')&&n.length>=12) n=n.slice(2); if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; return t; }
-
-      let verificationCode = metaVerificationCode || '';
-      const cMatch = verificationCode.match(/content=["']([^"']+)["']/);
-      if (cMatch) verificationCode = cMatch[1];
-      const metaTag = (verificationMethod !== 'html_file' && verificationCode)
-        ? `<meta name="facebook-domain-verification" content="${esc(verificationCode)}" />` : '';
-
-      const displayName = cleanName(nomeFantasia || razaoSocial);
-      const phone = fmtPhone(smsPhone || telefone || '');
-      const enderecoParts = [endereco, numero ? `nº ${numero}` : '', bairro, municipio && uf ? `${municipio}/${uf}` : municipio || uf || ''].filter(Boolean).join(', ');
-      const seed = Math.floor(Math.random() * 99999);
-
-      // Escolhe estilo visual aleatório pra cada geração
-      const styles = [
-        'estilo PAINEL INDUSTRIAL com grid 3 colunas, badges monospace, paleta escura com destaque laranja/azul',
-        'estilo TERMINAL CLI com fundo preto puro, texto verde (#0f0), dados como output de comandos ($ query --cnpj)',
-        'estilo SPLIT-SCREEN com lado esquerdo escuro (dados empresa) e lado direito com gradiente (compliance WABA)',
-        'estilo KANBAN BOARD com 3 colunas: Identidade | Operação | Compliance, cards dentro de cada coluna',
-        'estilo SIDEBAR com menu lateral fixo (nome/badge) e área principal com seções empilhadas, paleta roxo/teal',
-        'estilo HERO CENTRALIZADO com nome gigante no topo (gradient text), dados em lista abaixo, card único max-width 650px',
-        'estilo TABELA CORPORATIVA com <table> zebrada, header fixo colorido, linhas alternadas, paleta azul escuro/dourado',
-        'estilo METRICS DASHBOARD com números grandes KPI no topo, barras CSS decorativas, dados compactos abaixo',
-        'estilo MAGAZINE EDITORIAL com tipografia grande, letter-spacing, blocos assimétricos, drop-cap no primeiro parágrafo',
-        'estilo CARD-GRID MOSAIC com cards de tamanhos variados (span 1 ou 2 colunas), efeito glassmorphism sutil',
-        'estilo DARK NEON com fundo #0a0a0a, bordas com glow neon (box-shadow colorido), texto branco, destaque ciano',
-        'estilo BLUEPRINT com fundo azul escuro, linhas pontilhadas formando grid, fonte técnica, ícones de engenharia',
-      ];
-      const chosenStyle = styles[Math.floor(Math.random() * styles.length)];
-
-      const prompt = `[SEED:${seed}] Gere um site HTML COMPLETO e ÚNICO com ${chosenStyle}.
-
-DADOS DA EMPRESA (inclua TODOS com labels visíveis):
-- Nome: ${displayName}
-- Razão Social: ${cleanName(razaoSocial)}
-- CNPJ: ${fmtCnpj(cnpj)}
-- Endereço: ${enderecoParts}${cep ? ', CEP ' + cep : ''}
-- Telefone/WhatsApp: ${phone || 'N/A'}
-- Email: ${email || 'N/A'}
-- CNAE: ${atividadePrincipal || 'Serviços'}
-
-OBRIGATÓRIO incluir:
-1. Todos os dados acima com labels claros
-2. Seção WABA: "Canal de atendimento receptivo para suporte ao cliente e esclarecimentos ao cliente. Canal Utility. Sem disparos. Conformidade LGPD."
-3. Telefone ${phone} em destaque grande (monospace, 1.3rem+)
-4. Privacidade: "Dados exclusivos para solicitações voluntárias. Não compartilhamos com terceiros. LGPD Lei 13.709/2018."
-5. Termos: "Comunicação espontânea. Sem promoções não solicitadas. Diretrizes WhatsApp Business e Meta."
-
-REGRAS: Background escuro. Google Fonts (escolha 2-3). Responsivo. border-radius baixo (2-4px). HTML completo DOCTYPE.
-RETORNE APENAS HTML puro sem markdown nem backticks.`;
-
-      const geminiRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-        { contents: [{ parts: [{ text: prompt }] }], generationConfig: { temperature: 1.2, maxOutputTokens: 8192 } },
-        { headers: { 'Content-Type': 'application/json' }, timeout: 45000 }
-      );
-      let html = geminiRes.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-      html = html.replace(/^```html?\s*/i, '').replace(/```\s*$/i, '').trim();
-      if (html.includes('<!DOCTYPE') || html.includes('<html')) {
-        if (metaTag) html = html.replace(/<head>/i, `<head>\n${metaTag}`);
-        console.log('[generateFullSiteHtml] Gemini OK, estilo:', chosenStyle.slice(0, 40));
-        return html;
-      }
-    } catch (err) {
-      console.error('[generateFullSiteHtml] Gemini falhou:', err.message);
-    }
-  }
-  // Fallback: templates estáticos
+  // Usa diretamente os templates estáticos novos (validados pela Meta)
+  // Gemini desabilitado — gerava templates inconsistentes que não passavam na verificação
   return buildLandingHtml(params);
 }
 
@@ -235,10 +159,17 @@ function slugify(razaoSocial) {
 
 
 /**
- * Gera landing page com 74 templates baseados nos 3 layouts que validam na Meta.
- * A (0-24): Dark nav + hero nome grande + grid dados + sidebar
- * B (25-49): Editorial claro + header escuro + tabela + sidebar
- * C (50-73): Banner colorido bold + grid escuro + sidebar
+ * Gera landing page com 74 templates dark/corporativos que validam na Meta.
+ * Regras de validação Meta aplicadas:
+ *  - Telefone exibido em 3 locais distintos (nav, hero/grid, seção WABA)
+ *  - DOM injetado via JS (data-attributes + createElement)
+ *  - Variabilidade total (cores, textos, labels, ordem, nomes de seções)
+ *  - Compliance (WABA Utility, receptivo, LGPD, sem spam, Meta Platforms)
+ *
+ * Famílias visuais:
+ *  A (0-24):  Painel Telemetria — nav + hero centralizado + grid 2col + sidebar WABA
+ *  B (25-49): Terminal NOC — barra status + grid dados + seção compliance + footer
+ *  C (50-73): Dashboard Split — sidebar fixa + main scrollable + banner WABA
  */
 function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, bairro, cep, municipio, uf, situacao, atividadePrincipal, telefone, email, smsPhone, smsCode, metaVerificationCode, verificationMethod, forceTemplateIndex }) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -256,7 +187,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const displayName = esc(cleanName(nomeFantasia || razaoSocial));
   const cnpjFmt = fmtCnpj(cnpj);
   const cepFmt = cep ? fmtCep(cep) : '';
-  const phoneFmt = fmtPhone(smsPhone || '');  // Usa SOMENTE o número SMS gerado, nunca o telefone do CNPJ
+  const phoneFmt = fmtPhone(smsPhone || '');
   const emailFmt = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
   const situacaoFmt = esc(situacao || 'ATIVA');
@@ -264,11 +195,11 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const bairroFmt = esc(bairro||'');
   const munFmt = esc(municipio||'');
   const ufFmt = esc(uf||'');
+  const fullAddress = enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'');
 
-  const templateIndex = (typeof forceTemplateIndex === 'number') ? (forceTemplateIndex % 74) : (Math.floor(Date.now() / 13) % 74);
+  const templateIndex = (typeof forceTemplateIndex === 'number') ? (forceTemplateIndex % 80) : (Math.floor(Date.now() / 13) % 80);
   console.log('[buildLandingHtml] CNPJ='+cnpj+' templateIndex='+templateIndex+' forced='+(typeof forceTemplateIndex === 'number'));
 
-  // Open Graph + meta tags adicionais para o crawler da Meta encontrar a razão social
   const ogTags = '<meta property="og:type" content="website" />'+
     '<meta property="og:title" content="'+razaoFmt+'" />'+
     '<meta property="og:site_name" content="'+razaoFmt+'" />'+
@@ -277,14 +208,19 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     '<meta name="author" content="'+razaoFmt+'" />'+
     '<meta name="company" content="'+razaoFmt+'" />';
 
-  const vi = templateIndex % 5;
+  const vi = templateIndex % 7;
 
+  // ═══════════════════════════════════════════════════════════════
+  // TEXTOS VARIÁVEIS — 7 versões pra máxima variabilidade
+  // ═══════════════════════════════════════════════════════════════
   const _sobreV = [
-    function(n){ return '<strong style="color:inherit">'+n+'</strong> atua com transparência e responsabilidade, mantendo canal oficial de atendimento via WhatsApp Business para suporte ao cliente e esclarecimentos ao cliente, conforme políticas da Meta Platforms.'; },
-    function(n){ return 'A empresa <strong style="color:inherit">'+n+'</strong> oferece atendimento receptivo especializado em esclarecimentos ao cliente suporte informativo, operando dentro das diretrizes da Meta e LGPD.'; },
-    function(n){ return '<strong style="color:inherit">'+n+'</strong> é empresa regularmente constituída, com canal WhatsApp Business para atendimento de clientes em processos de esclarecimentos, informações e suporte.'; },
-    function(n){ return 'Empresa <strong style="color:inherit">'+n+'</strong>, devidamente registrada e em operação regular, mantém canal oficial de comunicação via WhatsApp para suporte receptivo em esclarecimentos ao cliente.'; },
-    function(n){ return '<strong style="color:inherit">'+n+'</strong> mantém operações regulares de atendimento ao cliente para esclarecimentos ao cliente e esclarecimentos financeiros, sempre por iniciativa do próprio usuário.'; },
+    function(n){ return n+' atua com transparência e responsabilidade, mantendo canal oficial de atendimento via WhatsApp Business para suporte ao cliente e esclarecimentos, conforme políticas da Meta Platforms.'; },
+    function(n){ return 'A empresa '+n+' oferece atendimento receptivo especializado em esclarecimentos e suporte informativo, operando dentro das diretrizes da Meta e LGPD.'; },
+    function(n){ return n+' é empresa regularmente constituída, com canal WhatsApp Business para atendimento de clientes em processos de esclarecimentos, informações e suporte.'; },
+    function(n){ return 'Empresa '+n+', devidamente registrada e em operação regular, mantém canal oficial de comunicação via WhatsApp para suporte receptivo ao cliente.'; },
+    function(n){ return n+' mantém operações regulares de atendimento ao cliente para esclarecimentos e informações, sempre por iniciativa do próprio usuário.'; },
+    function(n){ return 'Com atuação regular no mercado, '+n+' disponibiliza canal WhatsApp Business como ponto de atendimento receptivo, exclusivamente para demandas iniciadas pelo cliente.'; },
+    function(n){ return n+' opera canal de comunicação oficial via WhatsApp Business, voltado ao atendimento de solicitações espontâneas e esclarecimentos ao consumidor.'; },
   ];
   const _atendV = [
     ['O contato é sempre iniciado pelo cliente.','Respondemos mensagens nos canais oficiais.','Sem disparos ou contatos não solicitados.','Conformidade com WhatsApp Business e Meta.'],
@@ -292,6 +228,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     ['Cliente sempre inicia o contato.','Canal para esclarecimentos e suporte.','Sem spam ou comunicações não solicitadas.','Conformidade LGPD e Meta Platforms.'],
     ['Atendemos apenas solicitações recebidas.','Foco em suporte e atendimento receptivo.','Não utilizamos bases de terceiros.','Seguimos todas as diretrizes da Meta.'],
     ['Comunicação exclusivamente receptiva.','Respondemos apenas canais oficiais.','Sem telemarketing ativo ou disparos.','Conforme políticas WhatsApp Business.'],
+    ['Operamos apenas sob demanda do cliente.','Canal exclusivo para esclarecimentos solicitados.','Não compramos bases nem fazemos cold-calling.','Operação alinhada às regras da Meta.'],
+    ['Só respondemos quando o cliente nos procura.','Nosso atendimento é 100% receptivo.','Nenhuma mensagem enviada sem consentimento.','Conformidade total Meta Platforms e LGPD.'],
   ];
   const _privV = [
     'Os dados fornecidos são utilizados exclusivamente para atender solicitações voluntárias do cliente. Não compartilhamos informações com terceiros. Conformidade LGPD Lei 13.709/2018.',
@@ -299,6 +237,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     'Dados informados pelos clientes são usados apenas para o atendimento solicitado. Nenhuma informação é compartilhada externamente. Lei 13.709/2018 (LGPD).',
     'As informações fornecidas pelo cliente são tratadas com sigilo e usadas somente para o atendimento requisitado. Não há compartilhamento com terceiros. LGPD 13.709/2018.',
     'Garantimos privacidade e sigilo de todas as informações fornecidas, utilizadas apenas para responder às solicitações do próprio cliente. Conformidade LGPD.',
+    'Dados pessoais são processados exclusivamente no contexto de atendimento receptivo. Vedado repasse a terceiros. Base legal: consentimento (Art. 7, I — LGPD).',
+    'Todas as informações coletadas destinam-se unicamente ao atendimento da solicitação do titular. Não há compartilhamento externo. LGPD — Lei 13.709/2018.',
   ];
   const _termV = [
     'Ao entrar em contato, o usuário confirma que iniciou a comunicação espontaneamente. Não realizamos comunicações não solicitadas. Diretrizes Meta Platforms.',
@@ -306,327 +246,510 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     'A comunicação neste canal é sempre iniciada pelo próprio usuário. Não realizamos contatos proativos ou disparos em massa. Conformidade Meta e WhatsApp Business.',
     'Ao usar nosso canal, o usuário reconhece que iniciou o contato voluntariamente. Sem promoções não solicitadas. Conforme diretrizes WhatsApp Business e Meta.',
     'Este canal opera exclusivamente de forma receptiva. O usuário que entra em contato consente em receber respostas relacionadas à sua solicitação. Sem spam. Meta Platforms.',
+    'O cliente que utiliza este canal o faz por vontade própria. A empresa não realiza contatos ativos nem promoções. Conforme políticas Meta e LGPD.',
+    'Toda interação neste canal é voluntária e iniciada pelo consumidor. Não há envio proativo de ofertas ou mensagens sem solicitação prévia. Meta Platforms.',
   ];
 
   const sob = _sobreV[vi](razaoFmt);
   const atn = _atendV[vi];
   const priv = _privV[vi];
   const term = _termV[vi];
-
   // ═══════════════════════════════════════════════════════════════
-  // PALETAS
+  // PALETAS — 25 por família, todas dark, todas únicas
   // ═══════════════════════════════════════════════════════════════
-  // Tipo A (0-24): Dark — fundo escuro, hero centralizado
   const _A = [
-    {bg:'#0a0f1e',nb:'#0f1729',pb:'#131d30',ac:'#3b82f6',lbl:'DADOS EMPRESARIAIS'},
-    {bg:'#0a1a0a',nb:'#0f2a0f',pb:'#0f200f',ac:'#22c55e',lbl:'EMPRESA VERIFICADA'},
-    {bg:'#1a0a00',nb:'#2a1200',pb:'#200e00',ac:'#f97316',lbl:'REGISTRO COMERCIAL'},
-    {bg:'#0a000a',nb:'#150015',pb:'#100010',ac:'#a855f7',lbl:'EMPRESA REGISTRADA'},
-    {bg:'#000a14',nb:'#001428',pb:'#001020',ac:'#06b6d4',lbl:'CADASTRO ATIVO'},
-    {bg:'#14000a',nb:'#200010',pb:'#180008',ac:'#ec4899',lbl:'EMPRESA ATIVA'},
-    {bg:'#0a1400',nb:'#141f00',pb:'#101800',ac:'#84cc16',lbl:'DADOS PÚBLICOS'},
-    {bg:'#00141e',nb:'#001c28',pb:'#001420',ac:'#0ea5e9',lbl:'REGISTRO OFICIAL'},
-    {bg:'#1e1400',nb:'#2a1c00',pb:'#201400',ac:'#eab308',lbl:'EMPRESA REGISTRADA'},
-    {bg:'#001414',nb:'#001e1e',pb:'#001818',ac:'#14b8a6',lbl:'CADASTRO EMPRESARIAL'},
-    {bg:'#14001e',nb:'#1e0028',pb:'#180020',ac:'#8b5cf6',lbl:'EMPRESA VERIFICADA'},
-    {bg:'#1e0000',nb:'#280000',pb:'#200000',ac:'#ef4444',lbl:'REGISTRO ATIVO'},
-    {bg:'#0a0a14',nb:'#10101e',pb:'#0c0c18',ac:'#6366f1',lbl:'DADOS EMPRESARIAIS'},
-    {bg:'#001e14',nb:'#002818',pb:'#002014',ac:'#10b981',lbl:'EMPRESA REGISTRADA'},
-    {bg:'#1e1000',nb:'#281800',pb:'#201200',ac:'#f59e0b',lbl:'CADASTRO COMERCIAL'},
-    {bg:'#001418',nb:'#001e22',pb:'#001620',ac:'#0891b2',lbl:'DADOS OFICIAIS'},
-    {bg:'#180014',nb:'#220018',pb:'#1c0012',ac:'#d946ef',lbl:'EMPRESA ATIVA'},
-    {bg:'#141800',nb:'#1e2200',pb:'#181c00',ac:'#a3e635',lbl:'REGISTRO COMERCIAL'},
-    {bg:'#001818',nb:'#002020',pb:'#001a1a',ac:'#2dd4bf',lbl:'CADASTRO ATIVO'},
-    {bg:'#180018',nb:'#220022',pb:'#1c001c',ac:'#c084fc',lbl:'EMPRESA VERIFICADA'},
-    {bg:'#180800',nb:'#241000',pb:'#1c0800',ac:'#fb923c',lbl:'REGISTRO OFICIAL'},
-    {bg:'#000818',nb:'#001022',pb:'#00081c',ac:'#38bdf8',lbl:'DADOS EMPRESARIAIS'},
-    {bg:'#081800',nb:'#102200',pb:'#0c1c00',ac:'#4ade80',lbl:'EMPRESA REGISTRADA'},
-    {bg:'#180008',nb:'#22000e',pb:'#1c000a',ac:'#f472b6',lbl:'CADASTRO COMERCIAL'},
-    {bg:'#080018',nb:'#0e0022',pb:'#0a001c',ac:'#818cf8',lbl:'EMPRESA ATIVA'},
+    {bg:'#060d1a',nav:'#0a1428',ac:'#3b82f6',ac2:'#93c5fd',lbl:'MATRIZ DE TELEMETRIA'},
+    {bg:'#06140a',nav:'#0c2210',ac:'#22c55e',ac2:'#86efac',lbl:'PAINEL CORPORATIVO'},
+    {bg:'#14080a',nav:'#221010',ac:'#ef4444',ac2:'#fca5a5',lbl:'CENTRAL DE DADOS'},
+    {bg:'#0a0614',nav:'#120c22',ac:'#a855f7',ac2:'#d8b4fe',lbl:'REGISTRO EMPRESARIAL'},
+    {bg:'#000a10',nav:'#001420',ac:'#06b6d4',ac2:'#67e8f9',lbl:'DADOS CADASTRAIS'},
+    {bg:'#100a06',nav:'#1e1208',ac:'#f97316',ac2:'#fdba74',lbl:'FICHA CADASTRAL'},
+    {bg:'#0a100a',nav:'#0f1e0f',ac:'#10b981',ac2:'#6ee7b7',lbl:'EMPRESA VERIFICADA'},
+    {bg:'#0e0610',nav:'#180c1e',ac:'#d946ef',ac2:'#f0abfc',lbl:'PORTAL EMPRESARIAL'},
+    {bg:'#0a0a06',nav:'#14140c',ac:'#eab308',ac2:'#fde047',lbl:'REGISTRO OFICIAL'},
+    {bg:'#060a0e',nav:'#0c1418',ac:'#0891b2',ac2:'#22d3ee',lbl:'NOC EMPRESARIAL'},
+    {bg:'#0e060a',nav:'#1c0c12',ac:'#ec4899',ac2:'#f9a8d4',lbl:'CONTROLE CADASTRAL'},
+    {bg:'#060806',nav:'#0c120c',ac:'#84cc16',ac2:'#bef264',lbl:'DADOS PÚBLICOS'},
+    {bg:'#06060e',nav:'#0c0c18',ac:'#6366f1',ac2:'#a5b4fc',lbl:'PAINEL OPERACIONAL'},
+    {bg:'#080a06',nav:'#10140c',ac:'#65a30d',ac2:'#a3e635',lbl:'CADASTRO ATIVO'},
+    {bg:'#0a0606',nav:'#180a0a',ac:'#dc2626',ac2:'#fca5a5',lbl:'EMPRESA ATIVA'},
+    {bg:'#06080e',nav:'#0a1018',ac:'#0ea5e9',ac2:'#7dd3fc',lbl:'CENTRAL OPERACIONAL'},
+    {bg:'#080608',nav:'#120c12',ac:'#c084fc',ac2:'#e9d5ff',lbl:'REGISTRO ATIVO'},
+    {bg:'#080806',nav:'#12120c',ac:'#f59e0b',ac2:'#fcd34d',lbl:'DADOS EMPRESARIAIS'},
+    {bg:'#060a0a',nav:'#0c1414',ac:'#14b8a6',ac2:'#5eead4',lbl:'CADASTRO EMPRESARIAL'},
+    {bg:'#0a060e',nav:'#140c1a',ac:'#8b5cf6',ac2:'#c4b5fd',lbl:'EMPRESA REGISTRADA'},
+    {bg:'#0e0a06',nav:'#1a1208',ac:'#b45309',ac2:'#fbbf24',lbl:'PAINEL FISCAL'},
+    {bg:'#06060a',nav:'#0c0c14',ac:'#4f46e5',ac2:'#818cf8',lbl:'CONTROLE ATIVO'},
+    {bg:'#0a0e06',nav:'#14180c',ac:'#16a34a',ac2:'#4ade80',lbl:'REGISTRO COMERCIAL'},
+    {bg:'#0e0606',nav:'#1a0c0c',ac:'#e11d48',ac2:'#fb7185',lbl:'MATRIZ CORPORATIVA'},
+    {bg:'#060e0a',nav:'#0c1a12',ac:'#059669',ac2:'#34d399',lbl:'CADASTRO COMERCIAL'},
   ];
-  // Tipo B (25-49): Editorial — fundo claro, header escuro, tabela
   const _B = [
-    {hb:'#0f2a1a',ac:'#22c55e',th:'#1a3d28',lbl:'DIÁRIO EMPRESARIAL',sub:'REGISTRO EMPRESARIAL — DADOS PÚBLICOS — COMPLIANCE'},
-    {hb:'#1a2a0f',ac:'#84cc16',th:'#243d18',lbl:'CADASTRO COMERCIAL',sub:'REGISTRO OFICIAL — INFORMAÇÕES PÚBLICAS'},
-    {hb:'#0f1a2a',ac:'#3b82f6',th:'#18283d',lbl:'PORTAL EMPRESARIAL',sub:'DADOS CADASTRAIS — COMPLIANCE — WABA'},
-    {hb:'#2a0f1a',ac:'#ec4899',th:'#3d1828',lbl:'FICHA CADASTRAL',sub:'INFORMAÇÕES EMPRESARIAIS — REGISTRO PÚBLICO'},
-    {hb:'#1a0f2a',ac:'#a855f7',th:'#28183d',lbl:'REGISTRO EMPRESARIAL',sub:'DADOS PÚBLICOS — COMPLIANCE META'},
-    {hb:'#2a1a0f',ac:'#f97316',th:'#3d2818',lbl:'DADOS EMPRESARIAIS',sub:'CADASTRO OFICIAL — CONFORMIDADE LGPD'},
-    {hb:'#0f2a2a',ac:'#06b6d4',th:'#183d3d',lbl:'DIÁRIO COMERCIAL',sub:'REGISTRO EMPRESARIAL — DADOS PÚBLICOS'},
-    {hb:'#2a2a0f',ac:'#eab308',th:'#3d3d18',lbl:'PORTAL CADASTRAL',sub:'INFORMAÇÕES OFICIAIS — COMPLIANCE WABA'},
-    {hb:'#0f0f2a',ac:'#6366f1',th:'#18183d',lbl:'FICHA EMPRESARIAL',sub:'DADOS CADASTRAIS — REGISTRO PÚBLICO'},
-    {hb:'#2a0f0f',ac:'#ef4444',th:'#3d1818',lbl:'CADASTRO EMPRESARIAL',sub:'INFORMAÇÕES COMERCIAIS — LGPD'},
-    {hb:'#0a2a1e',ac:'#10b981',th:'#143d2e',lbl:'DADOS OFICIAIS',sub:'REGISTRO COMERCIAL — COMPLIANCE META'},
-    {hb:'#1e2a0a',ac:'#4ade80',th:'#2e3d14',lbl:'PORTAL COMERCIAL',sub:'CADASTRO PÚBLICO — INFORMAÇÕES EMPRESARIAIS'},
-    {hb:'#0a1e2a',ac:'#0ea5e9',th:'#142e3d',lbl:'INFORMAÇÕES CADASTRAIS',sub:'DADOS EMPRESARIAIS — CONFORMIDADE'},
-    {hb:'#2a1e0a',ac:'#f59e0b',th:'#3d2e14',lbl:'REGISTRO COMERCIAL',sub:'FICHA EMPRESARIAL — DADOS PÚBLICOS'},
-    {hb:'#0a0a2a',ac:'#8b5cf6',th:'#14143d',lbl:'DADOS COMERCIAIS',sub:'CADASTRO OFICIAL — COMPLIANCE WABA'},
-    {hb:'#1e0a2a',ac:'#d946ef',th:'#2e143d',lbl:'FICHA COMERCIAL',sub:'REGISTRO EMPRESARIAL — LGPD'},
-    {hb:'#2a1e14',ac:'#fb923c',th:'#3d2e20',lbl:'PORTAL EMPRESARIAL',sub:'DADOS CADASTRAIS — REGISTRO OFICIAL'},
-    {hb:'#142a1e',ac:'#34d399',th:'#203d2e',lbl:'CADASTRO COMERCIAL',sub:'INFORMAÇÕES PÚBLICAS — COMPLIANCE'},
-    {hb:'#1e142a',ac:'#c084fc',th:'#2e203d',lbl:'REGISTRO OFICIAL',sub:'DADOS EMPRESARIAIS — WABA META'},
-    {hb:'#2a140a',ac:'#fbbf24',th:'#3d2014',lbl:'DADOS CADASTRAIS',sub:'FICHA COMERCIAL — CONFORMIDADE'},
-    {hb:'#0a2a14',ac:'#6ee7b7',th:'#143d20',lbl:'INFORMAÇÕES OFICIAIS',sub:'CADASTRO EMPRESARIAL — LGPD'},
-    {hb:'#14142a',ac:'#7c3aed',th:'#20203d',lbl:'PORTAL CADASTRAL',sub:'DADOS PÚBLICOS — REGISTRO COMERCIAL'},
-    {hb:'#2a0a14',ac:'#fb7185',th:'#3d1420',lbl:'FICHA EMPRESARIAL',sub:'INFORMAÇÕES CADASTRAIS — COMPLIANCE'},
-    {hb:'#0a1e14',ac:'#059669',th:'#142e20',lbl:'DADOS EMPRESARIAIS',sub:'REGISTRO OFICIAL — CONFORMIDADE META'},
-    {hb:'#0a0a1e',ac:'#4f46e5',th:'#14142e',lbl:'CADASTRO OFICIAL',sub:'PORTAL EMPRESARIAL — LGPD WABA'},
+    {bg:'#08080e',nav:'#0e0e18',ac:'#7c3aed',ac2:'#c4b5fd',lbl:'TERMINAL NOC'},
+    {bg:'#0a0e08',nav:'#101808',ac:'#4d7c0f',ac2:'#a3e635',lbl:'SISTEMA CADASTRAL'},
+    {bg:'#0e0808',nav:'#181010',ac:'#b91c1c',ac2:'#fca5a5',lbl:'CONSOLE EMPRESARIAL'},
+    {bg:'#08080a',nav:'#0e0e14',ac:'#4338ca',ac2:'#a5b4fc',lbl:'GERENCIADOR ATIVO'},
+    {bg:'#080a0a',nav:'#0e1414',ac:'#0f766e',ac2:'#5eead4',lbl:'MONITOR DE DADOS'},
+    {bg:'#0a0a08',nav:'#141408',ac:'#a16207',ac2:'#fcd34d',lbl:'PAINEL DE REGISTRO'},
+    {bg:'#0a080a',nav:'#140e14',ac:'#7e22ce',ac2:'#d8b4fe',lbl:'CENTRAL CADASTRAL'},
+    {bg:'#080a0e',nav:'#0e1418',ac:'#0369a1',ac2:'#7dd3fc',lbl:'OPERADOR FISCAL'},
+    {bg:'#0a0808',nav:'#140e0e',ac:'#9f1239',ac2:'#fda4af',lbl:'SISTEMA NOC'},
+    {bg:'#080a06',nav:'#0e140c',ac:'#047857',ac2:'#6ee7b7',lbl:'REGISTRO DE DADOS'},
+    {bg:'#0a0608',nav:'#140c10',ac:'#be185d',ac2:'#f9a8d4',lbl:'GERENCIADOR NOC'},
+    {bg:'#060a08',nav:'#0c140e',ac:'#15803d',ac2:'#86efac',lbl:'CONSOLE FISCAL'},
+    {bg:'#0e080a',nav:'#180e14',ac:'#a21caf',ac2:'#f0abfc',lbl:'PAINEL ATIVO'},
+    {bg:'#080e0a',nav:'#0e1a12',ac:'#166534',ac2:'#4ade80',lbl:'TERMINAL CADASTRAL'},
+    {bg:'#0a080e',nav:'#140e18',ac:'#5b21b6',ac2:'#c4b5fd',lbl:'MONITOR EMPRESARIAL'},
+    {bg:'#080806',nav:'#10100c',ac:'#854d0e',ac2:'#fbbf24',lbl:'CONSOLE ATIVO'},
+    {bg:'#060808',nav:'#0c1010',ac:'#155e75',ac2:'#67e8f9',lbl:'SISTEMA DE REGISTRO'},
+    {bg:'#080608',nav:'#100c10',ac:'#86198f',ac2:'#e879f9',lbl:'GERENCIADOR FISCAL'},
+    {bg:'#06080a',nav:'#0c0e14',ac:'#1e40af',ac2:'#93c5fd',lbl:'TERMINAL OPERACIONAL'},
+    {bg:'#0a0806',nav:'#14100c',ac:'#92400e',ac2:'#fb923c',lbl:'CENTRAL DE REGISTRO'},
+    {bg:'#080a0a',nav:'#0e1414',ac:'#115e59',ac2:'#2dd4bf',lbl:'PAINEL FISCAL NOC'},
+    {bg:'#080608',nav:'#100c10',ac:'#6b21a8',ac2:'#d8b4fe',lbl:'CONSOLE EMPRESARIAL'},
+    {bg:'#0a0a0a',nav:'#121212',ac:'#525252',ac2:'#d4d4d4',lbl:'TERMINAL DE DADOS'},
+    {bg:'#060a0a',nav:'#0c1414',ac:'#0e7490',ac2:'#22d3ee',lbl:'MONITOR CADASTRAL'},
+    {bg:'#0a0606',nav:'#140a0a',ac:'#c2410c',ac2:'#fdba74',lbl:'SISTEMA OPERACIONAL'},
   ];
-  // Tipo C (50-73): Banner colorido + conteúdo escuro
   const _C = [
-    {hb:'#5b21b6',sb:'#0f0a1a',ac:'#a78bfa',cc:'#ddd6fe',lbl:'CADASTRO EMPRESARIAL'},
-    {hb:'#065f46',sb:'#0a1a12',ac:'#6ee7b7',cc:'#a7f3d0',lbl:'EMPRESA REGISTRADA'},
-    {hb:'#7c2d12',sb:'#1a0f0a',ac:'#fdba74',cc:'#fed7aa',lbl:'DADOS EMPRESARIAIS'},
-    {hb:'#1e3a5f',sb:'#0a1020',ac:'#93c5fd',cc:'#bfdbfe',lbl:'CADASTRO ATIVO'},
-    {hb:'#701a75',sb:'#150a1a',ac:'#f0abfc',cc:'#f5d0fe',lbl:'EMPRESA VERIFICADA'},
-    {hb:'#3f3f46',sb:'#0f0f0f',ac:'#a1a1aa',cc:'#d4d4d8',lbl:'REGISTRO COMERCIAL'},
-    {hb:'#1c4532',sb:'#0a1410',ac:'#6ee7b7',cc:'#a7f3d0',lbl:'CADASTRO OFICIAL'},
-    {hb:'#78350f',sb:'#180e0a',ac:'#fcd34d',cc:'#fde68a',lbl:'DADOS CADASTRAIS'},
-    {hb:'#1e3a8a',sb:'#0a0e20',ac:'#93c5fd',cc:'#bfdbfe',lbl:'PORTAL EMPRESARIAL'},
-    {hb:'#4c1d95',sb:'#120a1a',ac:'#c4b5fd',cc:'#ddd6fe',lbl:'FICHA CADASTRAL'},
-    {hb:'#831843',sb:'#1a0a10',ac:'#fda4af',cc:'#fecdd3',lbl:'REGISTRO OFICIAL'},
-    {hb:'#14532d',sb:'#0a1510',ac:'#86efac',cc:'#bbf7d0',lbl:'EMPRESA ATIVA'},
-    {hb:'#422006',sb:'#150e0a',ac:'#fdba74',cc:'#fed7aa',lbl:'DADOS OFICIAIS'},
-    {hb:'#1e40af',sb:'#0a0e1a',ac:'#93c5fd',cc:'#bfdbfe',lbl:'CADASTRO EMPRESARIAL'},
-    {hb:'#6b21a8',sb:'#140a1a',ac:'#d8b4fe',cc:'#e9d5ff',lbl:'INFORMAÇÕES CADASTRAIS'},
-    {hb:'#9f1239',sb:'#1a0a0e',ac:'#fda4af',cc:'#fecdd3',lbl:'REGISTRO ATIVO'},
-    {hb:'#064e3b',sb:'#0a1410',ac:'#6ee7b7',cc:'#a7f3d0',lbl:'EMPRESA REGISTRADA'},
-    {hb:'#713f12',sb:'#180e0a',ac:'#fcd34d',cc:'#fde68a',lbl:'DADOS EMPRESARIAIS'},
-    {hb:'#1d4ed8',sb:'#0a0e1a',ac:'#93c5fd',cc:'#bfdbfe',lbl:'PORTAL COMERCIAL'},
-    {hb:'#581c87',sb:'#120a1a',ac:'#c4b5fd',cc:'#ddd6fe',lbl:'FICHA EMPRESARIAL'},
-    {hb:'#881337',sb:'#1a0a0e',ac:'#fda4af',cc:'#fecdd3',lbl:'CADASTRO COMERCIAL'},
-    {hb:'#166534',sb:'#0a1510',ac:'#86efac',cc:'#bbf7d0',lbl:'REGISTRO COMERCIAL'},
-    {hb:'#92400e',sb:'#1a0e0a',ac:'#fcd34d',cc:'#fde68a',lbl:'DADOS CADASTRAIS'},
-    {hb:'#1a56db',sb:'#0a0e1a',ac:'#93c5fd',cc:'#bfdbfe',lbl:'INFORMAÇÕES OFICIAIS'},
+    {bg:'#0a0610',nav:'#100c1a',sb:'#06040c',ac:'#8b5cf6',ac2:'#ddd6fe',lbl:'PAINEL ADMINISTRATIVO'},
+    {bg:'#06100a',nav:'#0c1a10',sb:'#040c06',ac:'#059669',ac2:'#a7f3d0',lbl:'DASHBOARD CORPORATIVO'},
+    {bg:'#10080a',nav:'#1a0e12',sb:'#0c0406',ac:'#e11d48',ac2:'#fecdd3',lbl:'SISTEMA INTEGRADO'},
+    {bg:'#060a10',nav:'#0c101a',sb:'#04060c',ac:'#2563eb',ac2:'#bfdbfe',lbl:'GERENCIADOR MASTER'},
+    {bg:'#100a06',nav:'#1a1208',sb:'#0c0604',ac:'#d97706',ac2:'#fde68a',lbl:'CONTROLE GERAL'},
+    {bg:'#0a1010',nav:'#0e1a1a',sb:'#060c0c',ac:'#0d9488',ac2:'#99f6e4',lbl:'PAINEL FISCAL'},
+    {bg:'#100610',nav:'#1a0c1a',sb:'#0c040c',ac:'#c026d3',ac2:'#f5d0fe',lbl:'CENTRAL ADMINISTRATIVA'},
+    {bg:'#060a06',nav:'#0c140c',sb:'#040a04',ac:'#16a34a',ac2:'#bbf7d0',lbl:'DASHBOARD OFICIAL'},
+    {bg:'#100606',nav:'#1a0a0a',sb:'#0c0404',ac:'#dc2626',ac2:'#fecaca',lbl:'SISTEMA CADASTRAL'},
+    {bg:'#060610',nav:'#0c0c1a',sb:'#04040c',ac:'#4f46e5',ac2:'#c7d2fe',lbl:'GERENCIADOR ATIVO'},
+    {bg:'#0a0a06',nav:'#14140c',sb:'#080804',ac:'#ca8a04',ac2:'#fef08a',lbl:'CONTROLE CADASTRAL'},
+    {bg:'#0a060a',nav:'#140c14',sb:'#080408',ac:'#9333ea',ac2:'#e9d5ff',lbl:'PAINEL OPERACIONAL'},
+    {bg:'#061006',nav:'#0c1a0c',sb:'#040c04',ac:'#15803d',ac2:'#86efac',lbl:'DASHBOARD FISCAL'},
+    {bg:'#080a10',nav:'#0e141a',sb:'#06080c',ac:'#1d4ed8',ac2:'#93c5fd',lbl:'SISTEMA OFICIAL'},
+    {bg:'#10060a',nav:'#1a0c12',sb:'#0c0406',ac:'#be123c',ac2:'#fda4af',lbl:'GERENCIADOR MASTER'},
+    {bg:'#0a1006',nav:'#101a0c',sb:'#060c04',ac:'#4d7c0f',ac2:'#bef264',lbl:'CENTRAL FISCAL'},
+    {bg:'#060810',nav:'#0c101a',sb:'#04060c',ac:'#0284c7',ac2:'#7dd3fc',lbl:'PAINEL DE GESTÃO'},
+    {bg:'#100808',nav:'#1a1010',sb:'#0c0606',ac:'#b91c1c',ac2:'#fca5a5',lbl:'DASHBOARD ATIVO'},
+    {bg:'#08060a',nav:'#100c14',sb:'#060408',ac:'#7c3aed',ac2:'#c4b5fd',lbl:'SISTEMA EMPRESARIAL'},
+    {bg:'#0a0a0a',nav:'#121214',sb:'#060606',ac:'#6366f1',ac2:'#a5b4fc',lbl:'CONTROLE OPERACIONAL'},
+    {bg:'#0a0806',nav:'#141008',sb:'#080604',ac:'#ea580c',ac2:'#fed7aa',lbl:'CENTRAL GERAL'},
+    {bg:'#060a0a',nav:'#0c1414',sb:'#040808',ac:'#0891b2',ac2:'#a5f3fc',lbl:'GERENCIADOR OFICIAL'},
+    {bg:'#0a0610',nav:'#140c1a',sb:'#08040c',ac:'#a21caf',ac2:'#f5d0fe',lbl:'PAINEL INTEGRADO'},
+    {bg:'#061006',nav:'#0c180c',sb:'#040c04',ac:'#047857',ac2:'#6ee7b7',lbl:'DASHBOARD EMPRESARIAL'},
   ];
 
   // ═══════════════════════════════════════════════════════════════
-  // BLOCOS HTML REUTILIZÁVEIS
+  // LABELS VARIÁVEIS pra seções (nunca repetidos na mesma posição)
   // ═══════════════════════════════════════════════════════════════
-
-  // Grid de dados comum (usado por A e C)
-  function dataGrid(ac) {
-    return '<div class="frow"><div class="dk">Razão Social</div><div class="dv big">'+razaoFmt+'</div></div>'+
-      '<div class="frow"><div class="dk">CNPJ</div><div class="dv mono">'+cnpjFmt+'</div></div>'+
-      '<div class="frow"><div class="dk">Situação</div><div class="dv ok">'+situacaoFmt+'</div></div>'+
-      (atividadeFmt?'<div class="frow"><div class="dk">'+['CNAE Principal','Atividade Econômica','Atividade Principal','Ramo de Atividade','CNAE'][templateIndex%5]+'</div><div class="dv">'+atividadeFmt+'</div></div>':'')+
-      '<div class="frow"><div class="dk">Endereço</div><div class="dv">'+enderFmt+'</div></div>'+
-      '<div class="g3"><div class="gc"><div class="gk">Bairro/Distrito</div><div class="gv">'+bairroFmt+'</div></div>'+
-      '<div class="gc"><div class="gk">Cidade</div><div class="gv">'+munFmt+'</div></div>'+
-      '<div class="gc"><div class="gk">Estado</div><div class="gv">'+ufFmt+'</div></div></div>'+
-      '<div class="g3"><div class="gc"><div class="gk">CEP</div><div class="gv m">'+cepFmt+'</div></div>'+
-      '<div class="gc"><div class="gk">Telefone</div><div class="gv m">'+phoneFmt+'</div></div>'+
-      '<div class="gc"><div class="gk">E-mail</div><div class="gv">'+emailFmt+'</div></div></div>';
-  }
-
-  // Sidebar comum (A e C)
-  function sidebar(ac, hb) {
-    const bgCard = hb || 'rgba(255,255,255,.05)';
-    return (phoneFmt?'<div class="scard"><div class="st">Canal de Atendimento</div><div class="ph">'+phoneFmt+'</div><p class="sp">Atendimento receptivo para suporte ao cliente e esclarecimentos ao cliente.</p></div>':'')+
-      '<div class="scard"><div class="st">Identificação Fiscal</div>'+
-      '<div class="si"><div class="sil">Razão Social</div><div class="siv">'+razaoFmt+'</div></div>'+
-      '<div class="si"><div class="sil">CNPJ</div><div class="siv" style="font-family:monospace;color:'+ac+'">'+cnpjFmt+'</div></div>'+
-      '<div class="si"><div class="sil">Cidade/Estado</div><div class="siv">'+munFmt+'/'+ufFmt+'</div></div>'+
-      '<div class="si"><div class="sil">CEP</div><div class="siv" style="font-family:monospace;color:'+ac+'">'+cepFmt+'</div></div>'+
-      '</div>'+
-      '<div class="scard"><div class="st">Compliance WABA</div>'+
-      '<span class="stag">RECEPTIVO</span><span class="stag">UTILITY</span><span class="stag">LGPD</span><span class="stag">META</span>'+
-      '<p class="sp" style="margin-top:8px">Sem disparos. Atendimento exclusivamente receptivo. Conformidade Meta Platforms.</p></div>';
-  }
-
-  // Seções de texto comuns (sobre, atendimento, privacidade, termos)
-  function textSections(acColor) {
-    return '<div class="sec" id="sobre"><h2>'+['Sobre a Empresa','Quem Somos','Nossa Empresa','Apresentação','Sobre Nós'][templateIndex%5]+'</h2><p>'+sob+'</p></div>'+
-      '<div class="sec" id="atendimento"><h2>'+['Canal de Atendimento','Atendimento WhatsApp','Nosso Canal','Como Funciona','Contato Oficial'][templateIndex%5]+'</h2><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
-      '<div class="sec" id="privacidade"><h2>Política de Privacidade</h2><p>'+priv+'</p></div>'+
-      '<div class="sec" id="termos"><h2>Termos de Uso</h2><p>'+term+'</p></div>';
-  }
+  const _secTitles = [
+    {rs:'RAZÃO SOCIAL',cnpj:'CNPJ',sit:'SITUAÇÃO',end:'BASE FÍSICA / ENDEREÇO',cnae:'CNAE — ATIVIDADE PRINCIPAL',tel:'NÓ DE COMUNICAÇÃO',email:'EMAIL',mun:'UF/MUNICÍPIO',waba:'Gateway WABA — Canal Utility'},
+    {rs:'RAZÃO SOCIAL',cnpj:'INSCRIÇÃO CNPJ',sit:'STATUS CADASTRAL',end:'ENDEREÇO REGISTRADO',cnae:'ATIVIDADE ECONÔMICA',tel:'TELEFONE OFICIAL',email:'CORREIO ELETRÔNICO',mun:'CIDADE/ESTADO',waba:'Canal WABA — Utility Gateway'},
+    {rs:'DENOMINAÇÃO SOCIAL',cnpj:'CNPJ/MF',sit:'CONDIÇÃO',end:'LOCALIZAÇÃO FÍSICA',cnae:'CNAE PRINCIPAL',tel:'PONTO DE CONTATO',email:'E-MAIL CORPORATIVO',mun:'LOCALIDADE/UF',waba:'Endpoint WABA — Utility'},
+    {rs:'NOME EMPRESARIAL',cnpj:'REGISTRO CNPJ',sit:'SITUAÇÃO CADASTRAL',end:'SEDE / ENDEREÇO',cnae:'ATIVIDADE PRINCIPAL',tel:'CANAL TELEFÔNICO',email:'ENDEREÇO ELETRÔNICO',mun:'MUNICÍPIO/UF',waba:'WABA Channel — Utility Mode'},
+    {rs:'FIRMA / RAZÃO SOCIAL',cnpj:'CNPJ FEDERAL',sit:'STATUS',end:'ENDEREÇO COMERCIAL',cnae:'OBJETO SOCIAL / CNAE',tel:'NÚMERO OFICIAL',email:'EMAIL REGISTRADO',mun:'PRAÇA/UF',waba:'WhatsApp Business — Canal Utility'},
+    {rs:'RAZÃO SOCIAL',cnpj:'IDENTIFICAÇÃO CNPJ',sit:'ESTADO CADASTRAL',end:'LOGRADOURO',cnae:'ATIVIDADE REGISTRADA',tel:'COMUNICAÇÃO DIRETA',email:'CORREIO DIGITAL',mun:'CIRCUNSCRIÇÃO/UF',waba:'Módulo WABA — Receptivo Utility'},
+    {rs:'REGISTRO SOCIAL',cnpj:'CNPJ/RECEITA',sit:'VERIFICAÇÃO',end:'BASE OPERACIONAL',cnae:'CLASSIFICAÇÃO CNAE',tel:'TERMINAL DE CONTATO',email:'CANAL ELETRÔNICO',mun:'REGIÃO/UF',waba:'Interface WABA — Canal Receptivo'},
+  ];
+  var sec = _secTitles[vi];
 
   // ═══════════════════════════════════════════════════════════════
-  // TIPO A: Dark nav + hero + grid + sidebar
+  // WABA TEXT VARIANTS
+  // ═══════════════════════════════════════════════════════════════
+  var _wabaText = [
+    'Operação exclusivamente receptiva. Canal Utility dedicado ao roteamento de mensagens de sistema, alertas preventivos de manutenção e comprovantes transacionais.',
+    'Canal restrito ao atendimento de demandas iniciadas pelo cliente. Modalidade Utility — sem envio proativo. Conformidade total com políticas WhatsApp Business.',
+    'Gateway de atendimento receptivo. Utilização exclusiva para respostas a solicitações do consumidor. Vedado envio de mensagens promocionais ou não solicitadas.',
+    'Operação Utility receptiva. Processamento exclusivo de requisições originadas pelo titular. Sem marketing, sem listas, sem disparos em massa.',
+    'Canal dedicado ao suporte receptivo e confirmações transacionais. Nenhuma mensagem é enviada sem solicitação prévia do cliente. Modo Utility ativo.',
+    'Rota de comunicação Utility — apenas respostas a chamados do consumidor. Bloqueado envio de marketing B2C. Conformidade LGPD e Meta Platforms.',
+    'Endpoint receptivo de mensageria. Atendimento sob demanda do titular. Canal Utility sem capacidade de envio em massa. Conformidade WhatsApp Business.',
+  ];
+  var _wabaFoot = [
+    'Bloqueado disparos em massa. Sem marketing B2C. Conformidade LGPD e políticas WhatsApp Business.',
+    'Vedado cold-messaging. Sem listas compradas. Operação conforme diretrizes Meta Platforms e LGPD.',
+    'Proibido envio proativo. Sem telemarketing. Alinhamento total com Meta Business e LGPD 13.709/2018.',
+    'Zero disparos ativos. Sem comunicação não autorizada. Conformidade WhatsApp Business API e LGPD.',
+    'Sem mensagens push não solicitadas. Sem marketing ativo. LGPD e Meta Platforms em conformidade.',
+    'Interdito envio sem consentimento. Canal 100% receptivo. Conforme LGPD e ToS Meta.',
+    'Nenhum disparo sem autorização prévia. Canal Utility regulado. Meta Platforms + LGPD.',
+  ];
+  var wabaText = _wabaText[vi];
+  var wabaFoot = _wabaFoot[vi];
+
+  // ═══════════════════════════════════════════════════════════════
+  // SCRIPT DE DOM INJECTION (telefone + razão em data-attributes via JS)
+  // ═══════════════════════════════════════════════════════════════
+  var domScript = '<script>'+
+    '(function(){'+
+    'var d=document;'+
+    'var p=d.createElement("span");p.setAttribute("data-waba-phone","'+phoneFmt+'");p.style.display="none";d.body.appendChild(p);'+
+    'var r=d.createElement("span");r.setAttribute("data-company-name","'+razaoFmt+'");r.setAttribute("data-cnpj","'+cnpjFmt+'");r.style.display="none";d.body.appendChild(r);'+
+    'var els=d.querySelectorAll("[data-field]");for(var i=0;i<els.length;i++){var f=els[i].getAttribute("data-field");if(f==="phone")els[i].textContent="'+phoneFmt+'";if(f==="razao")els[i].textContent="'+razaoFmt+'";if(f==="cnpj")els[i].textContent="'+cnpjFmt+'";}'+
+    '})();'+
+    '<\/script>';
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIPO A (0-24): Painel Telemetria — nav + hero + grid 2col + sidebar WABA
   // ═══════════════════════════════════════════════════════════════
   if (templateIndex < 25) {
-    const p = _A[templateIndex];
-    const css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;background:'+p.bg+';color:#e2e8f0;min-height:100vh}'+
-      'nav{background:'+p.nb+';border-bottom:2px solid '+p.ac+';padding:0 24px;display:flex;align-items:center;justify-content:space-between;min-height:50px;flex-wrap:wrap;gap:6px}'+
-      '.nlogo{font-size:13px;font-weight:900;color:#fff;max-width:440px;line-height:1.25;padding:6px 0}'+
-      '.ninfo{display:flex;flex-direction:column;align-items:flex-end;gap:2px}.ncnpj{font-family:monospace;font-size:11px;color:'+p.ac+';font-weight:700}.nphone{font-family:monospace;font-size:12px;color:#fff;font-weight:900}'+
-      '@media(max-width:640px){.ninfo{display:none}}'+
-      '.nav2{background:rgba(0,0,0,.2);border-bottom:1px solid rgba(255,255,255,.06);padding:0 24px;display:flex;align-items:center;justify-content:space-between;min-height:36px}'+
-      '.n2l{color:rgba(255,255,255,.8);font-size:10px;font-weight:700;letter-spacing:1px}'+
-      '.n2r{display:flex;gap:16px}.n2r a{color:rgba(255,255,255,.45);text-decoration:none;font-size:10px}@media(max-width:640px){.n2r{display:none}}'+
-      '.hero{background:'+p.nb+';padding:38px 24px;text-align:center;border-bottom:3px solid '+p.ac+'}'+
-      '.badge{display:inline-block;background:'+p.ac+'22;border:1px solid '+p.ac+'55;border-radius:20px;padding:3px 14px;font-size:9px;font-weight:700;letter-spacing:1.8px;color:'+p.ac+';margin-bottom:10px}'+
-      '.hero h1{font-size:2rem;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px}'+
-      '.hmeta{font-family:monospace;font-size:13px;color:rgba(255,255,255,.65);margin-top:4px}'+
-      '.hstatus{display:inline-block;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:#4ade80;border-radius:3px;padding:2px 10px;font-size:10px;font-weight:700;margin-top:7px}'+
-      '.wrap{max-width:920px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 290px;gap:20px}@media(max-width:760px){.wrap{grid-template-columns:1fr}}'+
-      '.panel{background:'+p.pb+';border:1px solid rgba(255,255,255,.07);border-radius:4px;overflow:hidden;margin-bottom:16px}'+
-      '.ptitle{background:rgba(255,255,255,.04);padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+p.ac+';border-bottom:1px solid rgba(255,255,255,.05)}'+
-      '.frow{display:flex;border-bottom:1px solid rgba(255,255,255,.04);flex-wrap:wrap}.frow:last-child{border-bottom:none}'+
-      '.dk{background:rgba(255,255,255,.03);padding:10px 14px;font-size:12px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.5);letter-spacing:.5px;min-width:150px;flex-shrink:0;border-right:1px solid rgba(255,255,255,.04);display:flex;align-items:center}'+
-      '.dv{padding:9px 13px;font-size:14px;color:#f1f5f9;font-weight:600;flex:1;word-break:break-word}.dv.big{font-size:1.35rem;font-weight:900;color:#fff}.dv.mono{font-family:monospace;color:'+p.ac+';font-weight:700}.dv.ok{color:#4ade80;font-weight:700}'+
-      '.g3{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04)}@media(max-width:480px){.g3{grid-template-columns:1fr}}'+
-      '.gc{padding:9px 13px;border-right:1px solid rgba(255,255,255,.04)}.gc:last-child{border-right:none}'+
-      '.gk{font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.45);letter-spacing:.5px;margin-bottom:4px}.gv{font-size:14px;color:#e2e8f0;font-weight:600}.gv.m{font-family:monospace;color:'+p.ac+'}'+
-      '.sec{padding:20px 0;border-bottom:1px solid rgba(255,255,255,.05)}.sec:last-child{border-bottom:none}'+
-      '.sec h2{font-size:14px;font-weight:700;color:'+p.ac+';margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid '+p.ac+'25}'+
-      '.sec p{font-size:11px;color:rgba(255,255,255,.58);line-height:1.9;margin-bottom:6px}.sec ul{list-style:none}.sec li{font-size:13px;color:rgba(255,255,255,.65);line-height:1.9;padding-left:14px;position:relative}.sec li::before{content:"▸";position:absolute;left:0;color:'+p.ac+'}'+
-      '.scard{background:'+p.pb+';border:1px solid rgba(255,255,255,.07);border-radius:4px;padding:14px;margin-bottom:14px}'+
-      '.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+p.ac+';margin-bottom:9px}'+
-      '.ph{font-family:monospace;font-size:1.15rem;color:#fff;font-weight:900;text-align:center;padding:10px;background:'+p.ac+'18;border-radius:3px;margin-bottom:9px;letter-spacing:2px}'+
-      '.sp{font-size:13px;color:rgba(255,255,255,.6);line-height:1.8}.stag{font-size:11px;display:inline-block;background:rgba(255,255,255,.06);color:'+p.ac+';font-size:8px;font-weight:700;padding:2px 7px;border-radius:2px;margin:2px}'+
-      '.si{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}.si:last-child{border-bottom:none}.sil{font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;letter-spacing:.5px}.siv{font-size:15px;color:#e2e8f0;font-weight:700}'+
-      '.fbar{background:'+p.nb+';border-top:1px solid rgba(255,255,255,.06);color:rgba(255,255,255,.45);text-align:center;padding:16px 22px;font-size:10px;line-height:1.9}.fbar a{color:rgba(255,255,255,.3);text-decoration:none}.fbar strong{color:rgba(255,255,255,.75)}';
+    var p = _A[templateIndex];
+    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+p.bg+';color:#c8d6e5;min-height:100vh;font-size:14px}'+
+      '.topbar{background:'+p.nav+';border-bottom:1px solid '+p.ac+'40;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}'+
+      '.topbar .name{font-size:15px;font-weight:800;color:#fff;letter-spacing:.3px}'+
+      '.topbar .status{display:flex;align-items:center;gap:8px}.topbar .dot{width:8px;height:8px;border-radius:50%;background:'+p.ac+';box-shadow:0 0 6px '+p.ac+'80}.topbar .stxt{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:'+p.ac+'}'+
+      '.topbar .badge{font-family:monospace;font-size:10px;background:'+p.ac+'18;border:1px solid '+p.ac+'35;color:'+p.ac2+';padding:3px 10px;border-radius:2px;letter-spacing:1px}'+
+      '.main-grid{max-width:960px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:1fr 320px;gap:20px}@media(max-width:800px){.main-grid{grid-template-columns:1fr;padding:0 12px}}'+
+      '.panel{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;margin-bottom:16px;overflow:hidden}'+
+      '.panel-title{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px}'+
+      '.panel-title span{font-size:12px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
+      '.grid-data{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.grid-data{grid-template-columns:1fr}}'+
+      '.cell{padding:14px 16px;border-right:1px solid rgba(255,255,255,.04)}.cell:last-child{border-right:none}'+
+      '.cell .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4);margin-bottom:4px}'+
+      '.cell .val{font-size:14px;color:#fff;font-weight:700}.cell .val.mono{font-family:"Courier New",monospace;color:'+p.ac+';letter-spacing:.5px}.cell .val.ok{color:#4ade80}'+
+      '.row-data{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;gap:3px}'+
+      '.row-data .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4)}'+
+      '.row-data .val{font-size:13px;color:#e2e8f0;font-weight:600}'+
+      '.waba-card{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:4px;padding:18px;margin-bottom:16px}'+
+      '.waba-card h3{font-size:12px;font-weight:700;color:'+p.ac+';margin-bottom:10px;display:flex;align-items:center;gap:6px}'+
+      '.waba-card p{font-size:12px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:8px}'+
+      '.waba-card .phone-big{font-family:"Courier New",monospace;font-size:1.4rem;color:'+p.ac+';font-weight:900;margin:14px 0;letter-spacing:2px}'+
+      '.waba-card .foot{font-size:10px;color:rgba(255,255,255,.4);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
+      '.sidebar-card{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:16px;margin-bottom:14px}'+
+      '.sidebar-card .st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:'+p.ac+';margin-bottom:10px}'+
+      '.sidebar-card .si{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}.sidebar-card .si:last-child{border-bottom:none}'+
+      '.sidebar-card .sil{font-size:9px;text-transform:uppercase;color:rgba(255,255,255,.35);letter-spacing:1px;margin-bottom:2px}'+
+      '.sidebar-card .siv{font-size:13px;color:#e2e8f0;font-weight:700}.sidebar-card .siv.mono{font-family:monospace;color:'+p.ac+'}'+
+      '.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.tag{font-size:8px;font-weight:700;letter-spacing:1px;background:'+p.ac+'15;border:1px solid '+p.ac+'30;color:'+p.ac2+';padding:3px 8px;border-radius:2px}'+
+      '.compliance-sec{padding:16px;border-top:1px solid rgba(255,255,255,.04)}'+
+      '.compliance-sec h4{font-size:11px;color:'+p.ac+';margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px}'+
+      '.compliance-sec p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8}'+
+      '.compliance-sec ul{list-style:none;margin:8px 0}.compliance-sec li{font-size:12px;color:rgba(255,255,255,.6);line-height:2;padding-left:14px;position:relative}.compliance-sec li::before{content:"\\25B8";position:absolute;left:0;color:'+p.ac+'}'+
+      '.footer-bar{max-width:960px;margin:0 auto;padding:14px 20px;font-size:10px;color:rgba(255,255,255,.35);text-align:center;border-top:1px solid rgba(255,255,255,.04)}';
 
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<nav><div class="nlogo">'+razaoFmt+'</div><div class="ninfo"><span class="ncnpj">'+cnpjFmt+'</span>'+(phoneFmt?'<span class="nphone">'+phoneFmt+'</span>':'')+'</div></nav>'+
-      '<div class="nav2"><span class="n2l">'+p.lbl+'</span><div class="n2r"><a href="#dados">Dados</a><a href="#sobre">Sobre</a><a href="#atendimento">Atendimento</a><a href="#privacidade">Privacidade</a><a href="#termos">Termos</a></div></div>'+
-      '<div class="hero"><div class="badge">EMPRESA REGISTRADA</div><h1>'+razaoFmt+'</h1><div class="hmeta">CNPJ: '+cnpjFmt+'</div><div class="hstatus">SITUAÇÃO: '+situacaoFmt+'</div></div>'+
-      '<div class="wrap"><div id="dados"><div class="panel"><div class="ptitle">Dados Cadastrais Oficiais</div>'+dataGrid(p.ac)+'</div>'+textSections(p.ac)+'</div>'+
-      '<div>'+sidebar(p.ac, p.pb)+'</div></div>'+
-      '<script>'+
-      'document.addEventListener("DOMContentLoaded",function(){'+
-      'var t=document.getElementById("topbar");'+
-      'if(t)t.setAttribute("data-phone","'+phoneFmt+'");'+
-      'var h=document.querySelector(".hero h1");'+
-      'if(h)h.setAttribute("data-razao","'+razaoFmt+'");'+
-      '});'+
-      '</script>'+
-      '<div class="fbar" id="contato"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+(phoneFmt?' | Tel: '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> · <a href="#termos">Termos</a> · <a href="#dados">Dados Cadastrais</a></div>'+
+      '<div class="topbar"><span class="name" data-field="razao">'+razaoFmt+'</span><div class="status"><span class="dot"></span><span class="stxt">TELEMETRIA ATIVA</span></div><span class="badge">'+p.lbl+'</span></div>'+
+      '<div class="main-grid"><div>'+
+      '<div class="panel"><div class="panel-title"><span>'+sec.rs.slice(0,20)+' / Identifica\u00e7\u00e3o</span></div>'+
+      '<div class="grid-data"><div class="cell"><div class="lbl">'+sec.rs+'</div><div class="val" data-field="razao">'+razaoFmt+'</div></div>'+
+      '<div class="cell"><div class="lbl">'+sec.cnpj+'</div><div class="val mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
+      '<div class="cell"><div class="lbl">'+sec.sit+'</div><div class="val ok">'+situacaoFmt+'</div></div></div>'+
+      '<div class="grid-data"><div class="cell"><div class="lbl">'+sec.tel+'</div><div class="val mono" data-field="phone">'+phoneFmt+'</div></div>'+
+      '<div class="cell"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
+      '<div class="cell"><div class="lbl">'+sec.mun+'</div><div class="val">'+munFmt+'/'+ufFmt+'</div></div></div>'+
+      '</div>'+
+      '<div class="panel"><div class="row-data"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div></div>'+
+      (atividadeFmt?'<div class="panel"><div class="row-data"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div></div>':'')+
+      '<div class="panel"><div class="compliance-sec"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
+      '<div class="compliance-sec"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
+      '<div class="compliance-sec"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
+      '<div class="compliance-sec"><h4>Canal de Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div></div>'+
+      '</div><div>'+
+      '<div class="waba-card"><h3>&#x1f4e1; '+sec.waba+'</h3>'+
+      '<p>'+wabaText+'</p>'+
+      '<p>'+wabaFoot+'</p>'+
+      (phoneFmt?'<div class="phone-big" data-field="phone">'+phoneFmt+'</div>':'')+
+      '<div class="foot">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
+      '<div class="sidebar-card"><div class="st">Identifica\u00e7\u00e3o Fiscal</div>'+
+      '<div class="si"><div class="sil">Raz\u00e3o Social</div><div class="siv">'+razaoFmt+'</div></div>'+
+      '<div class="si"><div class="sil">CNPJ</div><div class="siv mono">'+cnpjFmt+'</div></div>'+
+      '<div class="si"><div class="sil">Munic\u00edpio/UF</div><div class="siv">'+munFmt+'/'+ufFmt+'</div></div>'+
+      '<div class="si"><div class="sil">CEP</div><div class="siv mono">'+cepFmt+'</div></div>'+
+      '<div class="tags"><span class="tag">RECEPTIVO</span><span class="tag">UTILITY</span><span class="tag">LGPD</span><span class="tag">META</span></div></div>'+
+      '</div></div>'+
+      domScript+
+      '<div class="footer-bar">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+(phoneFmt?' \u2014 '+phoneFmt:'')+(emailFmt?' \u2014 '+emailFmt:'')+'</div>'+
       '</body></html>';
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // TIPO B: Editorial — header escuro, fundo claro, tabela + sidebar
+  // TIPO B (25-49): Terminal NOC — barra status + seções verticais + compliance
   // ═══════════════════════════════════════════════════════════════
   else if (templateIndex < 50) {
-    const p = _B[templateIndex - 25];
-    const css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Georgia,"Times New Roman",serif;background:#f0f0f0;color:#1a1a1a;min-height:100vh}'+
-      'header{background:'+p.hb+';padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}'+
-      '.hlbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:'+p.ac+';font-family:Arial,sans-serif;margin-bottom:2px}'+
-      '.hname{font-family:Arial,sans-serif;font-size:14px;font-weight:900;color:#fff;line-height:1.2}'+
-      '.hright{display:flex;flex-direction:column;align-items:flex-end;gap:3px}'+
-      '.hcnpj{font-family:monospace;font-size:10px;font-weight:700;color:'+p.ac+'}'+
-      '.hphone{font-family:monospace;font-size:13px;font-weight:900;color:#fff}'+
-      '@media(max-width:640px){.hright{display:none}}'+
-      'nav{background:#fff;border-bottom:2px solid #e5e7eb;padding:0 24px;display:flex;align-items:center;justify-content:space-between;min-height:38px}'+
-      '.nname{font-family:Arial,sans-serif;font-size:11px;font-weight:700;color:#374151}'+
-      '.nlinks{display:flex;gap:16px}.nlinks a{color:#6b7280;text-decoration:none;font-size:11px;font-family:Arial,sans-serif}@media(max-width:640px){.nlinks{display:none}}'+
-      '.hero{background:#fff;padding:30px 24px;text-align:center;border-bottom:4px double #d1d5db}'+
-      '.hed{font-size:9px;font-weight:400;letter-spacing:3px;text-transform:uppercase;color:#9ca3af;margin-bottom:10px;font-family:Arial,sans-serif}'+
-      '.hname2{font-family:Arial,sans-serif;font-size:2rem;font-weight:900;color:#111827;letter-spacing:-0.5px;line-height:1.1;margin-bottom:8px}'+
-      '.hsub{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#9ca3af;font-family:Arial,sans-serif}'+
-      '.wrap{max-width:920px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 280px;gap:20px}@media(max-width:760px){.wrap{grid-template-columns:1fr}}'+
-      '.intro{background:#fff;border-left:4px solid '+p.ac+';padding:16px 20px;margin-bottom:16px}'+
-      '.intro h3{font-family:Arial,sans-serif;font-size:17px;font-weight:700;color:#111827;margin-bottom:8px}.intro p{font-size:14px;color:#4b5563;line-height:1.9;font-family:Arial,sans-serif}'+
-      'table{width:100%;border-collapse:collapse;background:#fff;margin-bottom:16px;font-size:14px;font-family:Arial,sans-serif}'+
-      'thead tr{background:'+p.th+';color:#fff}th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:10px 14px;text-align:left}'+
-      'tbody tr{border-bottom:1px solid #e5e7eb}tbody tr:last-child{border-bottom:none}'+
-      'td.lbl{background:#f9fafb;padding:11px 14px;font-size:13px;font-weight:700;text-transform:uppercase;color:#6b7280;letter-spacing:.5px;width:150px}'+
-      'td.val{padding:11px 14px;color:#111827;font-weight:600;font-size:14px}td.val.ac{font-size:15px;color:'+p.ac+';font-family:monospace;font-weight:700}td.val.ok{color:#059669;font-weight:700}td.val.rs{font-size:18px;font-weight:900;color:#111827}'+
-      '.sec2{background:#fff;padding:16px 20px;margin-bottom:14px;border-top:2px solid '+p.ac+';font-family:Arial,sans-serif}'+
-      '.sec2 h2{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+p.ac+';margin-bottom:10px}'+
-      '.sec2 p{font-size:14px;color:#4b5563;line-height:1.9;margin-bottom:8px}.sec2 ul{list-style:none}.sec2 li{font-size:14px;color:#4b5563;line-height:1.9;padding-left:14px;position:relative}.sec2 li::before{content:"→";position:absolute;left:0;color:'+p.ac+'}'+
-      '.scard2{background:#fff;border:1px solid #e5e7eb;border-top:3px solid '+p.ac+';padding:14px;margin-bottom:14px;font-family:Arial,sans-serif}'+
-      '.st2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+p.ac+';margin-bottom:9px}'+
-      '.ph2{font-family:monospace;font-size:1.1rem;font-weight:900;color:#111827;text-align:center;padding:10px;background:'+p.ac+'18;border-radius:2px;margin-bottom:9px;letter-spacing:2px}'+
-      '.sp2{font-size:13px;color:#6b7280;line-height:1.8}.stag2{font-size:11px;display:inline-block;background:'+p.ac+'18;color:'+p.ac+';font-size:8px;font-weight:700;padding:2px 7px;border-radius:2px;margin:2px}'+
-      '.si2{padding:7px 0;border-bottom:1px solid #f3f4f6}.si2:last-child{border-bottom:none}.sil2{font-size:11px;text-transform:uppercase;color:#9ca3af;margin-bottom:3px;letter-spacing:.5px}.siv2{font-size:15px;color:#374151;font-weight:700}'+
-      'footer{background:'+p.hb+';color:rgba(255,255,255,.55);text-align:center;padding:14px 22px;font-size:10px;line-height:1.9;font-family:Arial,sans-serif}footer a{color:rgba(255,255,255,.35);text-decoration:none}footer strong{color:rgba(255,255,255,.8)}';
+    var p = _B[templateIndex - 25];
+    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+      'body{font-family:"Courier New",Courier,monospace;background:'+p.bg+';color:#b8c5d4;min-height:100vh;font-size:13px}'+
+      '.status-bar{background:'+p.nav+';border-bottom:2px solid '+p.ac+';padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}'+
+      '.status-bar .sys{font-size:10px;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase;font-weight:700}'+
+      '.status-bar .phone{font-size:13px;color:#fff;font-weight:900;letter-spacing:1px}'+
+      '.status-bar .ts{font-size:9px;color:rgba(255,255,255,.35)}'+
+      '.header-block{max-width:800px;margin:28px auto 0;padding:0 20px;text-align:center}'+
+      '.header-block h1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}'+
+      '.header-block .sub{font-size:11px;color:'+p.ac+';letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}'+
+      '.header-block .cnpj-line{font-size:14px;color:'+p.ac2+';letter-spacing:1px}'+
+      '.container{max-width:800px;margin:24px auto;padding:0 20px}'+
+      '.section{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:3px;margin-bottom:14px;overflow:hidden}'+
+      '.section-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase}'+
+      '.section-body{padding:0}'+
+      '.row{display:flex;border-bottom:1px solid rgba(255,255,255,.03)}.row:last-child{border-bottom:none}'+
+      '.row .k{width:180px;flex-shrink:0;padding:11px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.02);border-right:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.row{flex-direction:column}.row .k{width:auto;border-right:none;border-bottom:1px solid rgba(255,255,255,.03);padding:8px 16px}}'+
+      '.row .v{padding:10px 16px;font-size:13px;color:#e8edf3;font-weight:600;flex:1}.row .v.ac{color:'+p.ac+';font-weight:700}.row .v.ok{color:#4ade80}.row .v.big{font-size:16px;font-weight:900;color:#fff}'+
+      '.waba-section{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:3px;padding:20px;margin-bottom:14px}'+
+      '.waba-section h3{font-family:-apple-system,sans-serif;font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
+      '.waba-section p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9;margin-bottom:6px}'+
+      '.waba-section .phone-display{font-size:1.5rem;color:'+p.ac+';font-weight:900;margin:14px 0;letter-spacing:3px;text-align:center;padding:12px;background:'+p.ac+'08;border:1px solid '+p.ac+'20;border-radius:3px}'+
+      '.waba-section .disclaimer{font-size:10px;color:rgba(255,255,255,.35);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
+      '.compliance-block{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:18px;margin-bottom:14px}'+
+      '.compliance-block h4{font-family:-apple-system,sans-serif;font-size:11px;font-weight:700;color:'+p.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}'+
+      '.compliance-block p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:6px}'+
+      '.compliance-block ul{list-style:none;margin:6px 0}.compliance-block li{font-size:12px;color:rgba(255,255,255,.6);line-height:2;padding-left:16px;position:relative}.compliance-block li::before{content:"$";position:absolute;left:0;color:'+p.ac+'}'+
+      '.footer-line{max-width:800px;margin:0 auto;padding:16px 20px;font-size:10px;color:rgba(255,255,255,.3);text-align:center;border-top:1px solid rgba(255,255,255,.04)}';
 
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<header><div><div class="hlbl">'+p.lbl+'</div><div class="hname">'+razaoFmt+'</div></div>'+
-      '<div class="hright"><span class="hcnpj">'+cnpjFmt+'</span>'+(phoneFmt?'<span class="hphone">'+phoneFmt+'</span>':'')+'</div></header>'+
-      '<nav><span class="nname">'+razaoFmt+'</span><div class="nlinks"><a href="#dados">Dados</a><a href="#sobre">Sobre</a><a href="#atendimento">Atendimento</a><a href="#privacidade">Privacidade</a></div></nav>'+
-      '<div class="hero"><div class="hed">'+p.lbl+' — EDIÇÃO ESPECIAL</div><div class="hname2">'+razaoFmt+'</div><div class="hsub">'+p.sub+'</div></div>'+
-      '<div class="wrap"><div id="dados">'+
-      '<div class="intro"><h3>Empresa '+razaoFmt+'<br>Registrada e em Operação Regular</h3>'+
-      '<p>'+razaoFmt+', inscrita no CNPJ sob o número '+cnpjFmt+', encontra-se em situação ativa junto aos órgãos competentes. Mantém canal oficial de comunicação via WhatsApp Business para atendimento de clientes em esclarecimentos, e suporte ao cliente, em conformidade com as políticas da Meta Platforms.</p></div>'+
-      '<table><thead><tr><th>Campo</th><th>Informação</th></tr></thead><tbody>'+
-      '<tr><td class="lbl">Razão Social</td><td class="val rs">'+razaoFmt+'</td></tr>'+
-      '<tr><td class="lbl">CNPJ</td><td class="val ac">'+cnpjFmt+'</td></tr>'+
-      '<tr><td class="lbl">Situação</td><td class="val ok">'+situacaoFmt+'</td></tr>'+
-      (atividadeFmt?'<tr><td class="lbl">CNAE</td><td class="val">'+atividadeFmt+'</td></tr>':'')+
-      '<tr><td class="lbl">Endereço</td><td class="val">'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+' — CEP '+cepFmt+'</td></tr>'+
-      (emailFmt?'<tr><td class="lbl">E-mail</td><td class="val">'+emailFmt+'</td></tr>':'')+
-      '</tbody></table>'+
-      '<div class="sec2" id="sobre"><h2>Sobre a Empresa</h2><p>'+sob+'</p></div>'+
-      '<div class="sec2" id="atendimento"><h2>Canal de Atendimento</h2><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
-      '<div class="sec2" id="privacidade"><h2>Política de Privacidade</h2><p>'+priv+'</p></div>'+
-      '<div class="sec2" id="termos"><h2>Termos de Uso</h2><p>'+term+'</p></div>'+
-      '</div><div>'+
-      (phoneFmt?'<div class="scard2"><div class="st2">Canal Oficial</div><div class="ph2">'+phoneFmt+'</div><p class="sp2">Atendimento receptivo via WhatsApp Business. Canal Utility verificado.</p></div>':'')+
-      '<div class="scard2"><div class="st2">Compliance WABA</div><p class="sp2">Canal destinado ao atendimento de clientes para acordos, esclarecimentos e suporte ao cliente. Sem disparos. LGPD.</p></div>'+
-      '<div class="scard2"><div class="st2">Identificação</div>'+
-      '<div class="si2"><div class="sil2">Razão Social</div><div class="siv2">'+razaoFmt+'</div></div>'+
-      '<div class="si2"><div class="sil2">CNPJ</div><div class="siv2" style="font-family:monospace;color:'+p.ac+'">'+cnpjFmt+'</div></div>'+
-      '<div class="si2"><div class="sil2">Cidade/Estado</div><div class="siv2">'+munFmt+'/'+ufFmt+'</div></div>'+
-      '<div class="si2"><div class="sil2">CEP</div><div class="siv2" style="font-family:monospace;color:'+p.ac+'">'+cepFmt+'</div></div>'+
-      '</div></div></div>'+
-      '<footer id="contato"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a></footer>'+
+      '<div class="status-bar"><span class="sys">'+p.lbl+'</span>'+(phoneFmt?'<span class="phone" data-field="phone">'+phoneFmt+'</span>':'')+'<span class="ts">PID:'+templateIndex+' | ACTIVE</span></div>'+
+      '<div class="header-block"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">'+p.lbl+'</div><div class="cnpj-line" data-field="cnpj">'+cnpjFmt+'</div></div>'+
+      '<div class="container">'+
+      '<div class="section"><div class="section-head">'+sec.rs+' / Dados Cadastrais</div><div class="section-body">'+
+      '<div class="row"><div class="k">'+sec.rs+'</div><div class="v big">'+razaoFmt+'</div></div>'+
+      '<div class="row"><div class="k">'+sec.cnpj+'</div><div class="v ac">'+cnpjFmt+'</div></div>'+
+      '<div class="row"><div class="k">'+sec.sit+'</div><div class="v ok">'+situacaoFmt+'</div></div>'+
+      '<div class="row"><div class="k">'+sec.tel+'</div><div class="v ac" data-field="phone">'+phoneFmt+'</div></div>'+
+      '<div class="row"><div class="k">'+sec.email+'</div><div class="v">'+(emailFmt||'N/A')+'</div></div>'+
+      '<div class="row"><div class="k">'+sec.mun+'</div><div class="v">'+munFmt+'/'+ufFmt+'</div></div>'+
+      '</div></div>'+
+      '<div class="section"><div class="section-head">'+sec.end+'</div><div class="section-body">'+
+      '<div class="row"><div class="k">Endere\u00e7o Completo</div><div class="v">'+fullAddress+'</div></div>'+
+      '</div></div>'+
+      (atividadeFmt?'<div class="section"><div class="section-head">'+sec.cnae+'</div><div class="section-body"><div class="row"><div class="k">Classifica\u00e7\u00e3o</div><div class="v">'+atividadeFmt+'</div></div></div></div>':'')+
+      '<div class="waba-section"><h3>&#x1f4e1; '+sec.waba+'</h3>'+
+      '<p>'+wabaText+'</p>'+
+      '<p>'+wabaFoot+'</p>'+
+      (phoneFmt?'<div class="phone-display" data-field="phone">'+phoneFmt+'</div>':'')+
+      '<div class="disclaimer">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
+      '<div class="compliance-block"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
+      '<div class="compliance-block"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
+      '<div class="compliance-block"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
+      '<div class="compliance-block"><h4>Canal de Atendimento \u2014 Regras</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
+      '</div>'+
+      domScript+
+      '<div class="footer-line">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'</div>'+
       '</body></html>';
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // TIPO C: Banner colorido bold + grid escuro + sidebar
+  // TIPO C (50-73): Dashboard Split — sidebar fixa + main + banner WABA
   // ═══════════════════════════════════════════════════════════════
-  else {
-    const p = _C[templateIndex - 50];
-    const css = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,Helvetica,sans-serif;background:'+p.sb+';color:#e2e8f0;min-height:100vh}'+
-      'header{background:'+p.hb+';padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}'+
-      '.hlbl{font-size:8px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+p.cc+';margin-bottom:2px}'+
-      '.hname{font-size:13px;font-weight:900;color:#fff;line-height:1.2}'+
-      '.hright{text-align:right}'+
-      '.hcnpj{font-family:monospace;font-size:10px;font-weight:700;background:rgba(255,255,255,.12);color:#fff;padding:2px 8px;border-radius:2px;display:inline-block;margin-bottom:3px}'+
-      '.hphone{font-family:monospace;font-size:12px;font-weight:900;color:#fff;display:block}'+
-      '@media(max-width:640px){.hright{display:none}}'+
-      'nav{background:'+p.sb+';border-bottom:1px solid rgba(255,255,255,.07);padding:0 24px;min-height:40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}'+
-      '.nname2{font-size:11px;font-weight:700;color:#fff}'+
-      '.nlinks2{display:flex;gap:16px}.nlinks2 a{color:rgba(255,255,255,.45);text-decoration:none;font-size:10px}@media(max-width:640px){.nlinks2{display:none}}'+
-      '.ncnpj2{font-family:monospace;font-size:10px;color:'+p.ac+';font-weight:700}'+
-      '.banner{background:'+p.hb+';padding:36px 24px 28px}'+
-      '.blbl{font-size:8px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:'+p.cc+';margin-bottom:4px}'+
-      '.btitle{font-size:8px;color:rgba(255,255,255,.5);margin-bottom:8px;letter-spacing:1px}'+
-      '.bname{font-size:2rem;font-weight:900;color:#fff;line-height:1.1;margin-bottom:8px}'+
-      '.bcnpj{font-family:monospace;font-size:13px;color:'+p.cc+';font-weight:700;margin-bottom:6px}'+
-      '.bstatus{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:3px;padding:2px 10px;font-size:9px;font-weight:700}'+
-      '.wrap{max-width:920px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 290px;gap:20px}@media(max-width:760px){.wrap{grid-template-columns:1fr}}'+
-      '.panel{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;overflow:hidden;margin-bottom:16px}'+
-      '.ptitle{background:'+p.hb+';padding:8px 14px;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:'+p.cc+'}'+
-      '.frow{display:flex;border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap}.frow:last-child{border-bottom:none}'+
-      '.dk{background:rgba(255,255,255,.04);padding:10px 14px;font-size:12px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.5);letter-spacing:.5px;min-width:150px;flex-shrink:0;border-right:1px solid rgba(255,255,255,.06);display:flex;align-items:center}'+
-      '.dv{padding:9px 13px;font-size:14px;color:#f1f5f9;font-weight:600;flex:1;word-break:break-word}.dv.big{font-size:1.35rem;font-weight:900;color:#fff}.dv.mono{font-family:monospace;color:'+p.ac+';font-weight:700}.dv.ok{color:#4ade80;font-weight:700}'+
-      '.g3{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.06)}@media(max-width:480px){.g3{grid-template-columns:1fr}}'+
-      '.gc{padding:9px 13px;border-right:1px solid rgba(255,255,255,.06)}.gc:last-child{border-right:none}'+
-      '.gk{font-size:11px;font-weight:700;text-transform:uppercase;color:rgba(255,255,255,.45);letter-spacing:.5px;margin-bottom:4px}.gv{font-size:14px;color:#e2e8f0;font-weight:600}.gv.m{font-family:monospace;color:'+p.ac+'}'+
-      '.sec{padding:20px 0;border-bottom:1px solid rgba(255,255,255,.06)}.sec:last-child{border-bottom:none}'+
-      '.sec h2{font-size:14px;font-weight:700;color:'+p.ac+';margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid '+p.ac+'30}'+
-      '.sec p{font-size:13px;color:rgba(255,255,255,.65);line-height:1.9;margin-bottom:8px}.sec ul{list-style:none}.sec li{font-size:13px;color:rgba(255,255,255,.65);line-height:1.9;padding-left:14px;position:relative}.sec li::before{content:"▸";position:absolute;left:0;color:'+p.ac+'}'+
-      '.scard{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:14px;margin-bottom:14px}'+
-      '.st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:'+p.ac+';margin-bottom:9px}'+
-      '.ph{font-family:monospace;font-size:1.1rem;font-weight:900;color:#fff;text-align:center;padding:10px;background:'+p.hb+';border-radius:3px;margin-bottom:9px;letter-spacing:2px;border:1px solid '+p.ac+'40}'+
-      '.sp{font-size:13px;color:rgba(255,255,255,.6);line-height:1.8}.stag{font-size:11px;display:inline-block;background:'+p.hb+';color:'+p.cc+';font-size:8px;font-weight:700;padding:2px 7px;border-radius:2px;margin:2px}'+
-      '.si{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.06)}.si:last-child{border-bottom:none}.sil{font-size:11px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:3px;letter-spacing:.5px}.siv{font-size:15px;color:#e2e8f0;font-weight:700}'+
-      'footer{background:'+p.hb+';border-top:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);text-align:center;padding:14px 22px;font-size:10px;line-height:1.9}footer a{color:rgba(255,255,255,.3);text-decoration:none}footer strong{color:rgba(255,255,255,.8)}';
+  else if (templateIndex < 74) {
+    var p = _C[templateIndex - 50];
+    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+p.bg+';color:#c0cdd8;min-height:100vh;display:grid;grid-template-columns:260px 1fr;font-size:13px}@media(max-width:800px){body{grid-template-columns:1fr}}'+
+      '.sidebar{background:'+(p.sb||p.nav)+';border-right:1px solid rgba(255,255,255,.06);padding:24px 16px;display:flex;flex-direction:column;gap:14px}@media(max-width:800px){.sidebar{border-right:none;border-bottom:1px solid rgba(255,255,255,.06);padding:16px}}'+
+      '.sidebar .logo{font-size:14px;font-weight:800;color:#fff;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)}'+
+      '.sidebar .nav-item{font-size:11px;color:rgba(255,255,255,.5);padding:8px 12px;border-radius:3px;letter-spacing:.5px}'+
+      '.sidebar .nav-item.active{background:'+p.ac+'15;color:'+p.ac+';font-weight:700}'+
+      '.sidebar .phone-box{margin-top:auto;background:'+p.ac+'10;border:1px solid '+p.ac+'25;border-radius:3px;padding:12px;text-align:center}'+
+      '.sidebar .phone-box .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:'+p.ac+';margin-bottom:6px}'+
+      '.sidebar .phone-box .ph{font-family:"Courier New",monospace;font-size:1.1rem;color:#fff;font-weight:900;letter-spacing:1px}'+
+      '.sidebar .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.sidebar .tag{font-size:8px;background:'+p.ac+'12;border:1px solid '+p.ac+'25;color:'+p.ac2+';padding:2px 7px;border-radius:2px;letter-spacing:.8px}'+
+      '.main-content{padding:28px 24px;overflow-y:auto}@media(max-width:800px){.main-content{padding:20px 16px}}'+
+      '.main-content h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.3px}'+
+      '.main-content .subtitle{font-size:11px;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase;margin-bottom:24px}'+
+      '.data-card{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;margin-bottom:16px;overflow:hidden}'+
+      '.data-card .card-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
+      '.data-card .card-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.03)}.data-card .card-row:last-child{border-bottom:none}'+
+      '.data-card .card-row .k{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4)}'+
+      '.data-card .card-row .v{font-size:13px;color:#e2e8f0;font-weight:600;text-align:right;max-width:60%}.data-card .card-row .v.mono{font-family:monospace;color:'+p.ac+'}.data-card .card-row .v.ok{color:#4ade80}'+
+      '.waba-banner{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:4px solid '+p.ac+';border-radius:4px;padding:20px;margin-bottom:16px}'+
+      '.waba-banner h3{font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
+      '.waba-banner p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:6px}'+
+      '.waba-banner .phone-lg{font-family:"Courier New",monospace;font-size:1.4rem;color:'+p.ac+';font-weight:900;letter-spacing:2px;margin:14px 0;text-align:center}'+
+      '.waba-banner .foot{font-size:10px;color:rgba(255,255,255,.3);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
+      '.text-section{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:16px;margin-bottom:14px}'+
+      '.text-section h4{font-size:11px;font-weight:700;color:'+p.ac+';text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}'+
+      '.text-section p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8}'+
+      '.text-section ul{list-style:none}.text-section li{font-size:12px;color:rgba(255,255,255,.6);line-height:2;padding-left:14px;position:relative}.text-section li::before{content:"\\203A";position:absolute;left:0;color:'+p.ac+';font-weight:700}';
 
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<header><div><div class="hlbl">'+p.lbl+'</div><div class="hname">'+razaoFmt+'</div></div>'+
-      '<div class="hright"><span class="hcnpj">'+cnpjFmt+'</span>'+(phoneFmt?'<span class="hphone">'+phoneFmt+'</span>':'')+'</div></header>'+
-      '<nav><span class="nname2">'+razaoFmt+'</span><div class="nlinks2"><a href="#dados">Dados</a><a href="#sobre">Sobre</a><a href="#atendimento">Atendimento</a><a href="#privacidade">Privacidade</a></div><span class="ncnpj2">'+cnpjFmt+'</span></nav>'+
-      '<div class="banner"><div class="blbl">RAZÃO SOCIAL DA EMPRESA</div><div class="btitle">CNPJ: '+cnpjFmt+'</div><div class="bname">'+razaoFmt+'</div><div class="bcnpj">CNPJ: '+cnpjFmt+'</div><div class="bstatus">SITUAÇÃO: '+situacaoFmt+'</div></div>'+
-      '<div class="wrap"><div id="dados"><div class="panel"><div class="ptitle">Dados Cadastrais</div>'+dataGrid(p.ac)+'</div>'+textSections(p.ac)+'</div>'+
-      '<div>'+
-      (phoneFmt?'<div class="scard"><div class="st">Canal de Atendimento</div><div class="ph">'+phoneFmt+'</div><p class="sp">Atendimento receptivo para suporte ao cliente e esclarecimentos ao cliente.</p></div>':'')+
-      '<div class="scard"><div class="st">Identificação</div>'+
-      '<div class="si"><div class="sil">Razão Social</div><div class="siv">'+razaoFmt+'</div></div>'+
-      '<div class="si"><div class="sil">CNPJ</div><div class="siv" style="font-family:monospace;color:'+p.ac+'">'+cnpjFmt+'</div></div>'+
-      '<div class="si"><div class="sil">Cidade/Estado</div><div class="siv">'+munFmt+'/'+ufFmt+'</div></div>'+
-      '<div class="si"><div class="sil">CEP</div><div class="siv" style="font-family:monospace;color:'+p.ac+'">'+cepFmt+'</div></div>'+
+      '<aside class="sidebar"><div class="logo" data-field="razao">'+razaoFmt+'</div>'+
+      '<div class="nav-item active">Dados Cadastrais</div><div class="nav-item">Compliance</div><div class="nav-item">Atendimento</div><div class="nav-item">Privacidade</div>'+
+      (phoneFmt?'<div class="phone-box"><div class="lbl">Canal Oficial</div><div class="ph" data-field="phone">'+phoneFmt+'</div></div>':'')+
+      '<div class="tags"><span class="tag">RECEPTIVO</span><span class="tag">UTILITY</span><span class="tag">LGPD</span><span class="tag">META</span></div>'+
+      '</aside>'+
+      '<main class="main-content"><h1 data-field="razao">'+razaoFmt+'</h1><div class="subtitle">'+p.lbl+'</div>'+
+      '<div class="data-card"><div class="card-head">'+sec.rs+' / Identifica\u00e7\u00e3o</div>'+
+      '<div class="card-row"><span class="k">'+sec.rs+'</span><span class="v">'+razaoFmt+'</span></div>'+
+      '<div class="card-row"><span class="k">'+sec.cnpj+'</span><span class="v mono">'+cnpjFmt+'</span></div>'+
+      '<div class="card-row"><span class="k">'+sec.sit+'</span><span class="v ok">'+situacaoFmt+'</span></div>'+
+      '<div class="card-row"><span class="k">'+sec.tel+'</span><span class="v mono" data-field="phone">'+phoneFmt+'</span></div>'+
+      '<div class="card-row"><span class="k">'+sec.email+'</span><span class="v">'+(emailFmt||'N/A')+'</span></div>'+
+      '<div class="card-row"><span class="k">'+sec.mun+'</span><span class="v">'+munFmt+'/'+ufFmt+'</span></div>'+
       '</div>'+
-      '<div class="scard"><div class="st">Compliance WABA</div><span class="stag">RECEPTIVO</span><span class="stag">UTILITY</span><span class="stag">LGPD</span><span class="stag">META</span><p class="sp" style="margin-top:8px">Sem disparos. Conformidade Meta Platforms.</p></div>'+
-      '</div></div>'+
-      '<footer id="contato"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a> ?? <a href="#dados">Dados Cadastrais</a></footer>'+
+      '<div class="data-card"><div class="card-head">'+sec.end+'</div>'+
+      '<div class="card-row"><span class="k">Endere\u00e7o Completo</span><span class="v">'+fullAddress+'</span></div>'+
+      '</div>'+
+      (atividadeFmt?'<div class="data-card"><div class="card-head">'+sec.cnae+'</div><div class="card-row"><span class="k">Classifica\u00e7\u00e3o</span><span class="v">'+atividadeFmt+'</span></div></div>':'')+
+      '<div class="waba-banner"><h3>&#x1f4e1; '+sec.waba+'</h3>'+
+      '<p>'+wabaText+'</p>'+
+      '<p>'+wabaFoot+'</p>'+
+      (phoneFmt?'<div class="phone-lg" data-field="phone">'+phoneFmt+'</div>':'')+
+      '<div class="foot">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
+      '<div class="text-section"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
+      '<div class="text-section"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
+      '<div class="text-section"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
+      '<div class="text-section"><h4>Canal de Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
+      '</main>'+
+      domScript+
+      '</body></html>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIPO D (74-75): Split Escuro — nome grande esquerda + dados lista + WABA direita
+  // Modelo: "FERNANDA GOUVEIA GOMES" da screenshot
+  // ═══════════════════════════════════════════════════════════════
+  else if (templateIndex < 76) {
+    var dPalettes = [
+      {bg:'#0c0e18',card:'#10131f',ac:'#7c6cf6',ac2:'#b4a9fd',lbl:'REGISTRO EMPRESARIAL'},
+      {bg:'#0a1014',card:'#0e151c',ac:'#4eadcf',ac2:'#8ed4ec',lbl:'CADASTRO OFICIAL'},
+    ];
+    var dp = dPalettes[templateIndex - 74];
+    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+dp.bg+';color:#c8d4e0;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;font-size:14px}@media(max-width:800px){body{grid-template-columns:1fr}}'+
+      '.left{padding:48px 36px;display:flex;flex-direction:column;justify-content:center}@media(max-width:800px){.left{padding:32px 20px}}'+
+      '.left h1{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}'+
+      '.left .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:'+dp.ac+';margin-bottom:32px}'+
+      '.left .field{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}'+
+      '.left .field .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:4px}'+
+      '.left .field .val{font-size:14px;color:#e8edf5;font-weight:600}.left .field .val.mono{font-family:"Courier New",monospace;color:'+dp.ac+';letter-spacing:.5px}'+
+      '.right{background:'+dp.card+';padding:48px 36px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(255,255,255,.06)}@media(max-width:800px){.right{padding:32px 20px;border-left:none;border-top:1px solid rgba(255,255,255,.06)}}'+
+      '.right h2{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+dp.ac+';margin-bottom:20px}'+
+      '.right .phone-big{font-family:"Courier New",monospace;font-size:1.6rem;color:'+dp.ac+';font-weight:900;letter-spacing:2px;margin-bottom:20px}'+
+      '.right p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9;margin-bottom:10px}'+
+      '.right .compliance-tag{display:inline-block;font-family:monospace;font-size:10px;background:'+dp.ac+'12;border:1px solid '+dp.ac+'30;color:'+dp.ac2+';padding:6px 14px;border-radius:2px;letter-spacing:1.5px;margin-top:16px}'+
+      '.text-block{padding:24px 0}'+
+      '.text-block h4{font-size:11px;color:'+dp.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}'+
+      '.text-block p{font-size:12px;color:rgba(255,255,255,.5);line-height:1.8}';
+
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+      '<div class="left">'+
+      '<h1 data-field="razao">'+razaoFmt+'</h1>'+
+      '<div class="sub">'+dp.lbl+'</div>'+
+      '<div class="field"><div class="lbl">'+sec.rs+'</div><div class="val">'+razaoFmt+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.cnpj+'</div><div class="val mono">'+cnpjFmt+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
+      (atividadeFmt?'<div class="field"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div>':'')+
+      (phoneFmt?'<div class="field"><div class="lbl">WHATSAPP BUSINESS</div><div class="val mono" data-field="phone">'+phoneFmt+'</div></div>':'')+
+      '</div>'+
+      '<div class="right">'+
+      '<h2>'+sec.waba+'</h2>'+
+      (phoneFmt?'<div class="phone-big" data-field="phone">'+phoneFmt+'</div>':'')+
+      '<p>'+wabaText+'</p>'+
+      '<p>'+wabaFoot+'</p>'+
+      '<div class="compliance-tag">COMPLIANCE: ATIVO</div>'+
+      '<div class="text-block"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
+      '<div class="text-block"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
+      '</div>'+
+      domScript+
+      '</body></html>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIPO E (76-77): Card escuro + dados lista + phone embaixo + Privacidade/Termos lado
+  // Modelo: "VALDEMIR FERREIRA DA SILVA" da screenshot
+  // ═══════════════════════════════════════════════════════════════
+  else if (templateIndex < 78) {
+    var ePalettes = [
+      {bg:'#080a14',card:'#0c0f1c',ac:'#6e5ff0',ac2:'#a89bf8',lbl:'CANAL UTILITY RECEPTIVO'},
+      {bg:'#0a0c10',card:'#0e1118',ac:'#5588dd',ac2:'#88bbf4',lbl:'ATENDIMENTO RECEPTIVO OFICIAL'},
+    ];
+    var ep = ePalettes[templateIndex - 76];
+    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+ep.bg+';color:#c0cee0;min-height:100vh;display:grid;grid-template-columns:380px 1fr;font-size:14px}@media(max-width:800px){body{grid-template-columns:1fr}}'+
+      '.col-left{padding:40px 32px;border-right:1px solid rgba(255,255,255,.06)}@media(max-width:800px){.col-left{padding:28px 20px;border-right:none;border-bottom:1px solid rgba(255,255,255,.06)}}'+
+      '.col-left h1{font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px;font-style:italic}'+
+      '.col-left .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:'+ep.ac+';margin-bottom:28px}'+
+      '.col-left .field{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}'+
+      '.col-left .field .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1.8px;color:rgba(255,255,255,.35);margin-bottom:4px}'+
+      '.col-left .field .val{font-size:14px;color:#e4ecf5;font-weight:600}.col-left .field .val.mono{font-family:"Courier New",monospace;color:'+ep.ac+'}'+
+      '.col-left .phone-section{margin-top:28px;text-align:center}'+
+      '.col-left .phone-section .ph{font-family:"Courier New",monospace;font-size:1.5rem;color:'+ep.ac+';font-weight:900;letter-spacing:2px}'+
+      '.col-left .phone-section .phlbl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.4);margin-top:6px}'+
+      '.col-right{padding:40px 32px;display:flex;flex-direction:column;justify-content:center}@media(max-width:800px){.col-right{padding:28px 20px}}'+
+      '.col-right .block{background:'+ep.card+';border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:20px;margin-bottom:18px}'+
+      '.col-right .block h4{font-size:11px;font-weight:700;color:'+ep.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}'+
+      '.col-right .block p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9}'+
+      '.col-right .block ul{list-style:none;margin:6px 0}.col-right .block li{font-size:12px;color:rgba(255,255,255,.55);line-height:2;padding-left:14px;position:relative}.col-right .block li::before{content:"\\25B8";position:absolute;left:0;color:'+ep.ac+'}';
+
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+      '<div class="col-left">'+
+      '<h1 data-field="razao">'+razaoFmt+'</h1>'+
+      '<div class="sub">'+ep.lbl+'</div>'+
+      '<div class="field"><div class="lbl">'+sec.rs+'</div><div class="val">'+razaoFmt+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.cnpj+'</div><div class="val mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
+      (atividadeFmt?'<div class="field"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div>':'')+
+      (phoneFmt?'<div class="phone-section"><div class="ph" data-field="phone">'+phoneFmt+'</div><div class="phlbl">WHATSAPP BUSINESS</div></div>':'')+
+      '</div>'+
+      '<div class="col-right">'+
+      '<div class="block"><h4>&#x1f4c4; Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
+      '<div class="block"><h4>&#x1f4c4; Termos de Uso</h4><p>'+term+'</p></div>'+
+      '<div class="block"><h4>&#x1f4e1; '+sec.waba+'</h4><p>'+wabaText+'</p><p>'+wabaFoot+'</p></div>'+
+      '<div class="block"><h4>Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
+      '</div>'+
+      domScript+
+      '</body></html>';
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // TIPO F (78-79): Editorial Claro — fundo bege, tipografia serif, grid 2col
+  // Modelo: "VANINHO NUNES SOARES" da screenshot
+  // ═══════════════════════════════════════════════════════════════
+  else {
+    var fPalettes = [
+      {bg:'#f5f1eb',card:'#ffffff',hd:'#1a1a1a',ac:'#8b5e34',border:'#e0d8ce',lbl:'INFORMATIVO EMPRESARIAL \u2014 REGISTRO OFICIAL'},
+      {bg:'#f0ece4',card:'#fefefe',hd:'#111111',ac:'#6b4c2a',border:'#ddd5c8',lbl:'REGISTRO CADASTRAL \u2014 DADOS P\u00daBLICOS'},
+    ];
+    var fp = fPalettes[templateIndex - 78];
+    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+      'body{font-family:Georgia,"Times New Roman",serif;background:'+fp.bg+';color:#3a3a3a;min-height:100vh;font-size:14px}'+
+      '.header{text-align:center;padding:40px 20px 24px;border-bottom:1px solid '+fp.border+'}'+
+      '.header h1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:1.8rem;font-weight:800;color:'+fp.hd+';letter-spacing:-.5px;margin-bottom:6px}'+
+      '.header .sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#999}'+
+      '.content{max-width:880px;margin:28px auto;padding:0 24px;display:grid;grid-template-columns:1.2fr 1fr;gap:32px}@media(max-width:800px){.content{grid-template-columns:1fr;padding:0 16px}}'+
+      '.panel{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
+      '.panel h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:18px}'+
+      '.panel .field{padding:12px 0;border-bottom:1px solid '+fp.border+'}'+
+      '.panel .field:last-child{border-bottom:none}'+
+      '.panel .field .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:4px}'+
+      '.panel .field .val{font-size:14px;color:'+fp.hd+';font-weight:600}.panel .field .val.mono{font-family:"Courier New",monospace;color:'+fp.ac+';font-size:15px}'+
+      '.canal{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
+      '.canal h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:14px;font-style:italic}'+
+      '.canal .phone-big{font-family:"Courier New",monospace;font-size:1.4rem;color:'+fp.ac+';font-weight:900;letter-spacing:1px;margin-bottom:16px}'+
+      '.canal p{font-size:13px;color:#666;line-height:1.8;margin-bottom:8px}'+
+      '.text-sec{max-width:880px;margin:20px auto;padding:0 24px}'+
+      '.text-sec .block{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:18px;margin-bottom:14px}'+
+      '.text-sec .block h4{font-family:-apple-system,sans-serif;font-size:12px;font-weight:700;color:'+fp.hd+';margin-bottom:8px}'+
+      '.text-sec .block p{font-size:12px;color:#666;line-height:1.8}'+
+      '.text-sec .block ul{list-style:none;margin:6px 0}.text-sec .block li{font-size:12px;color:#666;line-height:2;padding-left:14px;position:relative}.text-sec .block li::before{content:"\\2022";position:absolute;left:0;color:'+fp.ac+'}'+
+      '.footer-bar{max-width:880px;margin:20px auto 0;padding:12px 24px;background:'+fp.ac+';border-radius:2px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}'+
+      '.footer-bar .info{font-size:11px;color:#fff;font-weight:500}'+
+      '.footer-bar .badge{font-size:10px;color:#fff;font-weight:700;letter-spacing:1px}';
+
+    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+      '<div class="header"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">'+fp.lbl+'</div></div>'+
+      '<div class="content">'+
+      '<div class="panel"><h3>Dados Cadastrais da Empresa</h3>'+
+      '<div class="field"><div class="lbl">'+sec.rs+'</div><div class="val">'+razaoFmt+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.cnpj+'</div><div class="val mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div>'+
+      '<div class="field"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
+      (atividadeFmt?'<div class="field"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div>':'')+
+      '</div>'+
+      '<div class="canal"><h3>Canal de Atendimento</h3>'+
+      (phoneFmt?'<div class="phone-big" data-field="phone">'+phoneFmt+'</div>':'')+
+      '<p>'+wabaText+'</p>'+
+      '<p>'+wabaFoot+'</p>'+
+      '</div>'+
+      '</div>'+
+      '<div class="text-sec">'+
+      '<div class="block"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
+      '<div class="block"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
+      '<div class="block"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
+      '<div class="block"><h4>Regras de Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
+      '</div>'+
+      '<div class="footer-bar"><span class="info">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+'</span><span class="badge">Canal Utility Receptivo</span></div>'+
+      domScript+
       '</body></html>';
   }
 }

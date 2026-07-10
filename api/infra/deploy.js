@@ -55,7 +55,7 @@ module.exports = async function handler(req, res) {
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) * 7 + nameSeed * 3 + Math.floor(updatedSeed / 1009)) % 74;
+      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) * 7 + nameSeed * 3 + Math.floor(updatedSeed / 1009)) % 80;
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,
@@ -98,11 +98,11 @@ module.exports = async function handler(req, res) {
       const isWildcard = existingWorker === 'verificaconta-wildcard';
 
       // Força updatedAt calculado para gerar template aleatório real
-      const newIndex = Math.floor(Math.random() * 74);
+      const newIndex = Math.floor(Math.random() * 80);
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       const cnpjSum = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0);
-      const neededTs = (newIndex - ((cnpjSum * 7 + nameSeed * 3) % 74) + 74) % 74;
+      const neededTs = (newIndex - ((cnpjSum * 7 + nameSeed * 3) % 80) + 80) % 80;
       const fakeTs = new Date(neededTs * 1009 + 1);
       await prisma.domain.update({
         where: { id: domain.id },
@@ -211,13 +211,13 @@ module.exports = async function handler(req, res) {
       let resultUrl;
       if (isWildcard) {
         // Wildcard: gera índice aleatório e salva updatedAt engenheirado pra produzir esse índice
-        const newIndexPut = Math.floor(Math.random() * 74);
+        const newIndexPut = Math.floor(Math.random() * 80);
         const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
         const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const cnpjSum = cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0);
-        // Calcula timestamp que produz o índice desejado (formula: (cnpjSum*7 + nameSeed*3 + floor(ts/1009)) % 74 = newIndex)
+        // Calcula timestamp que produz o índice desejado (formula: (cnpjSum*7 + nameSeed*3 + floor(ts/1009)) % 80 = newIndex)
         const baseVal = cnpjSum * 7 + nameSeedPut * 3;
-        const neededTs = (newIndexPut - (baseVal % 74) + 74) % 74;
+        const neededTs = (newIndexPut - (baseVal % 80) + 80) % 80;
         const fakeTimestamp = new Date(neededTs * 1009 + 1);
         await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp } });
 
