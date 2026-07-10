@@ -409,7 +409,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     return '<div class="frow"><div class="dk">Razão Social</div><div class="dv big">'+razaoFmt+'</div></div>'+
       '<div class="frow"><div class="dk">CNPJ</div><div class="dv mono">'+cnpjFmt+'</div></div>'+
       '<div class="frow"><div class="dk">Situação</div><div class="dv ok">'+situacaoFmt+'</div></div>'+
-      (atividadeFmt?'<div class="frow"><div class="dk">Atividade Principal</div><div class="dv">'+atividadeFmt+'</div></div>':'')+
+      (atividadeFmt?'<div class="frow"><div class="dk">'+['CNAE Principal','Atividade Econômica','Atividade Principal','Ramo de Atividade','CNAE'][templateIndex%5]+'</div><div class="dv">'+atividadeFmt+'</div></div>':'')+
       '<div class="frow"><div class="dk">Endereço</div><div class="dv">'+enderFmt+'</div></div>'+
       '<div class="g3"><div class="gc"><div class="gk">Bairro/Distrito</div><div class="gv">'+bairroFmt+'</div></div>'+
       '<div class="gc"><div class="gk">Cidade</div><div class="gv">'+munFmt+'</div></div>'+
@@ -436,8 +436,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   // Seções de texto comuns (sobre, atendimento, privacidade, termos)
   function textSections(acColor) {
-    return '<div class="sec" id="sobre"><h2>Sobre a Empresa</h2><p>'+sob+'</p></div>'+
-      '<div class="sec" id="atendimento"><h2>Canal de Atendimento</h2><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
+    return '<div class="sec" id="sobre"><h2>'+['Sobre a Empresa','Quem Somos','Nossa Empresa','Apresentação','Sobre Nós'][templateIndex%5]+'</h2><p>'+sob+'</p></div>'+
+      '<div class="sec" id="atendimento"><h2>'+['Canal de Atendimento','Atendimento WhatsApp','Nosso Canal','Como Funciona','Contato Oficial'][templateIndex%5]+'</h2><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
       '<div class="sec" id="privacidade"><h2>Política de Privacidade</h2><p>'+priv+'</p></div>'+
       '<div class="sec" id="termos"><h2>Termos de Uso</h2><p>'+term+'</p></div>';
   }
@@ -485,7 +485,15 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="hero"><div class="badge">EMPRESA REGISTRADA</div><h1>'+razaoFmt+'</h1><div class="hmeta">CNPJ: '+cnpjFmt+'</div><div class="hstatus">SITUAÇÃO: '+situacaoFmt+'</div></div>'+
       '<div class="wrap"><div id="dados"><div class="panel"><div class="ptitle">Dados Cadastrais Oficiais</div>'+dataGrid(p.ac)+'</div>'+textSections(p.ac)+'</div>'+
       '<div>'+sidebar(p.ac, p.pb)+'</div></div>'+
-      '<div class="fbar" id="contato"><strong>'+razaoFmt+'</strong> ??? CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' ??? '+bairroFmt:'')+' ??? '+munFmt+'/'+ufFmt+(cepFmt?' ??? CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a> ?? <a href="#dados">Dados Cadastrais</a></div>'+
+      '<script>'+
+      'document.addEventListener("DOMContentLoaded",function(){'+
+      'var t=document.getElementById("topbar");'+
+      'if(t)t.setAttribute("data-phone","'+phoneFmt+'");'+
+      'var h=document.querySelector(".hero h1");'+
+      'if(h)h.setAttribute("data-razao","'+razaoFmt+'");'+
+      '});'+
+      '</script>'+
+      '<div class="fbar" id="contato"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+(phoneFmt?' | Tel: '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> · <a href="#termos">Termos</a> · <a href="#dados">Dados Cadastrais</a></div>'+
       '</body></html>';
   }
 
@@ -556,7 +564,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '<div class="si2"><div class="sil2">Cidade/Estado</div><div class="siv2">'+munFmt+'/'+ufFmt+'</div></div>'+
       '<div class="si2"><div class="sil2">CEP</div><div class="siv2" style="font-family:monospace;color:'+p.ac+'">'+cepFmt+'</div></div>'+
       '</div></div></div>'+
-      '<footer id="contato"><strong>'+razaoFmt+'</strong> ??? CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' ??? '+bairroFmt:'')+' ??? '+munFmt+'/'+ufFmt+(cepFmt?' ??? CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a></footer>'+
+      '<footer id="contato"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a></footer>'+
       '</body></html>';
   }
 
@@ -618,7 +626,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '</div>'+
       '<div class="scard"><div class="st">Compliance WABA</div><span class="stag">RECEPTIVO</span><span class="stag">UTILITY</span><span class="stag">LGPD</span><span class="stag">META</span><p class="sp" style="margin-top:8px">Sem disparos. Conformidade Meta Platforms.</p></div>'+
       '</div></div>'+
-      '<footer id="contato"><strong>'+razaoFmt+'</strong> ??? CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' ??? '+bairroFmt:'')+' ??? '+munFmt+'/'+ufFmt+(cepFmt?' ??? CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a> ?? <a href="#dados">Dados Cadastrais</a></footer>'+
+      '<footer id="contato"><strong>'+razaoFmt+'</strong> — CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'<br>'+enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'')+'<br><a href="#privacidade">Privacidade</a> ?? <a href="#termos">Termos</a> ?? <a href="#dados">Dados Cadastrais</a></footer>'+
       '</body></html>';
   }
 }
