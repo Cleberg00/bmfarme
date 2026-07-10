@@ -18,6 +18,94 @@ module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ── GET ?action=fix_txt — Recria TXT DNS pra todos os domínios wildcard sem TXT ────
+  if (req.method === 'GET' && req.query?.action === 'fix_txt') {
+    const user = verifyAuth(req, res);
+    if (!user) return;
+    try {
+      const axios = require('axios');
+      const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
+      const zoneIds = {
+        'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
+        'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
+        'perfilvalidados.com.br': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS_BR,
+        'perfilvalidados.com': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS,
+        'mettaativos.com': process.env.CLOUDFLARE_ZONE_METTAATIVOS,
+        'perfilbr.com': process.env.CLOUDFLARE_ZONE_PERFILBR,
+        'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
+        'verificativos.com': process.env.CLOUDFLARE_ZONE_VERIFICATIVOS,
+        'ativoscontas.com': process.env.CLOUDFLARE_ZONE_ATIVOSCONTAS,
+        'verificacontas.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS,
+        'zaplifyativos.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS,
+        'verificametaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAMETAATIVOS,
+        'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
+        'zaplifynegocios.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYNEGOCIOS,
+        'zaplifytrabalho.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYTRABALHO,
+        'centralativoss.com': process.env.CLOUDFLARE_ZONE_CENTRALATIVOSS,
+        'verificadapro1.com': process.env.CLOUDFLARE_ZONE_VERIFICADAPRO1,
+        'zaplifycontas.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYCONTAS,
+        'contaszaplify.com': process.env.CLOUDFLARE_ZONE_CONTASZAPLIFY,
+        'masterverificada.com': process.env.CLOUDFLARE_ZONE_MASTERVERIFICADA,
+        'farmezaplify.com': process.env.CLOUDFLARE_ZONE_FARMEZAPLIFY,
+        'contasativas.com': process.env.CLOUDFLARE_ZONE_CONTASATIVAS,
+        'verificaperfilbm.com': process.env.CLOUDFLARE_ZONE_VERIFICAPERFILBM,
+        'zaplifybm.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM,
+        'zaplifybm.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM_BR,
+        'verificaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS2,
+        'contasativasfb.com': process.env.CLOUDFLARE_ZONE_CONTASATIVASFB,
+        'contasativasbr.com': process.env.CLOUDFLARE_ZONE_CONTASATIVASBR,
+        'verificaperfil01.com': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL01,
+        'verificazapli.com': process.env.CLOUDFLARE_ZONE_VERIFICAZAPLI,
+        'checkverifica.com.br': process.env.CLOUDFLARE_ZONE_CHECKVERIFICA,
+        'verificacontas.com.br': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS_BR,
+        'verificaperfil.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL_BR,
+        'verificabm.com.br': process.env.CLOUDFLARE_ZONE_VERIFICABM_BR,
+        'zaplifyverifica.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYVERIFICA_BR,
+        'zaplifyativos.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS_BR,
+        'validacaoperfil.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPERFIL,
+        'veirficacc.com': process.env.CLOUDFLARE_ZONE_VEIRFICACC,
+        'verificaportifolio.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPORTIFOLIO_BR,
+        'verificaportifolio.com': process.env.CLOUDFLARE_ZONE_VERIFICAPORTIFOLIO,
+        'verificapf.com': process.env.CLOUDFLARE_ZONE_VERIFICAPF,
+        'verifcadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFCADORBM,
+      };
+
+      // Busca todos os domínios wildcard do usuário
+      const domains = await prisma.domain.findMany({
+        where: { userId: user.id, cloudflareZoneId: 'verificaconta-wildcard', status: 'ACTIVE' },
+      });
+
+      let created = 0, skipped = 0, errors = 0;
+      for (const domain of domains) {
+        const baseDom = domain.baseDomain || 'verificaconta.com';
+        const zoneId = zoneIds[baseDom];
+        if (!zoneId) { skipped++; continue; }
+
+        let cleanCode = domain.metaVerificationCode || '';
+        const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
+        if (codeMatch) cleanCode = codeMatch[1];
+        cleanCode = cleanCode.replace('facebook-domain-verification=', '');
+        if (!cleanCode) { skipped++; continue; }
+
+        try {
+          await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+            { type: 'TXT', name: domain.domainName, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
+            { headers: cfHeaders, timeout: 15000 }
+          );
+          created++;
+        } catch (e) {
+          const msg = e.response?.data?.errors?.[0]?.message || e.message;
+          if (msg.includes('already exists')) skipped++;
+          else { errors++; console.log(`[fix_txt] ${domain.domainName}.${baseDom}: ${msg}`); }
+        }
+      }
+
+      return res.status(200).json({ success: true, total: domains.length, created, skipped, errors });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // ── GET ?action=get_site — Worker wildcard busca HTML (sem auth JWT) ────
   if (req.method === 'GET' && req.query?.action === 'get_site') {
     try {
