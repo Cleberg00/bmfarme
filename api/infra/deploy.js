@@ -157,6 +157,41 @@ module.exports = async function handler(req, res) {
         }
         const baseDom = domain.baseDomain || 'verificaconta.com';
         resultUrl = `https://${domain.domainName}.${baseDom}`;
+
+        // Recria TXT DNS pra garantir verificação Meta (caso não tenha sido criado antes)
+        try {
+          let cleanCode = domain.metaVerificationCode || '';
+          const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
+          if (codeMatch) cleanCode = codeMatch[1];
+          cleanCode = cleanCode.replace('facebook-domain-verification=', '');
+          if (cleanCode && baseDom) {
+            const axios = require('axios');
+            const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
+            const zoneIds = {
+              'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
+              'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
+              'perfilvalidados.com.br': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS_BR,
+              'perfilvalidados.com': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS,
+              'mettaativos.com': process.env.CLOUDFLARE_ZONE_METTAATIVOS,
+              'perfilbr.com': process.env.CLOUDFLARE_ZONE_PERFILBR,
+              'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
+              'verificativos.com': process.env.CLOUDFLARE_ZONE_VERIFICATIVOS,
+              'ativoscontas.com': process.env.CLOUDFLARE_ZONE_ATIVOSCONTAS,
+              'verificacontas.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS,
+              'zaplifyativos.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS,
+              'verificametaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAMETAATIVOS,
+              'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
+            };
+            const zoneId = zoneIds[baseDom] || '';
+            if (zoneId) {
+              await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+                { type: 'TXT', name: domain.domainName, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
+                { headers: cfHeaders, timeout: 15000 }
+              ).catch(e => console.log(`[PATCH-TXT] Pode ja existir: ${e.response?.data?.errors?.[0]?.message || e.message}`));
+              console.log(`[PATCH] TXT recriado: ${domain.domainName}.${baseDom}`);
+            }
+          }
+        } catch (txtErr) { console.log(`[PATCH-TXT] Erro: ${txtErr.message}`); }
       } else if (isWorker) {
         const result = await deployWorker(existingWorker.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
