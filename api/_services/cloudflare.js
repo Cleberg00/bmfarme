@@ -256,7 +256,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const displayName = esc(cleanName(nomeFantasia || razaoSocial));
   const cnpjFmt = fmtCnpj(cnpj);
   const cepFmt = cep ? fmtCep(cep) : '';
-  const phoneFmt = fmtPhone(smsPhone || telefone || '');
+  const phoneFmt = fmtPhone(smsPhone || '');  // Usa SOMENTE o número SMS gerado, nunca o telefone do CNPJ
   const emailFmt = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
   const situacaoFmt = esc(situacao || 'ATIVA');
