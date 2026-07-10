@@ -342,13 +342,13 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // LABELS VARIÁVEIS pra seções (nunca repetidos na mesma posição)
   // ═══════════════════════════════════════════════════════════════
   const _secTitles = [
-    {rs:'RAZÃO SOCIAL',cnpj:'CNPJ',sit:'SITUAÇÃO',end:'BASE FÍSICA / ENDEREÇO',cnae:'CNAE — ATIVIDADE PRINCIPAL',tel:'NÓ DE COMUNICAÇÃO',email:'EMAIL',mun:'UF/MUNICÍPIO',waba:'Gateway WABA — Canal Utility'},
-    {rs:'RAZÃO SOCIAL',cnpj:'INSCRIÇÃO CNPJ',sit:'STATUS CADASTRAL',end:'ENDEREÇO REGISTRADO',cnae:'ATIVIDADE ECONÔMICA',tel:'TELEFONE OFICIAL',email:'CORREIO ELETRÔNICO',mun:'CIDADE/ESTADO',waba:'Canal WABA — Utility Gateway'},
-    {rs:'DENOMINAÇÃO SOCIAL',cnpj:'CNPJ/MF',sit:'CONDIÇÃO',end:'LOCALIZAÇÃO FÍSICA',cnae:'CNAE PRINCIPAL',tel:'PONTO DE CONTATO',email:'E-MAIL CORPORATIVO',mun:'LOCALIDADE/UF',waba:'Endpoint WABA — Utility'},
-    {rs:'NOME EMPRESARIAL',cnpj:'REGISTRO CNPJ',sit:'SITUAÇÃO CADASTRAL',end:'SEDE / ENDEREÇO',cnae:'ATIVIDADE PRINCIPAL',tel:'CANAL TELEFÔNICO',email:'ENDEREÇO ELETRÔNICO',mun:'MUNICÍPIO/UF',waba:'WABA Channel — Utility Mode'},
-    {rs:'FIRMA / RAZÃO SOCIAL',cnpj:'CNPJ FEDERAL',sit:'STATUS',end:'ENDEREÇO COMERCIAL',cnae:'OBJETO SOCIAL / CNAE',tel:'NÚMERO OFICIAL',email:'EMAIL REGISTRADO',mun:'PRAÇA/UF',waba:'WhatsApp Business — Canal Utility'},
-    {rs:'RAZÃO SOCIAL',cnpj:'IDENTIFICAÇÃO CNPJ',sit:'ESTADO CADASTRAL',end:'LOGRADOURO',cnae:'ATIVIDADE REGISTRADA',tel:'COMUNICAÇÃO DIRETA',email:'CORREIO DIGITAL',mun:'CIRCUNSCRIÇÃO/UF',waba:'Módulo WABA — Receptivo Utility'},
-    {rs:'REGISTRO SOCIAL',cnpj:'CNPJ/RECEITA',sit:'VERIFICAÇÃO',end:'BASE OPERACIONAL',cnae:'CLASSIFICAÇÃO CNAE',tel:'TERMINAL DE CONTATO',email:'CANAL ELETRÔNICO',mun:'REGIÃO/UF',waba:'Interface WABA — Canal Receptivo'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'CNPJ',sit:'SITUA\u00c7\u00c3O',end:'BASE F\u00cdSICA / ENDERE\u00c7O',cnae:'CNAE \u2014 ATIVIDADE PRINCIPAL',tel:'N\u00d3 DE COMUNICA\u00c7\u00c3O',email:'EMAIL',mun:'UF/MUNIC\u00cdPIO',waba:'Gateway WABA \u2014 Canal Utility'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'INSCRI\u00c7\u00c3O CNPJ',sit:'STATUS CADASTRAL',end:'ENDERE\u00c7O REGISTRADO',cnae:'ATIVIDADE ECON\u00d4MICA',tel:'TELEFONE OFICIAL',email:'CORREIO ELETR\u00d4NICO',mun:'CIDADE/ESTADO',waba:'Canal WABA \u2014 Utility Gateway'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'CNPJ/MF',sit:'CONDI\u00c7\u00c3O',end:'LOCALIZA\u00c7\u00c3O F\u00cdSICA',cnae:'CNAE PRINCIPAL',tel:'PONTO DE CONTATO',email:'E-MAIL CORPORATIVO',mun:'LOCALIDADE/UF',waba:'Endpoint WABA \u2014 Utility'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'REGISTRO CNPJ',sit:'SITUA\u00c7\u00c3O CADASTRAL',end:'SEDE / ENDERE\u00c7O',cnae:'ATIVIDADE PRINCIPAL',tel:'CANAL TELEF\u00d4NICO',email:'ENDERE\u00c7O ELETR\u00d4NICO',mun:'MUNIC\u00cdPIO/UF',waba:'WABA Channel \u2014 Utility Mode'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'CNPJ FEDERAL',sit:'STATUS',end:'ENDERE\u00c7O COMERCIAL',cnae:'OBJETO SOCIAL / CNAE',tel:'N\u00daMERO OFICIAL',email:'EMAIL REGISTRADO',mun:'PRA\u00c7A/UF',waba:'WhatsApp Business \u2014 Canal Utility'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'IDENTIFICA\u00c7\u00c3O CNPJ',sit:'ESTADO CADASTRAL',end:'LOGRADOURO',cnae:'ATIVIDADE REGISTRADA',tel:'COMUNICA\u00c7\u00c3O DIRETA',email:'CORREIO DIGITAL',mun:'CIRCUNSCRI\u00c7\u00c3O/UF',waba:'M\u00f3dulo WABA \u2014 Receptivo Utility'},
+    {rs:'RAZ\u00c3O SOCIAL',cnpj:'CNPJ/RECEITA',sit:'VERIFICA\u00c7\u00c3O',end:'BASE OPERACIONAL',cnae:'CLASSIFICA\u00c7\u00c3O CNAE',tel:'TERMINAL DE CONTATO',email:'CANAL ELETR\u00d4NICO',mun:'REGI\u00c3O/UF',waba:'Interface WABA \u2014 Canal Receptivo'},
   ];
   var sec = _secTitles[vi];
 
@@ -702,17 +702,17 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     ];
     var fp = fPalettes[templateIndex - 78];
     var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:Georgia,"Times New Roman",serif;background:'+fp.bg+';color:#3a3a3a;min-height:100vh;font-size:14px}'+
-      '.header{text-align:center;padding:40px 20px 24px;border-bottom:1px solid '+fp.border+'}'+
-      '.header h1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:1.8rem;font-weight:800;color:'+fp.hd+';letter-spacing:-.5px;margin-bottom:6px}'+
-      '.header .sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#999}'+
+      'body{font-family:Georgia,"Times New Roman",serif;background:'+fp.bg+';color:#2a2a2a;min-height:100vh;font-size:14px}'+
+      '.header{text-align:center;padding:48px 20px 28px;border-bottom:2px solid '+fp.ac+'}'+
+      '.header h1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:2.2rem;font-weight:900;color:#000;letter-spacing:-.5px;margin-bottom:8px}'+
+      '.header .sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#777}'+
       '.content{max-width:880px;margin:28px auto;padding:0 24px;display:grid;grid-template-columns:1.2fr 1fr;gap:32px}@media(max-width:800px){.content{grid-template-columns:1fr;padding:0 16px}}'+
       '.panel{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
       '.panel h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:18px}'+
       '.panel .field{padding:12px 0;border-bottom:1px solid '+fp.border+'}'+
       '.panel .field:last-child{border-bottom:none}'+
-      '.panel .field .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#999;margin-bottom:4px}'+
-      '.panel .field .val{font-size:14px;color:'+fp.hd+';font-weight:600}.panel .field .val.mono{font-family:"Courier New",monospace;color:'+fp.ac+';font-size:15px}'+
+      '.panel .field .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:4px}'+
+      '.panel .field .val{font-size:15px;color:#000;font-weight:700}.panel .field .val.mono{font-family:"Courier New",monospace;color:'+fp.ac+';font-size:16px}'+
       '.canal{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
       '.canal h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:14px;font-style:italic}'+
       '.canal .phone-big{font-family:"Courier New",monospace;font-size:1.4rem;color:'+fp.ac+';font-weight:900;letter-spacing:1px;margin-bottom:16px}'+
