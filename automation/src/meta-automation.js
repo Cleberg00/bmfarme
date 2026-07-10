@@ -30,12 +30,21 @@ class MetaAutomation {
 
   // ─── PASSO 1: Ir pro Business Manager ─────────────────────────────────
   async goToBusinessSettings() {
-    await this.page.goto('https://business.facebook.com/latest/settings/business_info', {
-      waitUntil: 'networkidle2',
-      timeout: TIMEOUTS.navigation,
-    });
-    await this.wait(2000);
-    console.log('[META] Business Settings aberto');
+    try {
+      await this.page.goto('https://business.facebook.com/latest/home', {
+        waitUntil: 'domcontentloaded',
+        timeout: TIMEOUTS.navigation,
+      });
+    } catch (err) {
+      // Se der redirect loop, tenta URL alternativa
+      console.log('[META] Redirect detectado, tentando URL alternativa...');
+      await this.page.goto('https://business.facebook.com/overview', {
+        waitUntil: 'domcontentloaded',
+        timeout: TIMEOUTS.navigation,
+      });
+    }
+    await this.wait(3000);
+    console.log('[META] Business Manager aberto:', this.page.url());
   }
 
   // ─── PASSO 2: Criar Portfolio Empresarial ──────────────────────────────

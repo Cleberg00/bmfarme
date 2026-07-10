@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "run": "node src/run.js"
+    "run": "node src/run.js",
+    "full": "node src/run-full.js"
   },
   "dependencies": {
     "puppeteer-core": "^22.0.0",

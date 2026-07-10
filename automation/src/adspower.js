@@ -4,15 +4,15 @@ const axios = require('axios');
 const API = process.env.ADSPOWER_API || 'http://127.0.0.1:50325';
 const KEY = process.env.ADSPOWER_API_KEY || '';
 
-function headers() {
-  return KEY ? { 'Api-Key': KEY } : {};
+function params(extra = {}) {
+  // API key desativada no AdsPower - envia sem key
+  return extra;
 }
 
 // Lista todos os perfis do AdsPower
 async function listProfiles(page = 1, pageSize = 100) {
   const { data } = await axios.get(`${API}/api/v1/user/list`, {
-    params: { page, page_size: pageSize },
-    headers: headers(),
+    params: params({ page, page_size: pageSize }),
   });
   if (data.code !== 0) throw new Error(`AdsPower list error: ${data.msg}`);
   return data.data.list || [];
@@ -21,8 +21,7 @@ async function listProfiles(page = 1, pageSize = 100) {
 // Abre um browser profile e retorna a URL de conexao do Puppeteer
 async function openBrowser(profileId) {
   const { data } = await axios.get(`${API}/api/v1/browser/start`, {
-    params: { user_id: profileId },
-    headers: headers(),
+    params: params({ user_id: profileId }),
   });
   if (data.code !== 0) throw new Error(`AdsPower open error: ${data.msg}`);
   return {
@@ -34,8 +33,7 @@ async function openBrowser(profileId) {
 // Fecha um browser profile
 async function closeBrowser(profileId) {
   const { data } = await axios.get(`${API}/api/v1/browser/stop`, {
-    params: { user_id: profileId },
-    headers: headers(),
+    params: params({ user_id: profileId }),
   });
   return data.code === 0;
 }
@@ -43,8 +41,7 @@ async function closeBrowser(profileId) {
 // Verifica status de um profile
 async function checkBrowser(profileId) {
   const { data } = await axios.get(`${API}/api/v1/browser/active`, {
-    params: { user_id: profileId },
-    headers: headers(),
+    params: params({ user_id: profileId }),
   });
   return data.data?.status === 'Active';
 }
@@ -65,7 +62,8 @@ async function createProfile({ name, proxy, cookie, platform }) {
   };
 
   const { data } = await axios.post(`${API}/api/v1/user/create`, body, {
-    headers: { ...headers(), 'Content-Type': 'application/json' },
+    params: params({}),
+    headers: { 'Content-Type': 'application/json' },
   });
   if (data.code !== 0) throw new Error(`AdsPower create error: ${data.msg}`);
   
@@ -85,7 +83,6 @@ async function importCookies(profileId, cookieString) {
   try {
     cookies = JSON.parse(cookieString);
   } catch {
-    // Se nao for JSON, tenta como cookie string simples
     cookies = cookieString;
   }
 
@@ -93,7 +90,8 @@ async function importCookies(profileId, cookieString) {
     user_id: profileId,
     cookie: typeof cookies === 'string' ? cookies : JSON.stringify(cookies),
   }, {
-    headers: { ...headers(), 'Content-Type': 'application/json' },
+    params: params({}),
+    headers: { 'Content-Type': 'application/json' },
   });
   return data.code === 0;
 }
