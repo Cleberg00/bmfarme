@@ -102,8 +102,8 @@ module.exports = async function handler(req, res) {
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       const cnpjSum = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0);
-      const neededTs = (newIndex - ((cnpjSum + nameSeed) % 74) + 74) % 74;
-      const fakeTs = new Date(neededTs * 13 + 1);
+      const neededTs = (newIndex - ((cnpjSum * 7 + nameSeed * 3) % 74) + 74) % 74;
+      const fakeTs = new Date(neededTs * 1009 + 1);
       await prisma.domain.update({
         where: { id: domain.id },
         data: {
@@ -215,10 +215,10 @@ module.exports = async function handler(req, res) {
         const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
         const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const cnpjSum = cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0);
-        // Calcula timestamp que produz o índice desejado
-        const baseVal = cnpjSum + nameSeedPut;
+        // Calcula timestamp que produz o índice desejado (formula: (cnpjSum*7 + nameSeed*3 + floor(ts/1009)) % 74 = newIndex)
+        const baseVal = cnpjSum * 7 + nameSeedPut * 3;
         const neededTs = (newIndexPut - (baseVal % 74) + 74) % 74;
-        const fakeTimestamp = new Date(neededTs * 13 + 1);
+        const fakeTimestamp = new Date(neededTs * 1009 + 1);
         await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp } });
 
         // Gera HTML com novo índice
