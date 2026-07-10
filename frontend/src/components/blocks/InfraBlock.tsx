@@ -42,9 +42,9 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const netlifyDomains = isRonaldo
     ? ['mettaativos.com']
     : isAdmin
-    ? ['perfilvalidados.com.br', 'zaplifyativos.com.br', 'validacaoperfil.com', 'verificaportifolio.com.br', 'verificaportifolio.com', 'verificapf.com', 'perfilvalidados.com', 'verifcadorbm.com', 'perfilbr.com']
+    ? ['perfilvalidados.com.br', 'zaplifyativos.com.br', 'validacaoperfil.com', 'verificaportifolio.com.br', 'verificaportifolio.com', 'verificapf.com', 'perfilvalidados.com', 'verifcadorbm.com', 'perfilbr.com', 'validarfm.com']
     : isMacumbinha
-    ? ['verificabm.com.br', 'zaplifyverifica.com.br', 'veirficacc.com', 'perfilbr.com']
+    ? ['verificabm.com.br', 'zaplifyverifica.com.br', 'veirficacc.com', 'perfilbr.com', 'validarfm.com']
     : isZaplify
     ? ['zaplifyativos.com.br', 'verificaperfil.com.br', 'perfilvalidados.com']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];

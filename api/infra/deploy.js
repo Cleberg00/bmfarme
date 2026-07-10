@@ -504,6 +504,7 @@ module.exports = async function handler(req, res) {
               'perfilvalidados.com': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS,
               'mettaativos.com': process.env.CLOUDFLARE_ZONE_METTAATIVOS,
               'perfilbr.com': process.env.CLOUDFLARE_ZONE_PERFILBR,
+              'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
               'verifcadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFCADORBM,
             };
             const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
