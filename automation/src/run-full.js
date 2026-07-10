@@ -15,7 +15,16 @@ const ask = (q) => new Promise(r => rl.question(q, r));
 
 // API do nosso sistema (Vercel)
 const API_URL = process.env.SYSTEM_API || 'https://bmfarme.vercel.app/api';
-const API_TOKEN = process.env.SYSTEM_TOKEN || '';
+let API_TOKEN = process.env.SYSTEM_TOKEN || '';
+
+async function loginSystem() {
+  if (API_TOKEN) return;
+  const email = await ask('Email do sistema (bmfarme): ');
+  const password = await ask('Senha: ');
+  const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+  API_TOKEN = res.data.token;
+  console.log('   Login OK!');
+}
 
 async function callApi(method, path, data) {
   const headers = { 'Content-Type': 'application/json' };
@@ -30,12 +39,15 @@ async function main() {
   console.log('  Portfolio → Site → Domínio → WABA');
   console.log('═══════════════════════════════════════════════════\n');
 
-  // ─── 1. DADOS DE ENTRADA ───────────────────────────────────────────────
+  // ─── 1. DADOS DE ENTRADA (mínimo) ────────────────────────────────────
   const profileId = await ask('ID do perfil AdsPower: ');
   const cnpj = await ask('CNPJ (só números): ');
 
   // ─── 2. CONSULTA CNPJ NO SISTEMA ──────────────────────────────────────
-  console.log('\n[1/9] Consultando CNPJ no sistema...');
+  console.log('\n[1/9] Fazendo login no sistema...');
+  await loginSystem();
+
+  console.log('   Consultando CNPJ...');
   let clientData;
   try {
     clientData = await callApi('GET', `/cnpj/${cnpj.replace(/\D/g, '')}`);
@@ -47,8 +59,17 @@ async function main() {
     process.exit(1);
   }
 
+  // ─── GERA TUDO AUTOMATICAMENTE ─────────────────────────────────────────
   const razaoSocial = clientData.razaoSocial;
-  const site = await ask(`Site (ex: nome.verificapf.com): `) || `${razaoSocial.toLowerCase().split(' ')[0]}.verificapf.com`;
+  const nomeSlug = razaoSocial.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9\s]/g,'').split(/\s+/).filter(w=>w&&!['de','da','do','dos','das','e','ltda','me','eireli'].includes(w)).slice(0,2).join('').slice(0,20);
+  const dominiosDisponiveis = ['verificapf.com','verifcadorbm.com','perfilvalidados.com','mettaativos.com'];
+  const dominioEscolhido = dominiosDisponiveis[Math.floor(Math.random()*dominiosDisponiveis.length)];
+  const site = `${nomeSlug}.${dominioEscolhido}`;
+  const emailTemp = `${nomeSlug}@${dominioEscolhido}`;
+  
+  console.log(`\n   [AUTO] Site: ${site}`);
+  console.log(`   [AUTO] Email: ${emailTemp}`);
+  console.log(`   [AUTO] Domínio: ${dominioEscolhido}`);
 
   // ─── 3. ABRE BROWSER ADSPOWER ─────────────────────────────────────────
   console.log('\n[2/9] Abrindo browser AdsPower...');
@@ -72,46 +93,58 @@ async function main() {
   const currentUrl = page.url();
   if (currentUrl.includes('create_business_portfolio') || currentUrl.includes('loginpage')) {
     console.log('   Criando novo portfolio...');
-    // Espera formulário aparecer
-    await meta.wait(3000);
+    await meta.wait(5000); // Espera modal carregar
 
-    // Preenche "Your business and account name"
-    const inputs = await page.$$('input');
-    if (inputs.length >= 3) {
-      await inputs[0].click({ clickCount: 3 });
-      await inputs[0].type(razaoSocial, { delay: 30 });
-      console.log('   Business name:', razaoSocial);
+    // Preenche os 3 campos do modal
+    const inputs = await page.$$('input[type="text"], input:not([type])');
+    const visibleInputs = [];
+    for (const inp of inputs) {
+      const visible = await inp.evaluate(el => el.offsetParent !== null);
+      if (visible) visibleInputs.push(inp);
+    }
 
-      await inputs[1].click({ clickCount: 3 });
-      await inputs[1].type(razaoSocial.split(' ').slice(0, 2).join(' '), { delay: 30 });
-      console.log('   Your name:', razaoSocial.split(' ').slice(0, 2).join(' '));
+    console.log(`   Encontrados ${visibleInputs.length} inputs visíveis`);
 
-      // Email temporário — usa o do remark do perfil ou gera
-      const emailTemp = await ask('Email temporário (ou Enter para pular): ');
-      if (emailTemp) {
-        await inputs[2].click({ clickCount: 3 });
-        await inputs[2].type(emailTemp, { delay: 30 });
+    if (visibleInputs.length >= 2) {
+      // Campo 1: Business name = Razão Social
+      await visibleInputs[0].click({ clickCount: 3 });
+      await visibleInputs[0].type(razaoSocial, { delay: 40 });
+      console.log('   ✓ Business name:', razaoSocial);
+
+      // Campo 2: Your name = Primeiros nomes da Razão Social
+      const nomeDisplay = razaoSocial.split(' ').slice(0, 3).join(' ');
+      await visibleInputs[1].click({ clickCount: 3 });
+      await visibleInputs[1].type(nomeDisplay, { delay: 40 });
+      console.log('   ✓ Your name:', nomeDisplay);
+
+      // Campo 3: Email (se existir)
+      if (visibleInputs.length >= 3) {
+        await visibleInputs[2].click({ clickCount: 3 });
+        await visibleInputs[2].type(emailTemp, { delay: 40 });
+        console.log('   ✓ Email:', emailTemp);
       }
     }
 
     // Clica Submit
-    const submitBtns = await page.$$('button, div[role="button"]');
+    await meta.wait(1000);
+    const submitBtns = await page.$$('button, div[role="button"], span[role="button"]');
     for (const btn of submitBtns) {
       const text = await btn.evaluate(el => el.textContent.trim());
       if (text === 'Submit' || text === 'Enviar') {
         await btn.click();
-        console.log('   Submit clicado!');
+        console.log('   ✓ Submit clicado!');
         break;
       }
     }
-    await meta.wait(5000);
+    await meta.wait(8000);
 
-    // Clica Done se aparecer
-    const doneBtns = await page.$$('button, div[role="button"]');
-    for (const btn of doneBtns) {
+    // Clica Done/Concluído se aparecer
+    const allBtns = await page.$$('button, div[role="button"]');
+    for (const btn of allBtns) {
       const text = await btn.evaluate(el => el.textContent.trim());
-      if (text === 'Done' || text === 'Concluído') {
+      if (text === 'Done' || text === 'Concluído' || text === 'OK') {
         await btn.click();
+        console.log('   ✓ Done clicado');
         break;
       }
     }
@@ -128,18 +161,19 @@ async function main() {
 
   // ─── 5. PUBLICA SITE + DNS TXT ────────────────────────────────────────
   console.log('\n[4/9] Publicando site + DNS TXT...');
-  const metaCode = await ask('Meta Verification Code (do domínio): ');
+  // O metaCode será pego depois de adicionar o domínio no Facebook
+  // Por agora, publica o site sem código (será atualizado depois)
   try {
     const deployResult = await callApi('POST', '/infra/deploy', {
-      subdomain: site.split('.')[0],
-      metaVerificationCode: metaCode,
+      subdomain: nomeSlug,
+      metaVerificationCode: 'placeholder',
       verificationMethod: 'meta_tag',
       clientId: clientData.id,
       cfAccount: 'empresasverrificada',
-      netlifyDomain: site.split('.').slice(1).join('.'),
+      netlifyDomain: dominioEscolhido,
       customRazao: razaoSocial,
     });
-    console.log('   Site publicado:', deployResult.workerUrl);
+    console.log('   Site publicado:', deployResult.workerUrl || site);
   } catch (err) {
     console.log('   AVISO site:', err.response?.data?.error || err.message);
   }
@@ -162,32 +196,28 @@ async function main() {
   console.log('   Verificação solicitada!');
 
   // ─── 8. CRIA WABA VIA DATACRAZY ───────────────────────────────────────
-  const criarWaba = await ask('\n[7/9] Criar WABA via DataCrazy? (s/n): ');
-  if (criarWaba.toLowerCase() === 's') {
-    const telefone = await ask('Número SMS para WABA (com DDI 55): ');
-    const dc = new DataCrazyAutomation(page);
+  console.log('\n[7/9] Criando WABA via DataCrazy...');
+  const telefone = clientData.telefone || '';
+  const dc = new DataCrazyAutomation(page);
 
-    console.log('   Logando no DataCrazy...');
-    await dc.login();
-    await dc.goToConexoes();
+  console.log('   Logando no DataCrazy...');
+  await dc.login();
+  await dc.goToConexoes();
 
-    console.log('   Criando conexão WhatsApp Cloud...');
-    await dc.criarConexaoWhatsApp(razaoSocial.split(' ')[0]);
+  console.log('   Criando conexão WhatsApp Cloud...');
+  await dc.criarConexaoWhatsApp(nomeSlug);
 
-    console.log('   Processando Embedded Signup...');
-    const fbPage = await dc.handleEmbeddedSignup({ razaoSocial, site, telefone });
+  console.log('   Processando Embedded Signup...');
+  const fbPage = await dc.handleEmbeddedSignup({ razaoSocial, site, telefone });
 
-    // Aguarda código SMS
-    const smsCode = await ask('   Código SMS recebido: ');
-    await dc.confirmSmsCode(fbPage, smsCode);
-    await dc.finalizarDataCrazy();
+  // Aguarda código SMS — único passo que precisa de input humano
+  const smsCode = await ask('\n   📱 Código SMS recebido: ');
+  await dc.confirmSmsCode(fbPage, smsCode);
+  await dc.finalizarDataCrazy();
 
-    // ─── 9. REMOVE PARCEIRO ──────────────────────────────────────────────
-    const remover = await ask('\n[8/9] Remover parceiro DataCrazy? (s/n): ');
-    if (remover.toLowerCase() === 's') {
-      await dc.removerParceiro(businessId);
-    }
-  }
+  // ─── 9. REMOVE PARCEIRO ──────────────────────────────────────────────
+  console.log('\n[8/9] Removendo parceiro DataCrazy...');
+  await dc.removerParceiro(businessId);
 
   // ─── CONCLUÍDO ─────────────────────────────────────────────────────────
   console.log('\n═══════════════════════════════════════════════════');
