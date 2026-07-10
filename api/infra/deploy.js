@@ -48,15 +48,13 @@ module.exports = async function handler(req, res) {
       }
 
       const smsLog = await prisma.smsLog.findFirst({
-        where: { clientId: client.id, status: { in: ['WAITING', 'RECEIVED'] } },
+        where: { clientId: client.id, userId: domain.userId, status: { in: ['WAITING', 'RECEIVED'] } },
         orderBy: { createdAt: 'desc' },
       });
-
-      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       // Usa milissegundos truncados pra distribuir bem pelos 74 templates
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) + nameSeed + Math.floor(updatedSeed / 13)) % 74;
+      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) * 7 + nameSeed * 3 + Math.floor(updatedSeed / 1009)) % 74;
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,
@@ -135,7 +133,7 @@ module.exports = async function handler(req, res) {
         // (o worker serve o HTML em tempo real buscando do smsLog)
         if (newPhone) {
           const existingSmsLog = await prisma.smsLog.findFirst({
-            where: { clientId: client.id },
+            where: { clientId: client.id, userId: domain.userId },
             orderBy: { createdAt: 'desc' },
           });
           if (existingSmsLog) {
@@ -147,9 +145,11 @@ module.exports = async function handler(req, res) {
             await prisma.smsLog.create({
               data: {
                 clientId: client.id,
+                userId: domain.userId,
                 phoneNumber: newPhone,
                 status: 'WAITING',
                 smsCode: null,
+                provider: 'manual',
               },
             });
           }
@@ -183,9 +183,9 @@ module.exports = async function handler(req, res) {
       const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
       if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-      // Busca o SMS mais recente desse cliente
+      // Busca o SMS mais recente desse cliente — escopo por userId para evitar vazamento entre operadores
       const smsLog = await prisma.smsLog.findFirst({
-        where: { clientId: client.id, status: { in: ['WAITING', 'RECEIVED'] } },
+        where: { clientId: client.id, userId: domain.userId, status: { in: ['WAITING', 'RECEIVED'] } },
         orderBy: { createdAt: 'desc' },
       });
 
@@ -410,7 +410,8 @@ module.exports = async function handler(req, res) {
       prisma.smsLog.findFirst({
         where: {
           clientId,
-          status: { in: ['WAITING', 'RECEIVED'] }, // número gerado, com ou sem código
+          userId: user.id,  // escopo por operador — evita vazamento de dados entre usuarios
+          status: { in: ['WAITING', 'RECEIVED'] },
         },
         orderBy: { createdAt: 'desc' },
       }),
