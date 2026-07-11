@@ -405,14 +405,14 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.panel-title span{font-size:12px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
       '.grid-data{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.grid-data{grid-template-columns:1fr}}'+
       '.cell{padding:14px 16px;border-right:1px solid rgba(255,255,255,.04)}.cell:last-child{border-right:none}'+
-      '.cell .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4);margin-bottom:4px}'+
-      '.cell .val{font-size:14px;color:#fff;font-weight:700}.cell .val.mono{font-family:"Courier New",monospace;color:'+p.ac+';letter-spacing:.5px}.cell .val.ok{color:#4ade80}'+
+      '.cell .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.55);margin-bottom:4px}'+
+      '.cell .val{font-size:15px;color:#fff;font-weight:700}.cell .val.mono{font-family:"Courier New",monospace;color:'+p.ac+';letter-spacing:.5px}.cell .val.ok{color:#4ade80}'+
       '.row-data{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;gap:3px}'+
       '.row-data .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4)}'+
       '.row-data .val{font-size:13px;color:#e2e8f0;font-weight:600}'+
       '.waba-card{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:4px;padding:18px;margin-bottom:16px}'+
       '.waba-card h3{font-size:12px;font-weight:700;color:'+p.ac+';margin-bottom:10px;display:flex;align-items:center;gap:6px}'+
-      '.waba-card p{font-size:12px;color:rgba(255,255,255,.6);line-height:1.8;margin-bottom:8px}'+
+      '.waba-card p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:8px}'+
       '.waba-card .phone-big{font-family:"Courier New",monospace;font-size:1.4rem;color:'+p.ac+';font-weight:900;margin:14px 0;letter-spacing:2px}'+
       '.waba-card .foot{font-size:10px;color:rgba(255,255,255,.4);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
       '.sidebar-card{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:16px;margin-bottom:14px}'+
@@ -482,17 +482,17 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.section-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase}'+
       '.section-body{padding:0}'+
       '.row{display:flex;border-bottom:1px solid rgba(255,255,255,.03)}.row:last-child{border-bottom:none}'+
-      '.row .k{width:180px;flex-shrink:0;padding:11px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);background:rgba(255,255,255,.02);border-right:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.row{flex-direction:column}.row .k{width:auto;border-right:none;border-bottom:1px solid rgba(255,255,255,.03);padding:8px 16px}}'+
-      '.row .v{padding:10px 16px;font-size:13px;color:#e8edf3;font-weight:600;flex:1}.row .v.ac{color:'+p.ac+';font-weight:700}.row .v.ok{color:#4ade80}.row .v.big{font-size:16px;font-weight:900;color:#fff}'+
+      '.row .k{width:180px;flex-shrink:0;padding:11px 16px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);background:rgba(255,255,255,.03);border-right:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.row{flex-direction:column}.row .k{width:auto;border-right:none;border-bottom:1px solid rgba(255,255,255,.03);padding:8px 16px}}'+
+      '.row .v{padding:10px 16px;font-size:14px;color:#fff;font-weight:700;flex:1}.row .v.ac{color:'+p.ac+';font-weight:700}.row .v.ok{color:#4ade80}.row .v.big{font-size:17px;font-weight:900;color:#fff}'+
       '.waba-section{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:3px;padding:20px;margin-bottom:14px}'+
       '.waba-section h3{font-family:-apple-system,sans-serif;font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
-      '.waba-section p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9;margin-bottom:6px}'+
+      '.waba-section p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.9;margin-bottom:6px}'+
       '.waba-section .phone-display{font-size:1.5rem;color:'+p.ac+';font-weight:900;margin:14px 0;letter-spacing:3px;text-align:center;padding:12px;background:'+p.ac+'08;border:1px solid '+p.ac+'20;border-radius:3px}'+
       '.waba-section .disclaimer{font-size:10px;color:rgba(255,255,255,.35);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
       '.compliance-block{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:18px;margin-bottom:14px}'+
       '.compliance-block h4{font-family:-apple-system,sans-serif;font-size:11px;font-weight:700;color:'+p.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}'+
-      '.compliance-block p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:6px}'+
-      '.compliance-block ul{list-style:none;margin:6px 0}.compliance-block li{font-size:12px;color:rgba(255,255,255,.6);line-height:2;padding-left:16px;position:relative}.compliance-block li::before{content:"$";position:absolute;left:0;color:'+p.ac+'}'+
+      '.compliance-block p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:6px}'+
+      '.compliance-block ul{list-style:none;margin:6px 0}.compliance-block li{font-size:13px;color:rgba(255,255,255,.75);line-height:2;padding-left:16px;position:relative}.compliance-block li::before{content:"$";position:absolute;left:0;color:'+p.ac+'}'+
       '.footer-line{max-width:800px;margin:0 auto;padding:16px 20px;font-size:10px;color:rgba(255,255,255,.3);text-align:center;border-top:1px solid rgba(255,255,255,.04)}';
 
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
@@ -551,13 +551,13 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.data-card .card-row .v{font-size:13px;color:#e2e8f0;font-weight:600;max-width:65%}.data-card .card-row .v.mono{font-family:monospace;color:'+p.ac+'}.data-card .card-row .v.ok{color:#4ade80}'+
       '.waba-banner{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:4px solid '+p.ac+';border-radius:4px;padding:20px;margin-bottom:16px}'+
       '.waba-banner h3{font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
-      '.waba-banner p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:6px}'+
+      '.waba-banner p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:6px}'+
       '.waba-banner .phone-lg{font-family:"Courier New",monospace;font-size:1.4rem;color:'+p.ac+';font-weight:900;letter-spacing:2px;margin:14px 0;text-align:center}'+
       '.waba-banner .foot{font-size:10px;color:rgba(255,255,255,.3);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
       '.text-section{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:16px;margin-bottom:14px}'+
       '.text-section h4{font-size:11px;font-weight:700;color:'+p.ac+';text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}'+
-      '.text-section p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8}'+
-      '.text-section ul{list-style:none}.text-section li{font-size:12px;color:rgba(255,255,255,.6);line-height:2;padding-left:14px;position:relative}.text-section li::before{content:"\\203A";position:absolute;left:0;color:'+p.ac+';font-weight:700}';
+      '.text-section p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8}'+
+      '.text-section ul{list-style:none}.text-section li{font-size:13px;color:rgba(255,255,255,.75);line-height:2;padding-left:14px;position:relative}.text-section li::before{content:"\\203A";position:absolute;left:0;color:'+p.ac+';font-weight:700}';
 
     return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
       '<aside class="sidebar"><div class="logo" data-field="razao">'+razaoFmt+'</div>'+
