@@ -405,10 +405,10 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.panel-title span{font-size:12px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
       '.grid-data{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.grid-data{grid-template-columns:1fr}}'+
       '.cell{padding:14px 16px;border-right:1px solid rgba(255,255,255,.04)}.cell:last-child{border-right:none}'+
-      '.cell .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.55);margin-bottom:4px}'+
+      '.cell .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.7);margin-bottom:5px}'+
       '.cell .val{font-size:15px;color:#fff;font-weight:700}.cell .val.mono{font-family:"Courier New",monospace;color:'+p.ac+';letter-spacing:.5px}.cell .val.ok{color:#4ade80}'+
       '.row-data{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;gap:3px}'+
-      '.row-data .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.4)}'+
+      '.row-data .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.7)}'+
       '.row-data .val{font-size:13px;color:#e2e8f0;font-weight:600}'+
       '.waba-card{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:4px;padding:18px;margin-bottom:16px}'+
       '.waba-card h3{font-size:12px;font-weight:700;color:'+p.ac+';margin-bottom:10px;display:flex;align-items:center;gap:6px}'+
@@ -482,7 +482,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.section-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase}'+
       '.section-body{padding:0}'+
       '.row{display:flex;flex-direction:column;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)}.row:last-child{border-bottom:none}'+
-      '.row .k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);margin-bottom:4px}'+
+      '.row .k{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.7);margin-bottom:4px}'+
       '.row .v{font-size:15px;color:#fff;font-weight:700}.row .v.ac{color:'+p.ac+';font-weight:700}.row .v.ok{color:#4ade80}.row .v.big{font-size:17px;font-weight:900;color:#fff}'+
       '.waba-section{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:3px;padding:20px;margin-bottom:14px}'+
       '.waba-section h3{font-family:-apple-system,sans-serif;font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
@@ -538,7 +538,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.sidebar .nav-item{font-size:11px;color:rgba(255,255,255,.5);padding:8px 12px;border-radius:3px;letter-spacing:.5px}'+
       '.sidebar .nav-item.active{background:'+p.ac+'15;color:'+p.ac+';font-weight:700}'+
       '.sidebar .phone-box{margin-top:auto;background:'+p.ac+'10;border:1px solid '+p.ac+'25;border-radius:3px;padding:12px;text-align:center}'+
-      '.sidebar .phone-box .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:'+p.ac+';margin-bottom:6px}'+
+      '.sidebar .phone-box .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:'+p.ac+';margin-bottom:6px}'+
       '.sidebar .phone-box .ph{font-family:"Courier New",monospace;font-size:1.1rem;color:#fff;font-weight:900;letter-spacing:1px}'+
       '.sidebar .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.sidebar .tag{font-size:8px;background:'+p.ac+'12;border:1px solid '+p.ac+'25;color:'+p.ac2+';padding:2px 7px;border-radius:2px;letter-spacing:.8px}'+
       '.main-content{padding:28px 24px;overflow-y:auto}@media(max-width:800px){.main-content{padding:20px 16px}}'+
@@ -547,7 +547,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.data-card{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;margin-bottom:16px;overflow:hidden}'+
       '.data-card .card-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
       '.data-card .card-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.03);gap:12px}.data-card .card-row:last-child{border-bottom:none}'+
-      '.data-card .card-row .k{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.4);min-width:120px;flex-shrink:0}'+
+      '.data-card .card-row .k{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.7);min-width:120px;flex-shrink:0}'+
       '.data-card .card-row .v{font-size:13px;color:#e2e8f0;font-weight:600;max-width:65%}.data-card .card-row .v.mono{font-family:monospace;color:'+p.ac+'}.data-card .card-row .v.ok{color:#4ade80}'+
       '.waba-banner{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:4px solid '+p.ac+';border-radius:4px;padding:20px;margin-bottom:16px}'+
       '.waba-banner h3{font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
@@ -608,8 +608,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.left h1{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}'+
       '.left .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:'+dp.ac+';margin-bottom:32px}'+
       '.left .field{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}'+
-      '.left .field .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.4);margin-bottom:4px}'+
-      '.left .field .val{font-size:14px;color:#e8edf5;font-weight:600}.left .field .val.mono{font-family:"Courier New",monospace;color:'+dp.ac+';letter-spacing:.5px}'+
+      '.left .field .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.7);margin-bottom:5px}'+
+      '.left .field .val{font-size:16px;color:#fff;font-weight:700}.left .field .val.mono{font-family:"Courier New",monospace;color:'+dp.ac+';letter-spacing:.5px}'+
       '.right{background:'+dp.card+';padding:48px 36px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(255,255,255,.06)}@media(max-width:800px){.right{padding:32px 20px;border-left:none;border-top:1px solid rgba(255,255,255,.06)}}'+
       '.right h2{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+dp.ac+';margin-bottom:20px}'+
       '.right .phone-big{font-family:"Courier New",monospace;font-size:1.6rem;color:'+dp.ac+';font-weight:900;letter-spacing:2px;margin-bottom:20px}'+
@@ -659,8 +659,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.col-left h1{font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px;font-style:italic}'+
       '.col-left .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:'+ep.ac+';margin-bottom:28px}'+
       '.col-left .field{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}'+
-      '.col-left .field .lbl{font-size:8px;text-transform:uppercase;letter-spacing:1.8px;color:rgba(255,255,255,.35);margin-bottom:4px}'+
-      '.col-left .field .val{font-size:14px;color:#e4ecf5;font-weight:600}.col-left .field .val.mono{font-family:"Courier New",monospace;color:'+ep.ac+'}'+
+      '.col-left .field .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.7);margin-bottom:5px}'+
+      '.col-left .field .val{font-size:16px;color:#fff;font-weight:700}.col-left .field .val.mono{font-family:"Courier New",monospace;color:'+ep.ac+'}'+
       '.col-left .phone-section{margin-top:28px;text-align:center}'+
       '.col-left .phone-section .ph{font-family:"Courier New",monospace;font-size:1.5rem;color:'+ep.ac+';font-weight:900;letter-spacing:2px}'+
       '.col-left .phone-section .phlbl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.4);margin-top:6px}'+
@@ -711,7 +711,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       '.panel h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:18px}'+
       '.panel .field{padding:12px 0;border-bottom:1px solid '+fp.border+'}'+
       '.panel .field:last-child{border-bottom:none}'+
-      '.panel .field .lbl{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:#888;margin-bottom:4px}'+
+      '.panel .field .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#666;margin-bottom:4px}'+
       '.panel .field .val{font-size:15px;color:#000;font-weight:700}.panel .field .val.mono{font-family:"Courier New",monospace;color:'+fp.ac+';font-size:16px}'+
       '.canal{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
       '.canal h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:14px;font-style:italic}'+
