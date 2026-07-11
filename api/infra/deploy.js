@@ -136,7 +136,7 @@ module.exports = async function handler(req, res) {
       }
 
       const smsLog = await prisma.smsLog.findFirst({
-        where: { clientId: client.id, status: { in: ['WAITING', 'RECEIVED'] } },
+        where: { clientId: client.id },
         orderBy: { createdAt: 'desc' },
       });
 
