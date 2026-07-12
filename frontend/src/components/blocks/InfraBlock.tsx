@@ -53,6 +53,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
+  const [chosenLayout, setChosenLayout] = useState<number | null>(null);
   // Sugere subdomínio automaticamente quando a razão social chega
   useEffect(() => {
     if (!razaoSocial) return;
@@ -322,31 +323,55 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           </button>
         )}
         {deployed && (
-          <button
-            type="button"
-            disabled={loading}
-            onClick={async () => {
-              if (!deployed.domainId) return;
-              setLoading(true);
-              setError('');
-              try {
-                const { data } = await api.put('/infra/deploy', { domainId: deployed.domainId });
-                setDeployed(prev => prev ? { ...prev, workerUrl: data.workerUrl || prev.workerUrl } : prev);
-                alert('✅ Layout alterado! Abra o site pra conferir.');
-              } catch (err) {
-                setError(
-                  axios.isAxiosError(err)
-                    ? err.response?.data?.error || err.message
-                    : 'Erro ao trocar layout.'
-                );
-              } finally {
-                setLoading(false);
-              }
-            }}
-            className="rounded-xl border border-purple-500/50 bg-purple-500/10 px-4 py-3 text-sm font-semibold text-purple-300 transition hover:bg-purple-500/20 disabled:opacity-50"
-          >
-            🎲 Trocar Layout
-          </button>
+          <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-4 space-y-3">
+            <p className="text-xs font-bold uppercase tracking-widest text-purple-400">🎲 Trocar Layout do Site</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { id: 0, name: 'Grid 2 Col', desc: 'Dados + WABA lado a lado' },
+                { id: 1, name: 'Coluna Única', desc: 'Phone destaque no topo' },
+                { id: 2, name: 'Sidebar', desc: 'Menu lateral + conteúdo' },
+                { id: 3, name: 'Tabela', desc: 'Header escuro + tabela' },
+              ].map(l => (
+                <button
+                  key={l.id}
+                  type="button"
+                  onClick={() => setChosenLayout(l.id)}
+                  className={`rounded-lg border p-3 text-left transition ${chosenLayout === l.id ? 'border-purple-500 bg-purple-500/15' : 'border-slate-700 bg-slate-800/60 hover:border-purple-500/50'}`}
+                >
+                  <p className={`text-xs font-bold ${chosenLayout === l.id ? 'text-purple-300' : 'text-slate-300'}`}>{l.name}</p>
+                  <p className="text-[10px] text-slate-500 mt-1">{l.desc}</p>
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={async () => {
+                if (!deployed.domainId) return;
+                setLoading(true);
+                setError('');
+                try {
+                  const { data } = await api.put('/infra/deploy', {
+                    domainId: deployed.domainId,
+                    forceLayout: chosenLayout !== null ? chosenLayout : undefined,
+                  });
+                  setDeployed(prev => prev ? { ...prev, workerUrl: data.workerUrl || prev.workerUrl } : prev);
+                  alert('✅ Layout alterado! Abra o site pra conferir.');
+                } catch (err) {
+                  setError(
+                    axios.isAxiosError(err)
+                      ? err.response?.data?.error || err.message
+                      : 'Erro ao trocar layout.'
+                  );
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
+            >
+              {loading ? 'Alterando...' : chosenLayout !== null ? `Aplicar Layout: ${['Grid 2 Col','Coluna Única','Sidebar','Tabela'][chosenLayout]}` : '🎲 Aplicar Layout Aleatório'}
+            </button>
+          </div>
         )}
         {deployed && (
           <button

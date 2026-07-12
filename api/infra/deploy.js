@@ -306,7 +306,7 @@ module.exports = async function handler(req, res) {
   // ── PUT — trocar layout do site (regenerar com template diferente) ────────
   if (req.method === 'PUT') {
     try {
-      const { domainId } = req.body;
+      const { domainId, forceLayout } = req.body;
       if (!domainId)
         return res.status(400).json({ error: 'domainId é obrigatório.' });
 
@@ -333,8 +333,15 @@ module.exports = async function handler(req, res) {
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
       };
 
-      // Gera novo template (random dos 16 layouts)
-      const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName });
+      // Gera novo template (random ou forçado pelo usuário)
+      var newPutIndex;
+      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 3) {
+        // forceLayout é o tipo (0-3), gera um índice que cai nesse layout (templateIndex % 4 === forceLayout)
+        newPutIndex = forceLayout + (Math.floor(Math.random() * 20) * 4);
+      } else {
+        newPutIndex = Math.floor(Math.random() * 80);
+      }
+      const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
 
       // Republica no provider correto
       const wName = domain.cloudflareZoneId || '';
@@ -343,7 +350,12 @@ module.exports = async function handler(req, res) {
       let resultUrl;
       if (isWildcard) {
         // Wildcard: gera índice aleatório e salva updatedAt engenheirado pra produzir esse índice
-        const newIndexPut = Math.floor(Math.random() * 80);
+        var newIndexPut;
+        if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 3) {
+          newIndexPut = forceLayout + (Math.floor(Math.random() * 20) * 4);
+        } else {
+          newIndexPut = Math.floor(Math.random() * 80);
+        }
         const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
         const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const cnpjSum = cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0);
