@@ -389,370 +389,72 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     '<\/script>';
 
   // ═══════════════════════════════════════════════════════════════
-  // TIPO A (0-24): Painel Telemetria — nav + hero + grid 2col + sidebar WABA
   // ═══════════════════════════════════════════════════════════════
-  if (templateIndex < 25) {
-    var p = _A[templateIndex];
-    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+p.bg+';color:#c8d6e5;min-height:100vh;font-size:14px}'+
-      '.topbar{background:'+p.nav+';border-bottom:1px solid '+p.ac+'40;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}'+
-      '.topbar .name{font-size:15px;font-weight:800;color:#fff;letter-spacing:.3px}'+
-      '.topbar .status{display:flex;align-items:center;gap:8px}.topbar .dot{width:8px;height:8px;border-radius:50%;background:'+p.ac+';box-shadow:0 0 6px '+p.ac+'80}.topbar .stxt{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:'+p.ac+'}'+
-      '.topbar .badge{font-family:monospace;font-size:10px;background:'+p.ac+'18;border:1px solid '+p.ac+'35;color:'+p.ac2+';padding:3px 10px;border-radius:2px;letter-spacing:1px}'+
-      '.main-grid{max-width:960px;margin:24px auto;padding:0 20px;display:grid;grid-template-columns:1fr 320px;gap:20px}@media(max-width:800px){.main-grid{grid-template-columns:1fr;padding:0 12px}}'+
-      '.panel{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;margin-bottom:16px;overflow:hidden}'+
-      '.panel-title{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:8px}'+
-      '.panel-title span{font-size:12px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
-      '.grid-data{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid rgba(255,255,255,.04)}@media(max-width:600px){.grid-data{grid-template-columns:1fr}}'+
-      '.cell{padding:14px 16px;border-right:1px solid rgba(255,255,255,.04)}.cell:last-child{border-right:none}'+
-      '.cell .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.7);margin-bottom:5px}'+
-      '.cell .val{font-size:15px;color:#fff;font-weight:700}.cell .val.mono{font-family:"Courier New",monospace;color:'+p.ac+';letter-spacing:.5px}.cell .val.ok{color:#4ade80}'+
-      '.row-data{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;flex-direction:column;gap:3px}'+
-      '.row-data .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:rgba(255,255,255,.7)}'+
-      '.row-data .val{font-size:13px;color:#e2e8f0;font-weight:600}'+
-      '.waba-card{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:4px;padding:18px;margin-bottom:16px}'+
-      '.waba-card h3{font-size:12px;font-weight:700;color:'+p.ac+';margin-bottom:10px;display:flex;align-items:center;gap:6px}'+
-      '.waba-card p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:8px}'+
-      '.waba-card .phone-big{font-family:"Courier New",monospace;font-size:1.4rem;color:'+p.ac+';font-weight:900;margin:14px 0;letter-spacing:2px}'+
-      '.waba-card .foot{font-size:10px;color:rgba(255,255,255,.4);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
-      '.sidebar-card{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:16px;margin-bottom:14px}'+
-      '.sidebar-card .st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:'+p.ac+';margin-bottom:10px}'+
-      '.sidebar-card .si{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}.sidebar-card .si:last-child{border-bottom:none}'+
-      '.sidebar-card .sil{font-size:9px;text-transform:uppercase;color:rgba(255,255,255,.35);letter-spacing:1px;margin-bottom:2px}'+
-      '.sidebar-card .siv{font-size:13px;color:#e2e8f0;font-weight:700}.sidebar-card .siv.mono{font-family:monospace;color:'+p.ac+'}'+
-      '.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}.tag{font-size:8px;font-weight:700;letter-spacing:1px;background:'+p.ac+'15;border:1px solid '+p.ac+'30;color:'+p.ac2+';padding:3px 8px;border-radius:2px}'+
-      '.compliance-sec{padding:16px;border-top:1px solid rgba(255,255,255,.04)}'+
-      '.compliance-sec h4{font-size:11px;color:'+p.ac+';margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px}'+
-      '.compliance-sec p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.8}'+
-      '.compliance-sec ul{list-style:none;margin:8px 0}.compliance-sec li{font-size:12px;color:rgba(255,255,255,.6);line-height:2;padding-left:14px;position:relative}.compliance-sec li::before{content:"\\25B8";position:absolute;left:0;color:'+p.ac+'}'+
-      '.footer-bar{max-width:960px;margin:0 auto;padding:14px 20px;font-size:10px;color:rgba(255,255,255,.35);text-align:center;border-top:1px solid rgba(255,255,255,.04)}';
-
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<div class="topbar"><span class="name" data-field="razao">'+razaoFmt+'</span><div class="status"><span class="dot"></span><span class="stxt">TELEMETRIA ATIVA</span></div><span class="badge">'+p.lbl+'</span></div>'+
-      '<div class="main-grid"><div>'+
-      '<div class="panel"><div class="panel-title"><span>'+sec.rs.slice(0,20)+' / Identifica\u00e7\u00e3o</span></div>'+
-      '<div class="grid-data"><div class="cell"><div class="lbl">'+sec.rs+'</div><div class="val" data-field="razao">'+razaoFmt+'</div></div>'+
-      '<div class="cell"><div class="lbl">'+sec.cnpj+'</div><div class="val mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
-      '<div class="cell"><div class="lbl">'+sec.sit+'</div><div class="val ok">'+situacaoFmt+'</div></div></div>'+
-      '<div class="grid-data"><div class="cell"><div class="lbl">'+sec.tel+'</div><div class="val mono" data-field="phone">'+phoneFmt+'</div></div>'+
-      '<div class="cell"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
-      '<div class="cell"><div class="lbl">'+sec.mun+'</div><div class="val">'+munFmt+'/'+ufFmt+'</div></div></div>'+
-      '</div>'+
-      '<div class="panel"><div class="row-data"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div></div>'+
-      (atividadeFmt?'<div class="panel"><div class="row-data"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div></div>':'')+
-      '<div class="panel"><div class="compliance-sec"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
-      '<div class="compliance-sec"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
-      '<div class="compliance-sec"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
-      '<div class="compliance-sec"><h4>Canal de Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div></div>'+
-      '</div><div>'+
-      '<div class="waba-card"><h3>&#x1f4e1; '+sec.waba+'</h3>'+
-      '<p>'+wabaText+'</p>'+
-      '<p>'+wabaFoot+'</p>'+
-      (phoneFmt?'<div class="phone-big" data-field="phone">'+phoneFmt+'</div>':'')+
-      '<div class="foot">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
-      '<div class="sidebar-card"><div class="st">Identifica\u00e7\u00e3o Fiscal</div>'+
-      '<div class="si"><div class="sil">Raz\u00e3o Social</div><div class="siv">'+razaoFmt+'</div></div>'+
-      '<div class="si"><div class="sil">CNPJ</div><div class="siv mono">'+cnpjFmt+'</div></div>'+
-      '<div class="si"><div class="sil">Munic\u00edpio/UF</div><div class="siv">'+munFmt+'/'+ufFmt+'</div></div>'+
-      '<div class="si"><div class="sil">CEP</div><div class="siv mono">'+cepFmt+'</div></div>'+
-      '<div class="tags"><span class="tag">RECEPTIVO</span><span class="tag">UTILITY</span><span class="tag">LGPD</span><span class="tag">META</span></div></div>'+
-      '</div></div>'+
-      domScript+
-      '<div class="footer-bar">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+(phoneFmt?' \u2014 '+phoneFmt:'')+(emailFmt?' \u2014 '+emailFmt:'')+'</div>'+
-      '</body></html>';
-  }
-
+  // TODOS OS TEMPLATES: Fundo claro, texto escuro, alta legibilidade
+  // Meta valida melhor sites claros e legíveis
   // ═══════════════════════════════════════════════════════════════
-  // TIPO B (25-49): Terminal NOC — barra status + seções verticais + compliance
-  // ═══════════════════════════════════════════════════════════════
-  else if (templateIndex < 50) {
-    var p = _B[templateIndex - 25];
-    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:"Courier New",Courier,monospace;background:'+p.bg+';color:#b8c5d4;min-height:100vh;font-size:13px}'+
-      '.status-bar{background:'+p.nav+';border-bottom:2px solid '+p.ac+';padding:10px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px}'+
-      '.status-bar .sys{font-size:10px;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase;font-weight:700}'+
-      '.status-bar .phone{font-size:13px;color:#fff;font-weight:900;letter-spacing:1px}'+
-      '.status-bar .ts{font-size:9px;color:rgba(255,255,255,.35)}'+
-      '.header-block{max-width:800px;margin:28px auto 0;padding:0 20px;text-align:center}'+
-      '.header-block h1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}'+
-      '.header-block .sub{font-size:11px;color:'+p.ac+';letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}'+
-      '.header-block .cnpj-line{font-size:14px;color:'+p.ac2+';letter-spacing:1px}'+
-      '.container{max-width:800px;margin:24px auto;padding:0 20px}'+
-      '.section{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:3px;margin-bottom:14px;overflow:hidden}'+
-      '.section-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.06);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase}'+
-      '.section-body{padding:0}'+
-      '.row{display:flex;flex-direction:column;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.05)}.row:last-child{border-bottom:none}'+
-      '.row .k{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.7);margin-bottom:4px}'+
-      '.row .v{font-size:15px;color:#fff;font-weight:700}.row .v.ac{color:'+p.ac+';font-weight:700}.row .v.ok{color:#4ade80}.row .v.big{font-size:17px;font-weight:900;color:#fff}'+
-      '.waba-section{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:3px solid '+p.ac+';border-radius:3px;padding:20px;margin-bottom:14px}'+
-      '.waba-section h3{font-family:-apple-system,sans-serif;font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
-      '.waba-section p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.9;margin-bottom:6px}'+
-      '.waba-section .phone-display{font-size:1.5rem;color:'+p.ac+';font-weight:900;margin:14px 0;letter-spacing:3px;text-align:center;padding:12px;background:'+p.ac+'08;border:1px solid '+p.ac+'20;border-radius:3px}'+
-      '.waba-section .disclaimer{font-size:10px;color:rgba(255,255,255,.35);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
-      '.compliance-block{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:18px;margin-bottom:14px}'+
-      '.compliance-block h4{font-family:-apple-system,sans-serif;font-size:11px;font-weight:700;color:'+p.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}'+
-      '.compliance-block p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:6px}'+
-      '.compliance-block ul{list-style:none;margin:6px 0}.compliance-block li{font-size:13px;color:rgba(255,255,255,.75);line-height:2;padding-left:16px;position:relative}.compliance-block li::before{content:"$";position:absolute;left:0;color:'+p.ac+'}'+
-      '.footer-line{max-width:800px;margin:0 auto;padding:16px 20px;font-size:10px;color:rgba(255,255,255,.3);text-align:center;border-top:1px solid rgba(255,255,255,.04)}';
 
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<div class="status-bar"><span class="sys">'+p.lbl+'</span>'+(phoneFmt?'<span class="phone" data-field="phone">'+phoneFmt+'</span>':'')+'<span class="ts">PID:'+templateIndex+' | ACTIVE</span></div>'+
-      '<div class="header-block"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">'+p.lbl+'</div><div class="cnpj-line" data-field="cnpj">'+cnpjFmt+'</div></div>'+
-      '<div class="container">'+
-      '<div class="section"><div class="section-head">'+sec.rs+' / Dados Cadastrais</div><div class="section-body">'+
-      '<div class="row"><div class="k">'+sec.rs+'</div><div class="v big">'+razaoFmt+'</div></div>'+
-      '<div class="row"><div class="k">'+sec.cnpj+'</div><div class="v ac">'+cnpjFmt+'</div></div>'+
-      '<div class="row"><div class="k">'+sec.sit+'</div><div class="v ok">'+situacaoFmt+'</div></div>'+
-      '<div class="row"><div class="k">'+sec.tel+'</div><div class="v ac" data-field="phone">'+phoneFmt+'</div></div>'+
-      '<div class="row"><div class="k">'+sec.email+'</div><div class="v">'+(emailFmt||'N/A')+'</div></div>'+
-      '<div class="row"><div class="k">'+sec.mun+'</div><div class="v">'+munFmt+'/'+ufFmt+'</div></div>'+
-      '</div></div>'+
-      '<div class="section"><div class="section-head">'+sec.end+'</div><div class="section-body">'+
-      '<div class="row"><div class="k">Endere\u00e7o Completo</div><div class="v">'+fullAddress+'</div></div>'+
-      '</div></div>'+
-      (atividadeFmt?'<div class="section"><div class="section-head">'+sec.cnae+'</div><div class="section-body"><div class="row"><div class="k">Classifica\u00e7\u00e3o</div><div class="v">'+atividadeFmt+'</div></div></div></div>':'')+
-      '<div class="waba-section"><h3>&#x1f4e1; '+sec.waba+'</h3>'+
-      '<p>'+wabaText+'</p>'+
-      '<p>'+wabaFoot+'</p>'+
-      (phoneFmt?'<div class="phone-display" data-field="phone">'+phoneFmt+'</div>':'')+
-      '<div class="disclaimer">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
-      '<div class="compliance-block"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
-      '<div class="compliance-block"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
-      '<div class="compliance-block"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
-      '<div class="compliance-block"><h4>Canal de Atendimento \u2014 Regras</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
-      '</div>'+
-      domScript+
-      '<div class="footer-line">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+(emailFmt?' | '+emailFmt:'')+'</div>'+
-      '</body></html>';
-  }
+  // Paleta de cores de destaque (accent) — varia por template
+  var accents = ['#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d','#ea580c','#6d28d9','#0e7490','#be123c','#047857','#a16207','#2563eb','#16a34a','#9333ea','#d97706','#1e40af','#065f46','#92400e','#5b21b6','#b91c1c','#0284c7','#7e22ce','#854d0e','#4338ca','#166534','#c2410c','#6b21a8','#155e75','#9f1239','#047857','#a16207','#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d','#ea580c','#6d28d9','#0e7490','#be123c','#047857','#a16207','#2563eb','#16a34a','#9333ea','#d97706','#1e40af','#065f46','#92400e','#5b21b6','#b91c1c','#0284c7','#7e22ce','#854d0e','#4338ca','#166534','#c2410c','#6b21a8','#155e75','#9f1239','#047857','#a16207','#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d'];
+  var ac = accents[templateIndex];
 
-  // ═══════════════════════════════════════════════════════════════
-  // TIPO C (50-73): Dashboard Split — sidebar fixa + main + banner WABA
-  // ═══════════════════════════════════════════════════════════════
-  else if (templateIndex < 74) {
-    var p = _C[templateIndex - 50];
-    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+p.bg+';color:#c0cdd8;min-height:100vh;display:grid;grid-template-columns:260px 1fr;font-size:13px}@media(max-width:800px){body{grid-template-columns:1fr}}'+
-      '.sidebar{background:'+(p.sb||p.nav)+';border-right:1px solid rgba(255,255,255,.06);padding:24px 16px;display:flex;flex-direction:column;gap:14px}@media(max-width:800px){.sidebar{border-right:none;border-bottom:1px solid rgba(255,255,255,.06);padding:16px}}'+
-      '.sidebar .logo{font-size:14px;font-weight:800;color:#fff;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.06)}'+
-      '.sidebar .nav-item{font-size:11px;color:rgba(255,255,255,.5);padding:8px 12px;border-radius:3px;letter-spacing:.5px}'+
-      '.sidebar .nav-item.active{background:'+p.ac+'15;color:'+p.ac+';font-weight:700}'+
-      '.sidebar .phone-box{margin-top:auto;background:'+p.ac+'10;border:1px solid '+p.ac+'25;border-radius:3px;padding:12px;text-align:center}'+
-      '.sidebar .phone-box .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:'+p.ac+';margin-bottom:6px}'+
-      '.sidebar .phone-box .ph{font-family:"Courier New",monospace;font-size:1.1rem;color:#fff;font-weight:900;letter-spacing:1px}'+
-      '.sidebar .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.sidebar .tag{font-size:8px;background:'+p.ac+'12;border:1px solid '+p.ac+'25;color:'+p.ac2+';padding:2px 7px;border-radius:2px;letter-spacing:.8px}'+
-      '.main-content{padding:28px 24px;overflow-y:auto}@media(max-width:800px){.main-content{padding:20px 16px}}'+
-      '.main-content h1{font-size:1.6rem;font-weight:800;color:#fff;margin-bottom:4px;letter-spacing:-.3px}'+
-      '.main-content .subtitle{font-size:11px;color:'+p.ac+';letter-spacing:1.5px;text-transform:uppercase;margin-bottom:24px}'+
-      '.data-card{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;margin-bottom:16px;overflow:hidden}'+
-      '.data-card .card-head{padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.05);font-size:10px;font-weight:700;color:'+p.ac+';letter-spacing:1.2px;text-transform:uppercase}'+
-      '.data-card .card-row{display:flex;justify-content:space-between;align-items:baseline;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.03);gap:12px}.data-card .card-row:last-child{border-bottom:none}'+
-      '.data-card .card-row .k{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.7);min-width:120px;flex-shrink:0}'+
-      '.data-card .card-row .v{font-size:13px;color:#e2e8f0;font-weight:600;max-width:65%}.data-card .card-row .v.mono{font-family:monospace;color:'+p.ac+'}.data-card .card-row .v.ok{color:#4ade80}'+
-      '.waba-banner{background:'+p.nav+';border:1px solid '+p.ac+'30;border-left:4px solid '+p.ac+';border-radius:4px;padding:20px;margin-bottom:16px}'+
-      '.waba-banner h3{font-size:13px;font-weight:700;color:'+p.ac+';margin-bottom:10px}'+
-      '.waba-banner p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8;margin-bottom:6px}'+
-      '.waba-banner .phone-lg{font-family:"Courier New",monospace;font-size:1.4rem;color:'+p.ac+';font-weight:900;letter-spacing:2px;margin:14px 0;text-align:center}'+
-      '.waba-banner .foot{font-size:10px;color:rgba(255,255,255,.3);padding-top:10px;border-top:1px solid rgba(255,255,255,.06)}'+
-      '.text-section{background:'+p.nav+';border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:16px;margin-bottom:14px}'+
-      '.text-section h4{font-size:11px;font-weight:700;color:'+p.ac+';text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}'+
-      '.text-section p{font-size:13px;color:rgba(255,255,255,.75);line-height:1.8}'+
-      '.text-section ul{list-style:none}.text-section li{font-size:13px;color:rgba(255,255,255,.75);line-height:2;padding-left:14px;position:relative}.text-section li::before{content:"\\203A";position:absolute;left:0;color:'+p.ac+';font-weight:700}';
+  var css = '*{margin:0;padding:0;box-sizing:border-box}'+
+    'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f8f9fa;color:#1a1a1a;min-height:100vh;font-size:15px;line-height:1.6}'+
+    '.header{background:#fff;border-bottom:3px solid '+ac+';padding:32px 24px;text-align:center}'+
+    '.header h1{font-size:2rem;font-weight:900;color:#000;margin-bottom:6px;letter-spacing:-.3px}'+
+    '.header .sub{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:'+ac+';font-weight:600}'+
+    '.header .cnpj{font-family:"Courier New",monospace;font-size:15px;color:#333;margin-top:6px}'+
+    '.content{max-width:900px;margin:28px auto;padding:0 20px;display:grid;grid-template-columns:1.3fr 1fr;gap:24px}@media(max-width:800px){.content{grid-template-columns:1fr;padding:0 16px}}'+
+    '.card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px;margin-bottom:20px}'+
+    '.card h2{font-size:14px;font-weight:700;color:'+ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid '+ac+'20}'+
+    '.field{padding:12px 0;border-bottom:1px solid #f0f0f0}'+
+    '.field:last-child{border-bottom:none}'+
+    '.field .label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#666;margin-bottom:4px}'+
+    '.field .value{font-size:16px;color:#000;font-weight:700}'+
+    '.field .value.mono{font-family:"Courier New",monospace;color:'+ac+'}'+
+    '.field .value.green{color:#059669}'+
+    '.waba-card{background:#fff;border:2px solid '+ac+';border-radius:8px;padding:24px}'+
+    '.waba-card h2{font-size:14px;font-weight:700;color:'+ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}'+
+    '.waba-card .phone{font-family:"Courier New",monospace;font-size:1.6rem;color:'+ac+';font-weight:900;letter-spacing:1px;margin:16px 0;text-align:center;padding:14px;background:'+ac+'08;border:1px solid '+ac+'20;border-radius:6px}'+
+    '.waba-card p{font-size:14px;color:#333;line-height:1.8;margin-bottom:8px}'+
+    '.waba-card .foot{font-size:12px;color:#666;padding-top:12px;margin-top:12px;border-top:1px solid #eee}'+
+    '.info-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin-bottom:16px}'+
+    '.info-card h3{font-size:13px;font-weight:700;color:#333;margin-bottom:10px}'+
+    '.info-card p{font-size:14px;color:#444;line-height:1.8}'+
+    '.info-card ul{list-style:none;margin:8px 0}.info-card li{font-size:14px;color:#444;line-height:2;padding-left:16px;position:relative}.info-card li::before{content:"\\2022";position:absolute;left:0;color:'+ac+';font-weight:bold}'+
+    '.footer{max-width:900px;margin:20px auto;padding:16px 20px;background:'+ac+';border-radius:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}'+
+    '.footer .info{font-size:12px;color:#fff;font-weight:500}'+
+    '.footer .badge{font-size:11px;color:#fff;font-weight:700;letter-spacing:1px;opacity:.9}';
 
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<aside class="sidebar"><div class="logo" data-field="razao">'+razaoFmt+'</div>'+
-      '<div class="nav-item active">Dados Cadastrais</div><div class="nav-item">Compliance</div><div class="nav-item">Atendimento</div><div class="nav-item">Privacidade</div>'+
-      (phoneFmt?'<div class="phone-box"><div class="lbl">Canal Oficial</div><div class="ph" data-field="phone">'+phoneFmt+'</div></div>':'')+
-      '<div class="tags"><span class="tag">RECEPTIVO</span><span class="tag">UTILITY</span><span class="tag">LGPD</span><span class="tag">META</span></div>'+
-      '</aside>'+
-      '<main class="main-content"><h1 data-field="razao">'+razaoFmt+'</h1><div class="subtitle">'+p.lbl+'</div>'+
-      '<div class="data-card"><div class="card-head">'+sec.rs+' / Identifica\u00e7\u00e3o</div>'+
-      '<div class="card-row"><span class="k">'+sec.rs+'</span><span class="v">'+razaoFmt+'</span></div>'+
-      '<div class="card-row"><span class="k">'+sec.cnpj+'</span><span class="v mono">'+cnpjFmt+'</span></div>'+
-      '<div class="card-row"><span class="k">'+sec.sit+'</span><span class="v ok">'+situacaoFmt+'</span></div>'+
-      '<div class="card-row"><span class="k">'+sec.tel+'</span><span class="v mono" data-field="phone">'+phoneFmt+'</span></div>'+
-      '<div class="card-row"><span class="k">'+sec.email+'</span><span class="v">'+(emailFmt||'N/A')+'</span></div>'+
-      '<div class="card-row"><span class="k">'+sec.mun+'</span><span class="v">'+munFmt+'/'+ufFmt+'</span></div>'+
-      '</div>'+
-      '<div class="data-card"><div class="card-head">'+sec.end+'</div>'+
-      '<div class="card-row"><span class="k">Endere\u00e7o Completo</span><span class="v">'+fullAddress+'</span></div>'+
-      '</div>'+
-      (atividadeFmt?'<div class="data-card"><div class="card-head">'+sec.cnae+'</div><div class="card-row"><span class="k">Classifica\u00e7\u00e3o</span><span class="v">'+atividadeFmt+'</span></div></div>':'')+
-      '<div class="waba-banner"><h3>&#x1f4e1; '+sec.waba+'</h3>'+
-      '<p>'+wabaText+'</p>'+
-      '<p>'+wabaFoot+'</p>'+
-      (phoneFmt?'<div class="phone-lg" data-field="phone">'+phoneFmt+'</div>':'')+
-      '<div class="foot">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
-      '<div class="text-section"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
-      '<div class="text-section"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
-      '<div class="text-section"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
-      '<div class="text-section"><h4>Canal de Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
-      '</main>'+
-      domScript+
-      '</body></html>';
-  }
 
-  // ═══════════════════════════════════════════════════════════════
-  // TIPO D (74-75): Split Escuro — nome grande esquerda + dados lista + WABA direita
-  // Modelo: "FERNANDA GOUVEIA GOMES" da screenshot
-  // ═══════════════════════════════════════════════════════════════
-  else if (templateIndex < 76) {
-    var dPalettes = [
-      {bg:'#0c0e18',card:'#10131f',ac:'#7c6cf6',ac2:'#b4a9fd',lbl:'REGISTRO EMPRESARIAL'},
-      {bg:'#0a1014',card:'#0e151c',ac:'#4eadcf',ac2:'#8ed4ec',lbl:'CADASTRO OFICIAL'},
-    ];
-    var dp = dPalettes[templateIndex - 74];
-    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+dp.bg+';color:#c8d4e0;min-height:100vh;display:grid;grid-template-columns:1fr 1fr;font-size:14px}@media(max-width:800px){body{grid-template-columns:1fr}}'+
-      '.left{padding:48px 36px;display:flex;flex-direction:column;justify-content:center}@media(max-width:800px){.left{padding:32px 20px}}'+
-      '.left h1{font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.5px}'+
-      '.left .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:'+dp.ac+';margin-bottom:32px}'+
-      '.left .field{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.06)}'+
-      '.left .field .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.7);margin-bottom:5px}'+
-      '.left .field .val{font-size:16px;color:#fff;font-weight:700}.left .field .val.mono{font-family:"Courier New",monospace;color:'+dp.ac+';letter-spacing:.5px}'+
-      '.right{background:'+dp.card+';padding:48px 36px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid rgba(255,255,255,.06)}@media(max-width:800px){.right{padding:32px 20px;border-left:none;border-top:1px solid rgba(255,255,255,.06)}}'+
-      '.right h2{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:'+dp.ac+';margin-bottom:20px}'+
-      '.right .phone-big{font-family:"Courier New",monospace;font-size:1.6rem;color:'+dp.ac+';font-weight:900;letter-spacing:2px;margin-bottom:20px}'+
-      '.right p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9;margin-bottom:10px}'+
-      '.right .compliance-tag{display:inline-block;font-family:monospace;font-size:10px;background:'+dp.ac+'12;border:1px solid '+dp.ac+'30;color:'+dp.ac2+';padding:6px 14px;border-radius:2px;letter-spacing:1.5px;margin-top:16px}'+
-      '.text-block{padding:24px 0}'+
-      '.text-block h4{font-size:11px;color:'+dp.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}'+
-      '.text-block p{font-size:12px;color:rgba(255,255,255,.5);line-height:1.8}';
-
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<div class="left">'+
-      '<h1 data-field="razao">'+razaoFmt+'</h1>'+
-      '<div class="sub">'+dp.lbl+'</div>'+
-      '<div class="field"><div class="lbl">'+sec.rs+'</div><div class="val">'+razaoFmt+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.cnpj+'</div><div class="val mono">'+cnpjFmt+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
-      (atividadeFmt?'<div class="field"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div>':'')+
-      (phoneFmt?'<div class="field"><div class="lbl">WHATSAPP BUSINESS</div><div class="val mono" data-field="phone">'+phoneFmt+'</div></div>':'')+
-      '</div>'+
-      '<div class="right">'+
-      '<h2>'+sec.waba+'</h2>'+
-      (phoneFmt?'<div class="phone-big" data-field="phone">'+phoneFmt+'</div>':'')+
-      '<p>'+wabaText+'</p>'+
-      '<p>'+wabaFoot+'</p>'+
-      '<div class="compliance-tag">COMPLIANCE: ATIVO</div>'+
-      '<div class="text-block"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
-      '<div class="text-block"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
-      '</div>'+
-      domScript+
-      '</body></html>';
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // TIPO E (76-77): Card escuro + dados lista + phone embaixo + Privacidade/Termos lado
-  // Modelo: "VALDEMIR FERREIRA DA SILVA" da screenshot
-  // ═══════════════════════════════════════════════════════════════
-  else if (templateIndex < 78) {
-    var ePalettes = [
-      {bg:'#080a14',card:'#0c0f1c',ac:'#6e5ff0',ac2:'#a89bf8',lbl:'CANAL UTILITY RECEPTIVO'},
-      {bg:'#0a0c10',card:'#0e1118',ac:'#5588dd',ac2:'#88bbf4',lbl:'ATENDIMENTO RECEPTIVO OFICIAL'},
-    ];
-    var ep = ePalettes[templateIndex - 76];
-    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:'+ep.bg+';color:#c0cee0;min-height:100vh;display:grid;grid-template-columns:380px 1fr;font-size:14px}@media(max-width:800px){body{grid-template-columns:1fr}}'+
-      '.col-left{padding:40px 32px;border-right:1px solid rgba(255,255,255,.06)}@media(max-width:800px){.col-left{padding:28px 20px;border-right:none;border-bottom:1px solid rgba(255,255,255,.06)}}'+
-      '.col-left h1{font-size:1.5rem;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px;font-style:italic}'+
-      '.col-left .sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:'+ep.ac+';margin-bottom:28px}'+
-      '.col-left .field{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}'+
-      '.col-left .field .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.7);margin-bottom:5px}'+
-      '.col-left .field .val{font-size:16px;color:#fff;font-weight:700}.col-left .field .val.mono{font-family:"Courier New",monospace;color:'+ep.ac+'}'+
-      '.col-left .phone-section{margin-top:28px;text-align:center}'+
-      '.col-left .phone-section .ph{font-family:"Courier New",monospace;font-size:1.5rem;color:'+ep.ac+';font-weight:900;letter-spacing:2px}'+
-      '.col-left .phone-section .phlbl{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.4);margin-top:6px}'+
-      '.col-right{padding:40px 32px;display:flex;flex-direction:column;justify-content:center}@media(max-width:800px){.col-right{padding:28px 20px}}'+
-      '.col-right .block{background:'+ep.card+';border:1px solid rgba(255,255,255,.06);border-radius:3px;padding:20px;margin-bottom:18px}'+
-      '.col-right .block h4{font-size:11px;font-weight:700;color:'+ep.ac+';text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}'+
-      '.col-right .block p{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9}'+
-      '.col-right .block ul{list-style:none;margin:6px 0}.col-right .block li{font-size:12px;color:rgba(255,255,255,.55);line-height:2;padding-left:14px;position:relative}.col-right .block li::before{content:"\\25B8";position:absolute;left:0;color:'+ep.ac+'}';
-
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<div class="col-left">'+
-      '<h1 data-field="razao">'+razaoFmt+'</h1>'+
-      '<div class="sub">'+ep.lbl+'</div>'+
-      '<div class="field"><div class="lbl">'+sec.rs+'</div><div class="val">'+razaoFmt+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.cnpj+'</div><div class="val mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
-      (atividadeFmt?'<div class="field"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div>':'')+
-      (phoneFmt?'<div class="phone-section"><div class="ph" data-field="phone">'+phoneFmt+'</div><div class="phlbl">WHATSAPP BUSINESS</div></div>':'')+
-      '</div>'+
-      '<div class="col-right">'+
-      '<div class="block"><h4>&#x1f4c4; Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
-      '<div class="block"><h4>&#x1f4c4; Termos de Uso</h4><p>'+term+'</p></div>'+
-      '<div class="block"><h4>&#x1f4e1; '+sec.waba+'</h4><p>'+wabaText+'</p><p>'+wabaFoot+'</p></div>'+
-      '<div class="block"><h4>Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
-      '</div>'+
-      domScript+
-      '</body></html>';
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // TIPO F (78-79): Editorial Claro — fundo bege, tipografia serif, grid 2col
-  // Modelo: "VANINHO NUNES SOARES" da screenshot
-  // ═══════════════════════════════════════════════════════════════
-  else {
-    var fPalettes = [
-      {bg:'#f5f1eb',card:'#ffffff',hd:'#1a1a1a',ac:'#8b5e34',border:'#e0d8ce',lbl:'INFORMATIVO EMPRESARIAL \u2014 REGISTRO OFICIAL'},
-      {bg:'#f0ece4',card:'#fefefe',hd:'#111111',ac:'#6b4c2a',border:'#ddd5c8',lbl:'REGISTRO CADASTRAL \u2014 DADOS P\u00daBLICOS'},
-    ];
-    var fp = fPalettes[templateIndex - 78];
-    var css = '*{margin:0;padding:0;box-sizing:border-box}'+
-      'body{font-family:Georgia,"Times New Roman",serif;background:'+fp.bg+';color:#2a2a2a;min-height:100vh;font-size:14px}'+
-      '.header{text-align:center;padding:48px 20px 28px;border-bottom:2px solid '+fp.ac+'}'+
-      '.header h1{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:2.2rem;font-weight:900;color:#000;letter-spacing:-.5px;margin-bottom:8px}'+
-      '.header .sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#777}'+
-      '.content{max-width:880px;margin:28px auto;padding:0 24px;display:grid;grid-template-columns:1.2fr 1fr;gap:32px}@media(max-width:800px){.content{grid-template-columns:1fr;padding:0 16px}}'+
-      '.panel{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
-      '.panel h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:18px}'+
-      '.panel .field{padding:12px 0;border-bottom:1px solid '+fp.border+'}'+
-      '.panel .field:last-child{border-bottom:none}'+
-      '.panel .field .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#666;margin-bottom:4px}'+
-      '.panel .field .val{font-size:15px;color:#000;font-weight:700}.panel .field .val.mono{font-family:"Courier New",monospace;color:'+fp.ac+';font-size:16px}'+
-      '.canal{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:24px}'+
-      '.canal h3{font-family:-apple-system,sans-serif;font-size:14px;font-weight:700;color:'+fp.hd+';margin-bottom:14px;font-style:italic}'+
-      '.canal .phone-big{font-family:"Courier New",monospace;font-size:1.4rem;color:'+fp.ac+';font-weight:900;letter-spacing:1px;margin-bottom:16px}'+
-      '.canal p{font-size:13px;color:#666;line-height:1.8;margin-bottom:8px}'+
-      '.text-sec{max-width:880px;margin:20px auto;padding:0 24px}'+
-      '.text-sec .block{background:'+fp.card+';border:1px solid '+fp.border+';border-radius:2px;padding:18px;margin-bottom:14px}'+
-      '.text-sec .block h4{font-family:-apple-system,sans-serif;font-size:12px;font-weight:700;color:'+fp.hd+';margin-bottom:8px}'+
-      '.text-sec .block p{font-size:12px;color:#666;line-height:1.8}'+
-      '.text-sec .block ul{list-style:none;margin:6px 0}.text-sec .block li{font-size:12px;color:#666;line-height:2;padding-left:14px;position:relative}.text-sec .block li::before{content:"\\2022";position:absolute;left:0;color:'+fp.ac+'}'+
-      '.footer-bar{max-width:880px;margin:20px auto 0;padding:12px 24px;background:'+fp.ac+';border-radius:2px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}'+
-      '.footer-bar .info{font-size:11px;color:#fff;font-weight:500}'+
-      '.footer-bar .badge{font-size:10px;color:#fff;font-weight:700;letter-spacing:1px}';
-
-    return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
-      '<div class="header"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">'+fp.lbl+'</div></div>'+
-      '<div class="content">'+
-      '<div class="panel"><h3>Dados Cadastrais da Empresa</h3>'+
-      '<div class="field"><div class="lbl">'+sec.rs+'</div><div class="val">'+razaoFmt+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.cnpj+'</div><div class="val mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.end+'</div><div class="val">'+fullAddress+'</div></div>'+
-      '<div class="field"><div class="lbl">'+sec.email+'</div><div class="val">'+(emailFmt||'N/A')+'</div></div>'+
-      (atividadeFmt?'<div class="field"><div class="lbl">'+sec.cnae+'</div><div class="val">'+atividadeFmt+'</div></div>':'')+
-      '</div>'+
-      '<div class="canal"><h3>Canal de Atendimento</h3>'+
-      (phoneFmt?'<div class="phone-big" data-field="phone">'+phoneFmt+'</div>':'')+
-      '<p>'+wabaText+'</p>'+
-      '<p>'+wabaFoot+'</p>'+
-      '</div>'+
-      '</div>'+
-      '<div class="text-sec">'+
-      '<div class="block"><h4>Sobre a Empresa</h4><p>'+sob+'</p></div>'+
-      '<div class="block"><h4>Pol\u00edtica de Privacidade</h4><p>'+priv+'</p></div>'+
-      '<div class="block"><h4>Termos de Uso</h4><p>'+term+'</p></div>'+
-      '<div class="block"><h4>Regras de Atendimento</h4><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
-      '</div>'+
-      '<div class="footer-bar"><span class="info">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+'</span><span class="badge">Canal Utility Receptivo</span></div>'+
-      domScript+
-      '</body></html>';
-  }
+  return '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'+metaTag+ogTags+'<title>'+razaoFmt+'</title><style>'+css+'</style></head><body>'+
+    '<div class="header"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">'+sec.waba+'</div><div class="cnpj" data-field="cnpj">CNPJ: '+cnpjFmt+'</div></div>'+
+    '<div class="content"><div>'+
+    '<div class="card"><h2>Dados Cadastrais da Empresa</h2>'+
+    '<div class="field"><div class="label">'+sec.rs+'</div><div class="value">'+razaoFmt+'</div></div>'+
+    '<div class="field"><div class="label">CNPJ</div><div class="value mono" data-field="cnpj">'+cnpjFmt+'</div></div>'+
+    '<div class="field"><div class="label">Situa\u00e7\u00e3o Cadastral</div><div class="value green">'+situacaoFmt+'</div></div>'+
+    '<div class="field"><div class="label">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'+
+    '<div class="field"><div class="label">Email</div><div class="value">'+(emailFmt||'N/A')+'</div></div>'+
+    (atividadeFmt?'<div class="field"><div class="label">CNAE / Atividade</div><div class="value">'+atividadeFmt+'</div></div>':'')+
+    (phoneFmt?'<div class="field"><div class="label">Telefone / WhatsApp</div><div class="value mono" data-field="phone">'+phoneFmt+'</div></div>':'')+
+    '</div>'+
+    '<div class="info-card"><h3>Sobre a Empresa</h3><p>'+sob+'</p></div>'+
+    '<div class="info-card"><h3>Canal de Atendimento</h3><ul>'+atn.map(function(l){return '<li>'+l+'</li>';}).join('')+'</ul></div>'+
+    '</div><div>'+
+    '<div class="waba-card"><h2>Canal de Atendimento Oficial</h2>'+
+    (phoneFmt?'<div class="phone" data-field="phone">'+phoneFmt+'</div>':'')+
+    '<p>'+wabaText+'</p>'+
+    '<p>'+wabaFoot+'</p>'+
+    '<div class="foot">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 Conformidade WhatsApp Business e Meta Platforms.</div></div>'+
+    '<div class="info-card"><h3>Pol\u00edtica de Privacidade</h3><p>'+priv+'</p></div>'+
+    '<div class="info-card"><h3>Termos de Uso</h3><p>'+term+'</p></div>'+
+    '</div></div>'+
+    '<div class="footer"><span class="info">'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+(phoneFmt?' \u2014 '+phoneFmt:'')+'</span><span class="badge">Canal Utility Receptivo</span></div>'+
+    domScript+
+    '</body></html>';
 }
+
 
 
 /**
