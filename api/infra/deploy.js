@@ -73,6 +73,8 @@ module.exports = async function handler(req, res) {
         'verificadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFICADORBM,
         'ativoson.com': process.env.CLOUDFLARE_ZONE_ATIVOSON,
         'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
+        'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
+        'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
       };
 
       // Busca todos os domínios wildcard do usuário
@@ -278,6 +280,8 @@ module.exports = async function handler(req, res) {
               'verificadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFICADORBM,
               'ativoson.com': process.env.CLOUDFLARE_ZONE_ATIVOSON,
               'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
+              'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
+              'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
             };
             const zoneId = zoneIds[baseDom] || '';
             if (zoneId) {
@@ -654,6 +658,7 @@ module.exports = async function handler(req, res) {
               'ativoson.com': process.env.CLOUDFLARE_ZONE_ATIVOSON,
               'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
               'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
+              'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
             };
             const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
             if (zoneId) {
