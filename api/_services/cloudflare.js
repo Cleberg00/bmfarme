@@ -397,7 +397,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   var accents = ['#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d','#ea580c','#6d28d9','#0e7490','#be123c','#047857','#a16207','#2563eb','#16a34a','#9333ea','#d97706','#1e40af','#065f46','#92400e','#5b21b6','#b91c1c','#0284c7','#7e22ce','#854d0e','#4338ca','#166534','#c2410c','#6b21a8','#155e75','#9f1239','#047857','#a16207','#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d','#ea580c','#6d28d9','#0e7490','#be123c','#047857','#a16207','#2563eb','#16a34a','#9333ea','#d97706','#1e40af','#065f46','#92400e','#5b21b6','#b91c1c','#0284c7','#7e22ce','#854d0e','#4338ca','#166534','#c2410c','#6b21a8','#155e75','#9f1239','#047857','#a16207','#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d','#ea580c','#6d28d9','#0e7490','#be123c','#047857','#a16207','#2563eb','#16a34a','#9333ea','#d97706','#1e40af','#065f46','#92400e','#5b21b6','#b91c1c','#0284c7'];
   var ac = accents[templateIndex % 96];
-  var layoutType = templateIndex % 8;
+  var layoutType = templateIndex % 28;
 
   var fonts = [
     '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
