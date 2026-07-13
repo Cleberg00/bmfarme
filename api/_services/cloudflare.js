@@ -460,6 +460,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
 
 
+/**
+ * Publica (ou atualiza) um Cloudflare Worker com o HTML da landing page.
  * Suporta dois métodos de verificação Meta:
  *  - meta_tag: meta tag no <head> da landing page
  *  - html_file: serve arquivo em /.well-known/facebook-domain-verification.html
