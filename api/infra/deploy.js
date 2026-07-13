@@ -335,9 +335,9 @@ module.exports = async function handler(req, res) {
 
       // Gera novo template (random ou forçado pelo usuário)
       var newPutIndex;
-      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 3) {
+      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 7) {
         // forceLayout é o tipo (0-3), gera um índice que cai nesse layout (templateIndex % 4 === forceLayout)
-        newPutIndex = forceLayout + (Math.floor(Math.random() * 20) * 4);
+        newPutIndex = forceLayout + (Math.floor(Math.random() * 10) * 8);
       } else {
         newPutIndex = Math.floor(Math.random() * 80);
       }
@@ -351,8 +351,8 @@ module.exports = async function handler(req, res) {
       if (isWildcard) {
         // Wildcard: gera índice aleatório e salva updatedAt engenheirado pra produzir esse índice
         var newIndexPut;
-        if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 3) {
-          newIndexPut = forceLayout + (Math.floor(Math.random() * 20) * 4);
+        if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 7) {
+          newIndexPut = forceLayout + (Math.floor(Math.random() * 10) * 8);
         } else {
           newIndexPut = Math.floor(Math.random() * 80);
         }

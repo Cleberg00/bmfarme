@@ -331,6 +331,10 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
                 { id: 1, name: 'Coluna Única', desc: 'Phone destaque no topo' },
                 { id: 2, name: 'Sidebar', desc: 'Menu lateral + conteúdo' },
                 { id: 3, name: 'Tabela', desc: 'Header escuro + tabela' },
+                { id: 4, name: 'Hero + Grid', desc: 'Banner colorido + 3 cards' },
+                { id: 5, name: 'Editorial', desc: 'Tipografia grande, bordas' },
+                { id: 6, name: 'Cards H', desc: 'Cards horizontais + ícones' },
+                { id: 7, name: 'Split 50/50', desc: 'Esquerda dados, direita texto' },
               ].map(l => (
                 <button
                   key={l.id}
@@ -369,7 +373,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               }}
               className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
             >
-              {loading ? 'Alterando...' : chosenLayout !== null ? `Aplicar Layout: ${['Grid 2 Col','Coluna Única','Sidebar','Tabela'][chosenLayout]}` : '🎲 Aplicar Layout Aleatório'}
+              {loading ? 'Alterando...' : chosenLayout !== null ? `Aplicar Layout: ${['Grid 2 Col','Coluna Única','Sidebar','Tabela','Hero + Grid','Editorial','Cards H','Split 50/50'][chosenLayout]}` : '🎲 Aplicar Layout Aleatório'}
             </button>
           </div>
         )}
