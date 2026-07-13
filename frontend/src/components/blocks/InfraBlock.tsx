@@ -40,7 +40,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const isZaplify = user?.email === 'julia@gmail.com' || user?.email === 'maria@gmail.com';
   const isMacumbinha = user?.email === 'miguelmacumbinha@gmail.com' || user?.email === 'macumbinha@gmail.com';
   const netlifyDomains = isRonaldo
-    ? ['mettaativos.com', 'ativoson.com']
+    ? ['mettaativos.com', 'ativoson.com', 'verifcationbm.com.br']
     : isAdmin
     ? ['perfilbr.com', 'validarfm.com', 'verificabussines.com', 'verificadorbm.com', 'validacaopf.com', 'verifcationbm.com']
     : isMacumbinha
