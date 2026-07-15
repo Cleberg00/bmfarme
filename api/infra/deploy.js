@@ -75,6 +75,10 @@ module.exports = async function handler(req, res) {
         'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
         'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
         'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
+        'ageion.com': process.env.CLOUDFLARE_ZONE_AGEION,
+        'verificacaobm02.com': process.env.CLOUDFLARE_ZONE_VERIFICACAOBM02,
+        'perfilbr01.com': process.env.CLOUDFLARE_ZONE_PERFILBR01,
+        'vericationbm.com': process.env.CLOUDFLARE_ZONE_VERICATIONBM,
       };
 
       // Busca todos os domínios wildcard do usuário
@@ -282,6 +286,10 @@ module.exports = async function handler(req, res) {
               'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
               'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
               'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
+              'ageion.com': process.env.CLOUDFLARE_ZONE_AGEION,
+              'verificacaobm02.com': process.env.CLOUDFLARE_ZONE_VERIFICACAOBM02,
+              'perfilbr01.com': process.env.CLOUDFLARE_ZONE_PERFILBR01,
+              'vericationbm.com': process.env.CLOUDFLARE_ZONE_VERICATIONBM,
             };
             const zoneId = zoneIds[baseDom] || '';
             if (zoneId) {
@@ -659,6 +667,10 @@ module.exports = async function handler(req, res) {
               'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
               'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
               'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
+              'ageion.com': process.env.CLOUDFLARE_ZONE_AGEION,
+              'verificacaobm02.com': process.env.CLOUDFLARE_ZONE_VERIFICACAOBM02,
+              'perfilbr01.com': process.env.CLOUDFLARE_ZONE_PERFILBR01,
+              'vericationbm.com': process.env.CLOUDFLARE_ZONE_VERICATIONBM,
             };
             const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
             if (zoneId) {
