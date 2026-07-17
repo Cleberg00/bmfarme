@@ -686,6 +686,12 @@ module.exports = async function handler(req, res) {
             };
             const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
             if (zoneId) {
+              // Cria A record wildcard * (garante que qualquer subdomain resolve)
+              await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+                { type: 'A', name: '*', content: '192.0.2.1', ttl: 1, proxied: true },
+                { headers: cfHeaders, timeout: 15000 }
+              ).catch(e => { /* wildcard pode já existir */ });
+
               // Cria A record proxied pro subdomínio (garante que DNS resolve mesmo com TXT)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
                 { type: 'A', name: cleanSubdomain, content: '192.0.2.1', ttl: 1, proxied: true },
@@ -697,7 +703,27 @@ module.exports = async function handler(req, res) {
                 { type: 'TXT', name: cleanSubdomain, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
                 { headers: cfHeaders, timeout: 15000 }
               ).catch(e => console.log(`[TXT] Pode ja existir: ${e.response?.data?.errors?.[0]?.message || e.message}`));
-              console.log(`[DNS] A + TXT criados: ${cleanSubdomain}.verificaconta.com`);
+              console.log(`[DNS] A + TXT criados: ${cleanSubdomain}.${chosenDomain}`);
+
+              // Cria worker route *.dominio.com/* se não existir (garante que o wildcard funciona)
+              try {
+                const routePattern = `*.${chosenDomain}/*`;
+                const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+                // Verifica se a route já existe
+                const existingRoutes = await axios.get(`https://api.cloudflare.com/client/v4/zones/${zoneId}/workers/routes`,
+                  { headers: cfHeaders, timeout: 15000 }
+                ).catch(() => ({ data: { result: [] } }));
+                const routeExists = (existingRoutes.data?.result || []).some(r => r.pattern === routePattern);
+                if (!routeExists) {
+                  await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/workers/routes`,
+                    { pattern: routePattern, script: 'verificaconta-wildcard' },
+                    { headers: cfHeaders, timeout: 15000 }
+                  );
+                  console.log(`[ROUTE] Worker route criada: ${routePattern} -> verificaconta-wildcard`);
+                }
+              } catch (routeErr) {
+                console.log(`[ROUTE] Erro (pode já existir): ${routeErr.response?.data?.errors?.[0]?.message || routeErr.message}`);
+              }
             }
           }
         } catch (txtErr) {
