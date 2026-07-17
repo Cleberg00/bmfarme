@@ -59,8 +59,12 @@ module.exports = async function handler(req, res) {
           if (client) {
             const html = buildLandingHtml({
               razaoSocial: client.razaoSocial, nomeFantasia: client.nomeFantasia,
-              cnpj: client.cnpj, endereco: client.endereco, cep: client.cep,
-              municipio: client.municipio, uf: client.uf, situacao: client.situacao,
+              cnpj: client.cnpj, endereco: client.endereco, numero: client.numero,
+              complemento: client.complemento, bairro: client.bairro,
+              cep: client.cep, municipio: client.municipio, uf: client.uf,
+              situacao: client.situacao, dataSituacao: client.dataSituacao,
+              dataAbertura: client.dataAbertura, porte: client.porte,
+              naturezaJuridica: client.naturezaJuridica,
               atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
               email: client.email, smsPhone: smsLog.phoneNumber, smsCode: result.code,
               metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
