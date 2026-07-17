@@ -73,10 +73,13 @@ model Domain {
   domainName           String
   cloudflareZoneId     String
   metaVerificationCode String
+  baseDomain           String?
+  customRazao          String?
   status               DomainStatus @default(PENDING)
   clientId             String
   userId               String
   createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
   client               Client       @relation(fields: [clientId], references: [id], onDelete: Restrict)
   user                 User         @relation(fields: [userId], references: [id], onDelete: Restrict)
   bmAssets             BmAsset[]
