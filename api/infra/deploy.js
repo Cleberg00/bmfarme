@@ -617,8 +617,8 @@ module.exports = async function handler(req, res) {
     if (cfAccount === 'empresasverrificada' || cfAccount === 'zaplifydisparo') {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
-      // ── Wildcard: sem Worker individual, sem Custom Domain ──
-      if (cfAccount === 'empresasverrificada' && (chosenDomain === 'verificaconta.com' || chosenDomain === 'ativosmeta.com' || chosenDomain === 'verificativos.com' || chosenDomain === 'ativoscontas.com' || chosenDomain === 'verificacontas.com' || chosenDomain === 'zaplifyativos.com' || chosenDomain === 'verificametaativos.com' || chosenDomain === 'verificaativos.online' || chosenDomain === 'zaplifynegocios.com' || chosenDomain === 'zaplifytrabalho.com' || chosenDomain === 'centralativoss.com' || chosenDomain === 'verificadapro1.com' || chosenDomain === 'zaplifycontas.com' || chosenDomain === 'contaszaplify.com' || chosenDomain === 'masterverificada.com' || chosenDomain === 'farmezaplify.com' || chosenDomain === 'contasativas.com' || chosenDomain === 'verificaperfilbm.com' || chosenDomain === 'zaplifybm.com' || chosenDomain === 'zaplifybm.com.br' || chosenDomain === 'verificaativos.com' || chosenDomain === 'contasativasfb.com' || chosenDomain === 'contasativasbr.com' || chosenDomain === 'verificaperfil01.com' || chosenDomain === 'verificazapli.com' || chosenDomain === 'checkverifica.com.br' || chosenDomain === 'verificacontas.com.br' || chosenDomain === 'verificaperfil.com.br' || chosenDomain === 'verificabm.com.br' || chosenDomain === 'zaplifyverifica.com.br' || chosenDomain === 'perfilvalidados.com.br' || chosenDomain === 'zaplifyativos.com.br' || chosenDomain === 'validacaoperfil.com' || chosenDomain === 'veirficacc.com' || chosenDomain === 'verificaportifolio.com.br' || chosenDomain === 'verificaportifolio.com' || chosenDomain === 'verificapf.com' || chosenDomain === 'perfilvalidados.com' || chosenDomain === 'verifcadorbm.com' || chosenDomain === 'validarfm.com' || chosenDomain === 'mettaativos.com' || chosenDomain === 'perfilbr.com' || chosenDomain === 'verificabussines.com' || chosenDomain === 'verificadorbm.com' || chosenDomain === 'ativoson.com' || chosenDomain === 'validacaopf.com' || chosenDomain === 'verifcationbm.com' || chosenDomain === 'verifcationbm.com.br' || chosenDomain === 'ageion.com' || chosenDomain === 'verificacaobm02.com' || chosenDomain === 'perfilbr01.com' || chosenDomain === 'vericationbm.com' || chosenDomain === 'zaplifyativos01.com' || chosenDomain === 'zaplifyvalidation.com' || chosenDomain === 'bmseven.com' || chosenDomain === 'zaplify01.com' || chosenDomain === 'zaplifybm02.com' || chosenDomain === 'zapbm02.com' || chosenDomain === 'zaplifydigital.com' || chosenDomain === 'veridesk1.com')) {
+      // ── Wildcard: TODOS os domínios de empresasverrificada usam wildcard ──
+      if (cfAccount === 'empresasverrificada') {
         workerName = 'verificaconta-wildcard';
         url = `https://${cleanSubdomain}.${chosenDomain}`;
         console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
@@ -696,7 +696,15 @@ module.exports = async function handler(req, res) {
               'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
               'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
             };
-            const zoneId = zoneIds[chosenDomain] || process.env.CLOUDFLARE_ZONE_VERIFICACONTA || '';
+            let zoneId = zoneIds[chosenDomain] || '';
+            // Se não tem na env, busca automaticamente via API
+            if (!zoneId) {
+              try {
+                const zoneRes = await axios.get(`https://api.cloudflare.com/client/v4/zones?name=${chosenDomain}`, { headers: cfHeaders, timeout: 15000 });
+                zoneId = zoneRes.data?.result?.[0]?.id || '';
+                if (zoneId) console.log(`[DNS] Zone ID encontrado via API pra ${chosenDomain}: ${zoneId}`);
+              } catch { /* ignora */ }
+            }
             if (zoneId) {
               // Cria A record wildcard * (garante que qualquer subdomain resolve)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
