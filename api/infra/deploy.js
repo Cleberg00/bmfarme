@@ -154,7 +154,7 @@ module.exports = async function handler(req, res) {
       }
 
       const smsLog = await prisma.smsLog.findFirst({
-        where: { clientId: client.id },
+        where: { clientId: client.id, userId: domain.userId },
         orderBy: { createdAt: 'desc' },
       });
 
@@ -517,7 +517,7 @@ module.exports = async function handler(req, res) {
 
       // 5. Busca SMS mais recente
       const smsLog = await prisma.smsLog.findFirst({
-        where: { clientId, status: { in: ['WAITING', 'RECEIVED'] } },
+        where: { clientId, userId: user.id, status: { in: ['WAITING', 'RECEIVED'] } },
         orderBy: { createdAt: 'desc' },
       });
 
