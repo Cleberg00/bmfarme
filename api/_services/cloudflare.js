@@ -191,16 +191,16 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const emailFmt = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
   const situacaoFmt = esc(situacao || 'ATIVA');
-  const enderFmt = esc((endereco||'') + (numero ? ', nº '+numero : ''));
-  const bairroFmt = esc(bairro||'');
-  const munFmt = esc(municipio||'');
+  const enderFmt = esc((endereco||'Não informado') + (numero ? ', nº '+numero : ''));
+  const bairroFmt = esc(bairro||'Não informado');
+  const munFmt = esc(municipio||'Não informado');
   const ufFmt = esc(uf||'');
-  const porteFmt = esc(porte || '');
-  const natJurFmt = esc(naturezaJuridica || '');
+  const porteFmt = esc(porte || 'MEI - Microempreendedor Individual');
+  const natJurFmt = esc(naturezaJuridica || '213-5 - Empresário Individual');
   const cnaeCodeFmt = esc(cnaeCode || '');
   const cnaeDescFmt = esc(cnaeDesc || '');
   const areaLabel = atividadeFmt || cnaeDescFmt || 'Atividade Empresarial';
-  const fullAddress = enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'');
+  const fullAddress = enderFmt+(bairroFmt&&bairroFmt!=='Não informado'?' — '+bairroFmt:'')+' — '+munFmt+(ufFmt?'/'+ufFmt:'')+(cepFmt?' — CEP '+cepFmt:'');
 
   const templateIndex = (typeof forceTemplateIndex === 'number') ? forceTemplateIndex : (Math.floor(Date.now() / 13) % 33);
   console.log('[buildLandingHtml] CNPJ='+cnpj+' templateIndex='+templateIndex+' forced='+(typeof forceTemplateIndex === 'number'));
