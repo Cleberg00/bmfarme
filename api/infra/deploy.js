@@ -159,6 +159,12 @@ module.exports = async function handler(req, res) {
         orderBy: { createdAt: 'desc' },
       });
 
+      // Se tem HTML cacheado (gerado por IA), serve direto
+      if (domain.htmlCache) {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        return res.status(200).send(domain.htmlCache);
+      }
+
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -809,7 +815,7 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Salva ou atualiza no banco
+    // Salva ou atualiza no banco (inclui HTML gerado pela IA)
     let domain;
     if (existing) {
       domain = await prisma.domain.update({
@@ -817,6 +823,7 @@ module.exports = async function handler(req, res) {
         data: {
           cloudflareZoneId:     workerName,
           metaVerificationCode,
+          htmlCache:            html,
           status:               'ACTIVE',
           userId:               user.id,
           ...(workerName === 'verificaconta-wildcard' ? { baseDomain: netlifyDomain || null } : {}),
@@ -828,6 +835,7 @@ module.exports = async function handler(req, res) {
           domainName:           cleanSubdomain,
           cloudflareZoneId:     workerName,
           metaVerificationCode,
+          htmlCache:            html,
           status:               'ACTIVE',
           clientId,
           userId:               user.id,
