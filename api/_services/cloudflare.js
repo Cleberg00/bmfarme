@@ -52,8 +52,75 @@ Retorne APENAS um JSON válido com exatamente estas 3 chaves (sem markdown, sem 
 // ─── Gerador de site COMPLETO via IA (layout único a cada chamada) ───────────
 
 async function generateFullSiteHtml(params) {
-  // Usa diretamente os templates estáticos novos (validados pela Meta)
-  // Gemini desabilitado — gerava templates inconsistentes que não passavam na verificação
+  // Tenta gerar site único via Gemini AI
+  try {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey) return buildLandingHtml(params);
+
+    const { razaoSocial, nomeFantasia, cnpj, endereco, numero, bairro, cep, municipio, uf, situacao, atividadePrincipal, telefone, email, smsPhone, metaVerificationCode, porte, naturezaJuridica } = params;
+    const phone = smsPhone || telefone || '';
+    const displayName = nomeFantasia || razaoSocial || '';
+
+    // Extrai código de verificação
+    let verCode = metaVerificationCode || '';
+    const cm = verCode.match(/content=["']([^"']+)["']/);
+    if (cm) verCode = cm[1];
+
+    const prompt = `Gere uma landing page HTML COMPLETA e PROFISSIONAL para a empresa abaixo. O site deve parecer um site institucional REAL de uma empresa brasileira, não um template genérico.
+
+DADOS DA EMPRESA (use EXATAMENTE como fornecidos):
+- Razão Social: ${razaoSocial}
+- Nome Fantasia: ${nomeFantasia || razaoSocial}
+- CNPJ: ${cnpj}
+- Situação: ${situacao || 'ATIVA'}
+- Porte: ${porte || 'Microempresa'}
+- Natureza Jurídica: ${naturezaJuridica || 'Empresário Individual'}
+- Atividade: ${atividadePrincipal || 'Comércio e Serviços'}
+- Endereço: ${endereco}${numero ? ', nº ' + numero : ''}, ${bairro || ''}, ${municipio || ''}/${uf || ''}, CEP ${cep || ''}
+- Telefone: ${phone}
+- Email: ${email || ''}
+
+REGRAS OBRIGATÓRIAS:
+1. HTML completo (<!DOCTYPE html> até </html>), CSS inline no <style>, sem JS externo
+2. Adicione esta meta tag no <head>: <meta name="facebook-domain-verification" content="${verCode}" />
+3. O telefone "${phone}" deve aparecer em pelo menos 2 lugares visíveis
+4. Todos os dados da empresa devem estar visíveis no HTML
+5. Design DARK profissional (fundo escuro #0d1117 ou similar)
+6. Inclua seções: Hero com dados, Sobre a Empresa, Dados Oficiais, Contato
+7. Adicione data-field="razao" no elemento com razão social, data-field="cnpj" no CNPJ, data-field="phone" no telefone
+8. Responsivo (mobile-friendly)
+9. Inclua og:title, og:description, meta description com a razão social e CNPJ
+10. NÃO use Lorem Ipsum. Use texto real sobre atendimento receptivo e WhatsApp Business
+11. Inclua texto sobre compliance: "Canal exclusivamente receptivo. Não realizamos disparos ou contatos não solicitados. Conformidade LGPD e Meta Platforms."
+12. O site deve ter CARA DE SITE REAL, não de formulário ou template
+
+Retorne APENAS o HTML completo, sem markdown, sem explicações, sem \`\`\`.`;
+
+    const res = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      { contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: 8000, temperature: 0.9 } },
+      { timeout: 25000, headers: { 'Content-Type': 'application/json' } }
+    );
+
+    const text = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    // Extrai HTML da resposta (pode vir com markdown wrapper)
+    let html = text.trim();
+    if (html.startsWith('```')) html = html.replace(/^```html?\n?/, '').replace(/\n?```$/, '');
+    
+    // Valida que é HTML válido com os dados essenciais
+    if (html.includes('<!DOCTYPE') && html.includes(cnpj) && html.includes('</html>')) {
+      // Adiciona domScript pra DOM injection
+      const phoneFmt = phone ? (function(t){ let n=String(t).replace(/\D/g,''); if(n.startsWith('55')&&n.length>=12) n=n.slice(2); if(n.length===10) return '('+n.slice(0,2)+') '+n.slice(2,6)+'-'+n.slice(6); if(n.length===11) return '('+n.slice(0,2)+') '+n.slice(2,7)+'-'+n.slice(7); return t; })(phone) : '';
+      const domScript = '<script>(function(){var d=document;var p=d.createElement("span");p.setAttribute("data-waba-phone","'+phoneFmt+'");p.style.display="none";d.body.appendChild(p);})();<\/script>';
+      html = html.replace('</body>', domScript + '</body>');
+      console.log('[AI] Site gerado via Gemini OK para ' + cnpj);
+      return html;
+    }
+  } catch (e) {
+    console.log('[AI] Gemini falhou, usando template fixo:', e.message);
+  }
+
+  // Fallback: template fixo
   return buildLandingHtml(params);
 }
 

@@ -1,6 +1,6 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
-const { buildLandingHtml, createZone, addDnsTxtRecord, getZoneNameservers, deployWorker } = require('../_services/cloudflare');
+const { buildLandingHtml, generateFullSiteHtml, createZone, addDnsTxtRecord, getZoneNameservers, deployWorker } = require('../_services/cloudflare');
 const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
 const porkbun = require('../_services/porkbun');
 const dynadot = require('../_services/dynadot');
@@ -609,8 +609,8 @@ module.exports = async function handler(req, res) {
       email: client.email, smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
-    // Gera HTML com templates variados (16 layouts diferentes)
-    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
+    // Gera HTML via IA (site único) com fallback pro template estático
+    const html = await generateFullSiteHtml({ ...siteParams, subdomain: cleanSubdomain });
 
     // Publica o site (Cloudflare Workers ou Netlify)
     let workerName, url;
