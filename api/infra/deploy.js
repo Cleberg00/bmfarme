@@ -211,7 +211,7 @@ module.exports = async function handler(req, res) {
       const isWildcard = existingWorker === 'verificaconta-wildcard';
 
       // Força updatedAt calculado para gerar template aleatório real
-      const newIndex = Math.floor(Math.random() * 15);
+      const newIndex = Math.floor(Math.random() * 18);
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
       const cnpjSum = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0);
@@ -372,9 +372,9 @@ module.exports = async function handler(req, res) {
       if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 17) {
         newPutIndex = forceLayout;
       } else {
-        newPutIndex = Math.floor(Math.random() * 15);
+        newPutIndex = Math.floor(Math.random() * 18);
       }
-      const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
+      const html = await generateFullSiteHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
 
       // Republica no provider correto
       const wName = domain.cloudflareZoneId || '';
@@ -387,7 +387,7 @@ module.exports = async function handler(req, res) {
         if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 17) {
           newIndexPut = forceLayout;
         } else {
-          newIndexPut = Math.floor(Math.random() * 15);
+          newIndexPut = Math.floor(Math.random() * 18);
         }
         const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
         const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -396,15 +396,13 @@ module.exports = async function handler(req, res) {
         const baseVal = cnpjSum * 7 + nameSeedPut * 3;
         const neededTs = (newIndexPut - (baseVal % 18) + 80) % 18;
         const fakeTimestamp = new Date(neededTs * 1009 + 1);
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp } });
 
-        // Gera HTML com novo índice
-        const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
+        // Gera HTML via IA e salva no banco
+        const htmlWildcard = await generateFullSiteHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
+        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp, htmlCache: htmlWildcard } });
 
         const baseDom = domain.baseDomain || 'verificaconta.com';
         resultUrl = `https://${domain.domainName}.${baseDom}`;
-        // HTML gerado mas não usado diretamente — worker serve do banco em tempo real
-        void htmlWildcard;
       } else if (isWorker) {
         const result = await deployWorker(wName.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
