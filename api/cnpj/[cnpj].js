@@ -45,7 +45,7 @@ module.exports = async function handler(req, res) {
       razaoSocial:        d.razaoSocial                               || null,
       nomeFantasia:       d.nomeFantasia                              || null,
       endereco:           endereco                                    || 'Não informado',
-      numero:             numero                                      || 'S/N',
+      numero:             numero                                      || null,
       complemento:        d.complemento                               || null,
       bairro:             bairro                                      || 'Centro',
       cep:                d.cep                                       || '',

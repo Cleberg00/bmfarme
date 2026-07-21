@@ -245,7 +245,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const emailFmt = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
   const situacaoFmt = esc(situacao || 'ATIVA');
-  const enderFmt = esc((endereco||'Não informado') + (numero ? ', nº '+numero : ''));
+  const enderFmt = esc((endereco||'Não informado') + (numero && numero !== 'S/N' ? ', nº '+numero : ''));
   const bairroFmt = esc(bairro||'Não informado');
   const munFmt = esc(municipio||'Não informado');
   const ufFmt = esc(uf||'');
