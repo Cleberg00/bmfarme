@@ -159,10 +159,19 @@ module.exports = async function handler(req, res) {
         orderBy: { createdAt: 'desc' },
       });
 
-      // Se tem HTML cacheado (gerado por IA), serve direto
+      // Se tem HTML cacheado (gerado por IA), verifica se o código Meta está correto
       if (domain.htmlCache) {
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        return res.status(200).send(domain.htmlCache);
+        let cachedHtml = domain.htmlCache;
+        // Extrai o código atual do banco
+        let currentCode = domain.metaVerificationCode || '';
+        const cm2 = currentCode.match(/content=["']([^"']+)["']/);
+        if (cm2) currentCode = cm2[1];
+        // Se o htmlCache não tem o código correto, NÃO serve o cache (regenera abaixo)
+        if (currentCode && cachedHtml.includes(currentCode)) {
+          res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+          return res.status(200).send(cachedHtml);
+        }
+        // Cache desatualizado — limpa e regenera com template fixo
       }
 
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
