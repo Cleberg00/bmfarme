@@ -332,6 +332,11 @@ module.exports = async function handler(req, res) {
             }
           }
         } catch (txtErr) { console.log(`[PATCH-TXT] Erro: ${txtErr.message}`); }
+
+        // Atualiza htmlCache com novo número
+        try {
+          await prisma.$executeRawUnsafe(`UPDATE "Domain" SET "htmlCache" = $1 WHERE id = $2`, html, domain.id);
+        } catch (cacheErr) { console.log(`[PATCH] htmlCache update err: ${cacheErr.message}`); }
       } else if (isWorker) {
         const result = await deployWorker(existingWorker.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
