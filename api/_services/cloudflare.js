@@ -452,7 +452,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // 5 LAYOUTS corporativos — rotação por templateIndex % 5
   // ═══════════════════════════════════════════════════════════════
 
-  var layoutType = templateIndex % 25;
+  var layoutType = templateIndex % 30;
 
   var accents = ['#1d4ed8','#059669','#b45309','#7c3aed','#dc2626','#0891b2','#c026d3','#ca8a04','#4f46e5','#15803d','#ea580c','#6d28d9','#0e7490','#be123c','#047857','#a16207','#2563eb','#16a34a','#9333ea','#d97706'];
   var ac = accents[templateIndex % 20];
