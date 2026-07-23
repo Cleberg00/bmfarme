@@ -618,8 +618,8 @@ module.exports = async function handler(req, res) {
       email: client.email, smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
-    // Gera HTML via IA (site único) com fallback pro template estático
-    const html = await generateFullSiteHtml({ ...siteParams, subdomain: cleanSubdomain });
+    // Gera HTML com template fixo
+    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
 
     // Publica o site (Cloudflare Workers ou Netlify)
     let workerName, url;
