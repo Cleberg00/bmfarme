@@ -391,13 +391,8 @@ module.exports = async function handler(req, res) {
       const isWildcard = wName === 'verificaconta-wildcard';
       let resultUrl;
       if (isWildcard) {
-        // Wildcard: gera índice aleatório e salva updatedAt engenheirado pra produzir esse índice
-        var newIndexPut;
-        if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 17) {
-          newIndexPut = forceLayout;
-        } else {
-          newIndexPut = Math.floor(Math.random() * 18);
-        }
+        // Wildcard: usa o mesmo index já calculado
+        var newIndexPut = newPutIndex;
         const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
         const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
         const cnpjSum = cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0);
@@ -406,9 +401,8 @@ module.exports = async function handler(req, res) {
         const neededTs = (newIndexPut - (baseVal % 18) + 80) % 18;
         const fakeTimestamp = new Date(neededTs * 1009 + 1);
 
-        // Gera HTML via IA e salva no banco
-        const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp, htmlCache: htmlWildcard } });
+        // Salva no banco com o HTML já gerado
+        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp, htmlCache: html } });
 
         const baseDom = domain.baseDomain || 'verificaconta.com';
         resultUrl = `https://${domain.domainName}.${baseDom}`;
