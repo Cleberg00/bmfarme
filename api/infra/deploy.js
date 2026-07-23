@@ -379,7 +379,7 @@ module.exports = async function handler(req, res) {
       } else {
         newPutIndex = Math.floor(Math.random() * 18);
       }
-      const html = await generateFullSiteHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
+      const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
 
       // Republica no provider correto
       const wName = domain.cloudflareZoneId || '';
@@ -403,7 +403,7 @@ module.exports = async function handler(req, res) {
         const fakeTimestamp = new Date(neededTs * 1009 + 1);
 
         // Gera HTML via IA e salva no banco
-        const htmlWildcard = await generateFullSiteHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
+        const htmlWildcard = buildLandingHtml({ ...siteParams, forceTemplateIndex: newIndexPut });
         await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp, htmlCache: htmlWildcard } });
 
         const baseDom = domain.baseDomain || 'verificaconta.com';
