@@ -589,3 +589,15 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   }
 }
 
+
+
+module.exports = {
+  // legado
+  createZone, createARecord, deleteZone,
+  // workers
+  deployWorker, deleteWorker, buildLandingHtml, slugify,
+  // AI
+  generateAiContent, generateFullSiteHtml,
+  // DNS TXT
+  addDnsTxtRecord, getZoneNameservers,
+};
