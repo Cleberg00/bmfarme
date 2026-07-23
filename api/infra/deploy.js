@@ -87,6 +87,7 @@ module.exports = async function handler(req, res) {
         'zapbm02.com': process.env.CLOUDFLARE_ZONE_ZAPBM02,
         'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
         'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
+        'zaplifybm1.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM1,
       };
 
       // Busca todos os domínios wildcard do usuário
@@ -312,6 +313,7 @@ module.exports = async function handler(req, res) {
               'zapbm02.com': process.env.CLOUDFLARE_ZONE_ZAPBM02,
               'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
               'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
+              'zaplifybm1.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM1,
             };
             const zoneId = zoneIds[baseDom] || '';
             if (zoneId) {
@@ -704,6 +706,7 @@ module.exports = async function handler(req, res) {
               'zapbm02.com': process.env.CLOUDFLARE_ZONE_ZAPBM02,
               'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
               'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
+              'zaplifybm1.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM1,
             };
             let zoneId = zoneIds[chosenDomain] || '';
             // Se não tem na env, busca automaticamente via API
