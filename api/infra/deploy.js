@@ -1,6 +1,6 @@
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
-const { buildLandingHtml, generateFullSiteHtml, createZone, addDnsTxtRecord, getZoneNameservers, deployWorker } = require('../_services/cloudflare');
+const { buildLandingHtml, createZone, addDnsTxtRecord, getZoneNameservers, deployWorker } = require('../_services/cloudflare');
 const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
 const porkbun = require('../_services/porkbun');
 const dynadot = require('../_services/dynadot');
