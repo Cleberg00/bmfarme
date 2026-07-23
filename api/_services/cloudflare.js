@@ -398,7 +398,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // 5 LAYOUTS corporativos — rotação por templateIndex % 5
   // ═══════════════════════════════════════════════════════════════
 
-  var layoutType = templateIndex % 18;
+  var layoutType = templateIndex % 36;
 
   var accents = ['#1e40af','#047857','#a16207','#6d28d9','#b91c1c','#0e7490','#a21caf','#d97706','#3730a3','#166534','#c2410c','#5b21b6','#155e75','#9f1239','#065f46','#92400e','#1d4ed8','#15803d','#7c3aed','#b45309'];
   var ac = accents[templateIndex % 20];
@@ -531,10 +531,74 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     return headHtml+'<style>'+css+'</style></head><body><div class="topbar"><h1 data-field="razao">'+razaoFmt+'</h1><div class="info" data-field="cnpj">CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+'</div></div><div class="content"><h2>Dados da Empresa</h2>'+infoBlock+phoneBlock+(phoneFmt?'<div class="phone-line" data-field="phone">&#9742; '+phoneFmt+'</div>':'')+'<h2>Canal WhatsApp Business</h2>'+wabaInline+'<h2>Sobre a Empresa</h2><p>'+sob+'</p><h2>Regras de Atendimento</h2>'+rulesInline+'<h2>Privacidade e LGPD</h2><p>'+priv+'</p><h2>Termos de Uso</h2><p>'+term+'</p></div><footer>'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+' &mdash; Canal receptivo WhatsApp Business</footer>'+domScript+'</body></html>';
   }
 
-  // ══════ LAYOUT 17 (FALLBACK): SIMPLES DIRETO ══════
-  else {
+  // ══════ LAYOUT 17: SIMPLES DIRETO ══════
+  else if (layoutType === 17) {
     var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#fff;color:#333;line-height:1.8;font-size:15px}.wrap{max-width:720px;margin:0 auto;padding:36px 24px}h1{font-size:1.7rem;font-weight:800;color:#111;margin-bottom:4px}.meta{font-size:13px;color:#6b7280;margin-bottom:28px}h2{font-size:16px;color:#111;margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.phone-direct{font-family:monospace;font-size:1.3rem;color:'+ac+';font-weight:800;margin:12px 0}footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:32px;padding-top:14px;border-top:1px solid #f1f5f9}';
     return headHtml+'<style>'+css+'</style></head><body><div class="wrap"><h1 data-field="razao">'+razaoFmt+'</h1><div class="meta">CNPJ: '+cnpjFmt+' &bull; '+munFmt+'/'+ufFmt+' &bull; Situa&ccedil;&atilde;o: '+situacaoFmt+'</div>'+infoBlock+phoneBlock+(phoneFmt?'<div class="phone-direct" data-field="phone">WhatsApp: '+phoneFmt+'</div>':'')+'<h2>Canal de Atendimento WhatsApp</h2>'+wabaInline+'<h2>Sobre a Empresa</h2><p>'+sob+'</p><h2>Regras de Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos de Uso</h2><p>'+term+'</p><footer>'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+'</footer></div>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 18: PORTAL AZUL ══════
+  else if (layoutType === 18) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#eff6ff;color:#333;line-height:1.8;font-size:15px}.bar{background:#1e3a5f;color:#fff;padding:16px 24px}.bar h1{font-size:1.2rem;font-weight:700}.bar span{font-size:11px;opacity:.8}main{max-width:760px;margin:0 auto;padding:28px 24px}h2{font-size:16px;color:#1e3a5f;margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.3rem;color:#1e3a5f;font-weight:800;background:#dbeafe;padding:12px;border-radius:6px;text-align:center;margin:14px 0}footer{background:#1e3a5f;color:#94a3b8;text-align:center;padding:14px;font-size:11px}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="bar"><h1 data-field="razao">'+razaoFmt+'</h1><span data-field="cnpj">CNPJ '+cnpjFmt+'</span></div><main>'+(phoneFmt?'<div class="ph" data-field="phone">'+phoneFmt+'</div>':'')+'<h2>Dados Cadastrais</h2>'+infoBlock+phoneBlock+'<h2>Canal WhatsApp Business</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p></main><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 19: VERDE NATUREZA ══════
+  else if (layoutType === 19) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#f0fdf4;color:#333;line-height:1.8;font-size:15px}.hdr{background:#166534;color:#fff;padding:28px 24px;text-align:center}.hdr h1{font-size:1.7rem;font-weight:700}.hdr p{font-size:12px;opacity:.85;margin-top:4px}main{max-width:740px;margin:0 auto;padding:28px 24px}h2{font-size:16px;color:#166534;margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.2rem;color:#166534;font-weight:800;margin:10px 0}footer{text-align:center;font-size:11px;color:#6b7280;margin-top:28px;padding-top:14px;border-top:1px solid #dcfce7}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="hdr"><h1 data-field="razao">'+razaoFmt+'</h1><p>CNPJ: '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+'</p></div><main><h2>Dados da Empresa</h2>'+infoBlock+phoneBlock+(phoneFmt?'<p class="ph" data-field="phone">Contato: '+phoneFmt+'</p>':'')+'<h2>Canal WhatsApp</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Regras</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer></main>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 20: ROXO MODERNO ══════
+  else if (layoutType === 20) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#faf5ff;color:#333;line-height:1.8;font-size:15px}.top{background:linear-gradient(135deg,#7c3aed,#a78bfa);color:#fff;padding:36px 24px;text-align:center}.top h1{font-size:1.8rem;font-weight:800}.top .sub{font-size:13px;opacity:.9;margin-top:4px}.top .ph{font-family:monospace;font-size:1.3rem;font-weight:800;margin-top:12px}main{max-width:720px;margin:0 auto;padding:28px 24px}h2{font-size:16px;color:#7c3aed;margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}footer{text-align:center;font-size:11px;color:#6b7280;padding:16px;border-top:1px solid #f3e8ff}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="top"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div>'+(phoneFmt?'<div class="ph" data-field="phone">'+phoneFmt+'</div>':'')+'</div><main><h2>Informa&ccedil;&otilde;es Cadastrais</h2>'+infoBlock+phoneBlock+'<h2>Canal WhatsApp Business</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p></main><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 21: NEWSPAPER ══════
+  else if (layoutType === 21) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:Georgia,serif;background:#fefce8;color:#1c1917;line-height:1.9;font-size:16px}.page{max-width:700px;margin:0 auto;padding:48px 28px;border-left:1px solid #d6d3d1;border-right:1px solid #d6d3d1;background:#fff}h1{font-size:2rem;font-weight:700;text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:8px}.dateline{text-align:center;font-size:12px;color:#78716c;margin-bottom:28px;font-family:sans-serif}h2{font-size:1.1rem;color:#111;margin:28px 0 8px;font-weight:600}p{margin-bottom:10px}strong{color:#000}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.1rem;color:#92400e;font-weight:700}footer{text-align:center;font-size:11px;color:#a8a29e;margin-top:32px;padding-top:14px;border-top:2px solid #111;font-family:sans-serif}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="page"><h1 data-field="razao">'+razaoFmt+'</h1><div class="dateline">CNPJ '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+' &mdash; Empresa '+situacaoFmt+'</div><h2>Dados Empresariais</h2>'+infoBlock+phoneBlock+(phoneFmt?'<p>Telefone: <span class="ph" data-field="phone">'+phoneFmt+'</span></p>':'')+'<h2>Canal WhatsApp</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Pol&iacute;tica de Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer></div>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 22: DARK NAVY ══════
+  else if (layoutType === 22) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#0c1222;color:#cbd5e1;line-height:1.8;font-size:15px}.wrap{max-width:720px;margin:0 auto;padding:36px 24px}h1{color:#f1f5f9;font-size:1.7rem;font-weight:800;margin-bottom:4px}.sub{font-size:12px;color:#64748b;margin-bottom:24px}h2{font-size:15px;color:#38bdf8;margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#f1f5f9}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.3rem;color:#38bdf8;font-weight:800;margin:12px 0;padding:12px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);border-radius:6px;text-align:center}footer{text-align:center;font-size:11px;color:#475569;margin-top:28px;padding-top:14px;border-top:1px solid #1e293b}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="wrap"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">CNPJ: '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div>'+(phoneFmt?'<div class="ph" data-field="phone">'+phoneFmt+'</div>':'')+'<h2>Dados da Empresa</h2>'+infoBlock+phoneBlock+'<h2>WhatsApp Business</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Regras</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer></div>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 23: ORANGE WARM ══════
+  else if (layoutType === 23) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#fff7ed;color:#333;line-height:1.8;font-size:15px}.bar{background:#9a3412;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}.bar h1{font-size:1.1rem;font-weight:700}.bar .info{font-size:11px;opacity:.85}main{max-width:740px;margin:0 auto;padding:28px 24px}h2{font-size:16px;color:#9a3412;margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.2rem;color:#9a3412;font-weight:800;margin:10px 0}footer{background:#9a3412;color:rgba(255,255,255,.7);text-align:center;padding:14px;font-size:11px}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="bar"><h1 data-field="razao">'+razaoFmt+'</h1><div class="info" data-field="cnpj">'+cnpjFmt+'</div></div><main><h2>Dados Cadastrais</h2>'+infoBlock+phoneBlock+(phoneFmt?'<p class="ph" data-field="phone">WhatsApp: '+phoneFmt+'</p>':'')+'<h2>Canal de Atendimento</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Diretrizes</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p></main><footer>'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+'</footer>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 24: CLEAN BORDERED ══════
+  else if (layoutType === 24) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#fff;color:#333;line-height:1.8;font-size:15px}.wrap{max-width:700px;margin:32px auto;padding:32px;border:1px solid #e5e7eb;border-radius:8px}h1{font-size:1.6rem;font-weight:800;color:#111;margin-bottom:4px}.meta{font-size:12px;color:#6b7280;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid #e5e7eb}h2{font-size:15px;color:'+ac+';margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.2rem;color:'+ac+';font-weight:800;margin:10px 0}footer{text-align:center;font-size:10px;color:#9ca3af;margin-top:24px;padding-top:12px;border-top:1px solid #e5e7eb}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="wrap"><h1 data-field="razao">'+razaoFmt+'</h1><div class="meta">CNPJ: '+cnpjFmt+' &bull; '+munFmt+'/'+ufFmt+' &bull; '+situacaoFmt+'</div>'+infoBlock+phoneBlock+(phoneFmt?'<p class="ph" data-field="phone">'+phoneFmt+'</p>':'')+'<h2>Canal WhatsApp</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer></div>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 25: WIDE HEADER ══════
+  else if (layoutType === 25) {
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:#f8fafc;color:#333;line-height:1.8;font-size:15px}.hdr{background:#fff;padding:32px 24px;text-align:center;border-bottom:3px solid '+ac+'}.hdr h1{font-size:1.8rem;font-weight:800;color:#111}.hdr .sub{font-size:13px;color:#6b7280;margin-top:4px}.hdr .ph{font-family:monospace;font-size:1.3rem;color:'+ac+';font-weight:800;margin-top:10px}main{max-width:740px;margin:0 auto;padding:28px 24px}h2{font-size:16px;color:'+ac+';margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}footer{text-align:center;font-size:11px;color:#6b7280;padding:16px;background:#fff;border-top:3px solid '+ac+'}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="hdr"><h1 data-field="razao">'+razaoFmt+'</h1><div class="sub">CNPJ: '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+'</div>'+(phoneFmt?'<div class="ph" data-field="phone">'+phoneFmt+'</div>':'')+'</div><main><h2>Dados da Empresa</h2>'+infoBlock+phoneBlock+'<h2>Canal WhatsApp</h2>'+wabaInline+'<h2>Sobre</h2><p>'+sob+'</p><h2>Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos</h2><p>'+term+'</p></main><footer>'+razaoFmt+' &mdash; '+cnpjFmt+'</footer>'+domScript+'</body></html>';
+  }
+
+  // ══════ LAYOUT 26-35: VARIAÇÕES RÁPIDAS ══════
+  else if (layoutType >= 26 && layoutType <= 35) {
+    var bgColors = ['#fff','#f9fafb','#fffbeb','#f0fdfa','#fdf2f8','#f5f3ff','#ecfdf5','#fff1f2','#f0f9ff','#fefce8'];
+    var hdrColors = ['#1f2937','#064e3b','#7c2d12','#1e1b4b','#831843','#4c1d95','#14532d','#9f1239','#0c4a6e','#713f12'];
+    var vi2 = layoutType - 26;
+    var bgC = bgColors[vi2];
+    var hdC = hdrColors[vi2];
+    var css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:'+bgC+';color:#333;line-height:1.8;font-size:15px}.hdr{background:'+hdC+';color:#fff;padding:24px;text-align:center}.hdr h1{font-size:1.6rem;font-weight:700}.hdr p{font-size:12px;opacity:.85;margin-top:4px}main{max-width:740px;margin:0 auto;padding:28px 24px}h2{font-size:16px;color:'+hdC+';margin:24px 0 10px;font-weight:700}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}.ph{font-family:monospace;font-size:1.2rem;color:'+hdC+';font-weight:800;margin:10px 0}footer{background:'+hdC+';color:rgba(255,255,255,.7);text-align:center;padding:14px;font-size:11px}';
+    return headHtml+'<style>'+css+'</style></head><body><div class="hdr"><h1 data-field="razao">'+razaoFmt+'</h1><p>CNPJ: '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+'</p></div><main>'+(phoneFmt?'<p class="ph" data-field="phone">Telefone: '+phoneFmt+'</p>':'')+'<h2>Dados Cadastrais</h2>'+infoBlock+phoneBlock+'<h2>Canal WhatsApp Business</h2>'+wabaInline+'<h2>Sobre a Empresa</h2><p>'+sob+'</p><h2>Regras de Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos de Uso</h2><p>'+term+'</p></main><footer>'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+'</footer>'+domScript+'</body></html>';
+  }
+
+  // ══════ FALLBACK ══════
+  else {
+    return headHtml+'</head><body><h1>'+razaoFmt+'</h1><p>CNPJ: '+cnpjFmt+'</p>'+infoBlock+phoneBlock+wabaInline+'<p>'+sob+'</p>'+rulesInline+'<p>'+priv+'</p><p>'+term+'</p>'+domScript+'</body></html>';
   }
 }
 
