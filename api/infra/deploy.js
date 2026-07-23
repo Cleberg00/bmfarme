@@ -855,6 +855,6 @@ module.exports = async function handler(req, res) {
       smsCode,
     });
   } catch (error) {
-    return res.status(error.statusCode || 500).json({ error: error.message });
+    return res.status(error?.statusCode || 500).json({ error: typeof error?.message === 'string' ? error.message : 'Erro interno no deploy' });
   }
 };

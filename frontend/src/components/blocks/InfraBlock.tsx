@@ -108,9 +108,10 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
       setDeployed({ subdomain: data.subdomain ?? subdomain, workerUrl: url, domainId: id });
       onDomainReady(id, url);
     } catch (err) {
+      const rawErr = axios.isAxiosError(err) ? err.response?.data?.error : undefined;
       setError(
-        axios.isAxiosError(err)
-          ? err.response?.data?.error || err.message
+        typeof rawErr === 'string' ? rawErr
+          : axios.isAxiosError(err) ? err.message
           : err instanceof Error ? err.message : 'Falha ao subir infraestrutura.'
       );
     } finally {
@@ -362,11 +363,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
                   setDeployed(prev => prev ? { ...prev, workerUrl: data.workerUrl || prev.workerUrl } : prev);
                   alert('✅ Layout alterado! Abra o site pra conferir.');
                 } catch (err) {
-                  setError(
-                    axios.isAxiosError(err)
-                      ? err.response?.data?.error || err.message
-                      : 'Erro ao trocar layout.'
-                  );
+                  const rawErr = axios.isAxiosError(err) ? err.response?.data?.error : undefined;
+                  setError(typeof rawErr === 'string' ? rawErr : axios.isAxiosError(err) ? err.message : 'Erro ao trocar layout.');
                 } finally {
                   setLoading(false);
                 }
@@ -389,11 +387,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
                 await api.get(`/infra/deploy?action=provision_ssl&siteName=${deployed.subdomain}`);
                 alert('✅ SSL provisionado! Aguarde 1-2 min pro HTTPS ativar.');
               } catch (err) {
-                setError(
-                  axios.isAxiosError(err)
-                    ? err.response?.data?.error || err.message
-                    : 'Erro ao provisionar SSL.'
-                );
+                const rawErr = axios.isAxiosError(err) ? err.response?.data?.error : undefined;
+                setError(typeof rawErr === 'string' ? rawErr : axios.isAxiosError(err) ? err.message : 'Erro ao provisionar SSL.');
               } finally {
                 setLoading(false);
               }

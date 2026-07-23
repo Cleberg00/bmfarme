@@ -589,26 +589,3 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   }
 }
 
-
-/**
- * Retorna os nameservers atribuídos pela Cloudflare pra uma zona
- */
-async function getZoneNameservers(zoneId) {
-  try {
-    const res = await getApi().get(`/zones/${zoneId}`);
-    return res.data?.result?.name_servers || [];
-  } catch {
-    return [];
-  }
-}
-
-module.exports = {
-  // legado
-  createZone, createARecord, deleteZone,
-  // workers
-  deployWorker, deleteWorker, buildLandingHtml, slugify,
-  // AI
-  generateAiContent, generateFullSiteHtml,
-  // DNS TXT
-  addDnsTxtRecord, getZoneNameservers,
-};
