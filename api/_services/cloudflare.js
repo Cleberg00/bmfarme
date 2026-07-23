@@ -398,7 +398,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // 5 LAYOUTS corporativos — rotação por templateIndex % 5
   // ═══════════════════════════════════════════════════════════════
 
-  var layoutType = templateIndex % 36;
+  var layoutType = templateIndex % 72; // 0-35 = templates fixos, 36-71 = gerador combinatório
 
   var accents = ['#1e40af','#047857','#a16207','#6d28d9','#b91c1c','#0e7490','#a21caf','#d97706','#3730a3','#166534','#c2410c','#5b21b6','#155e75','#9f1239','#065f46','#92400e','#1d4ed8','#15803d','#7c3aed','#b45309'];
   var ac = accents[templateIndex % 20];
@@ -596,9 +596,72 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     return headHtml+'<style>'+css+'</style></head><body><div class="hdr"><h1 data-field="razao">'+razaoFmt+'</h1><p>CNPJ: '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+'</p></div><main>'+(phoneFmt?'<p class="ph" data-field="phone">Telefone: '+phoneFmt+'</p>':'')+'<h2>Dados Cadastrais</h2>'+infoBlock+phoneBlock+'<h2>Canal WhatsApp Business</h2>'+wabaInline+'<h2>Sobre a Empresa</h2><p>'+sob+'</p><h2>Regras de Atendimento</h2>'+rulesInline+'<h2>Privacidade</h2><p>'+priv+'</p><h2>Termos de Uso</h2><p>'+term+'</p></main><footer>'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+'</footer>'+domScript+'</body></html>';
   }
 
-  // ══════ FALLBACK ══════
+  // ══════ FALLBACK / GERADOR COMBINATÓRIO (layouts 36-71) ══════
   else {
-    return headHtml+'</head><body><h1>'+razaoFmt+'</h1><p>CNPJ: '+cnpjFmt+'</p>'+infoBlock+phoneBlock+wabaInline+'<p>'+sob+'</p>'+rulesInline+'<p>'+priv+'</p><p>'+term+'</p>'+domScript+'</body></html>';
+    // Seed baseada no templateIndex pra gerar combinações determinísticas
+    var seed = templateIndex * 7 + 13;
+    var pick = function(arr) { return arr[seed++ % arr.length]; };
+
+    // HEADERS (6 estilos)
+    var headers = [
+      // 0: gradient full
+      function(){ return '<div style="background:linear-gradient(135deg,'+ac+','+ac+'bb);color:#fff;padding:36px 24px;text-align:center"><h1 style="font-size:1.8rem;font-weight:800;margin:0" data-field="razao">'+razaoFmt+'</h1><p style="font-size:13px;opacity:.85;margin-top:6px">CNPJ: '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+'</p>'+(phoneFmt?'<p style="font-family:monospace;font-size:1.3rem;font-weight:800;margin-top:12px;background:rgba(0,0,0,.15);display:inline-block;padding:8px 20px;border-radius:20px" data-field="phone">'+phoneFmt+'</p>':'')+'</div>'; },
+      // 1: dark solid
+      function(){ return '<div style="background:#111827;color:#fff;padding:24px 28px"><h1 style="font-size:1.4rem;font-weight:700;margin:0" data-field="razao">'+razaoFmt+'</h1><p style="font-size:12px;color:#9ca3af;margin-top:4px" data-field="cnpj">CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</p>'+(phoneFmt?'<p style="font-family:monospace;color:'+ac+';font-weight:700;font-size:13px;margin-top:6px" data-field="phone">'+phoneFmt+'</p>':'')+'</div>'; },
+      // 2: white clean border bottom
+      function(){ return '<div style="background:#fff;border-bottom:3px solid '+ac+';padding:28px 24px;text-align:center"><h1 style="font-size:1.7rem;font-weight:800;color:#111;margin:0" data-field="razao">'+razaoFmt+'</h1><p style="font-size:12px;color:#6b7280;margin-top:4px">CNPJ: '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+' &mdash; '+situacaoFmt+'</p>'+(phoneFmt?'<p style="font-family:monospace;font-size:1.2rem;color:'+ac+';font-weight:800;margin-top:10px" data-field="phone">'+phoneFmt+'</p>':'')+'</div>'; },
+      // 3: colored bar compact
+      function(){ return '<div style="background:'+ac+';color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h1 style="font-size:1.1rem;font-weight:700;margin:0" data-field="razao">'+razaoFmt+'</h1><span style="font-size:11px;opacity:.9" data-field="cnpj">CNPJ '+cnpjFmt+(phoneFmt?' | '+phoneFmt:'')+'</span></div>'; },
+      // 4: hero grande
+      function(){ return '<div style="background:linear-gradient(160deg,#0f172a,#1e293b);color:#fff;padding:48px 24px;text-align:center"><h1 style="font-size:2.2rem;font-weight:900;margin:0;letter-spacing:-.5px" data-field="razao">'+razaoFmt+'</h1><p style="font-size:14px;color:#94a3b8;margin-top:8px">Empresa registrada &mdash; CNPJ '+cnpjFmt+'</p><p style="font-size:13px;color:#64748b;margin-top:4px">'+munFmt+'/'+ufFmt+' &mdash; Situa&ccedil;&atilde;o: '+situacaoFmt+'</p>'+(phoneFmt?'<p style="font-family:monospace;font-size:1.4rem;color:'+ac+';font-weight:900;margin-top:14px" data-field="phone">'+phoneFmt+'</p>':'')+'</div>'; },
+      // 5: minimal no-bg
+      function(){ return '<div style="padding:32px 24px;max-width:760px;margin:0 auto"><h1 style="font-size:1.6rem;font-weight:800;color:#111;margin:0" data-field="razao">'+razaoFmt+'</h1><p style="font-size:13px;color:#6b7280;margin-top:4px">CNPJ '+cnpjFmt+' &bull; '+munFmt+'/'+ufFmt+' &bull; '+situacaoFmt+'</p>'+(phoneFmt?'<p style="font-family:monospace;font-size:1.2rem;color:'+ac+';font-weight:800;margin-top:8px" data-field="phone">'+phoneFmt+'</p>':'')+'</div>'; },
+    ];
+
+    // BODY STYLES (6 estilos de seção)
+    var bodyStyles = [
+      // 0: seções com h2 + borda inferior
+      'h2{font-size:16px;color:'+ac+';margin:28px 0 10px;font-weight:700;padding-bottom:8px;border-bottom:1px solid #e5e7eb}',
+      // 1: seções com h2 colorido sem borda
+      'h2{font-size:17px;color:#111;margin:28px 0 10px;font-weight:700}',
+      // 2: h2 uppercase com letter-spacing
+      'h2{font-size:13px;color:'+ac+';margin:28px 0 10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px}',
+      // 3: h2 com background sutil
+      'h2{font-size:15px;color:#111;margin:28px 0 10px;font-weight:700;background:#f8fafc;padding:8px 12px;border-radius:4px}',
+      // 4: h2 com borda esquerda
+      'h2{font-size:15px;color:'+ac+';margin:28px 0 10px;font-weight:700;padding-left:12px;border-left:3px solid '+ac+'}',
+      // 5: h2 grande editorial
+      'h2{font-size:1.2rem;color:#111;margin:32px 0 12px;font-weight:600}',
+    ];
+
+    // BACKGROUNDS (6)
+    var bgs = ['#fff','#f9fafb','#f8fafc','#fffbeb','#f0fdfa','#fdf2f8'];
+
+    // PHONE DISPLAY (4 estilos)
+    var phoneDivs = [
+      phoneFmt ? '<div style="font-family:monospace;font-size:1.3rem;color:'+ac+';font-weight:800;text-align:center;margin:16px 0;padding:14px;background:'+ac+'08;border:1px solid '+ac+'20;border-radius:8px" data-field="phone">'+phoneFmt+'</div>' : '',
+      phoneFmt ? '<p style="font-family:monospace;font-size:1.2rem;color:'+ac+';font-weight:800;margin:12px 0" data-field="phone">&#9742; '+phoneFmt+'</p>' : '',
+      phoneFmt ? '<div style="background:'+ac+';color:#fff;padding:12px;border-radius:6px;text-align:center;font-family:monospace;font-size:1.2rem;font-weight:700;margin:14px 0" data-field="phone">'+phoneFmt+'</div>' : '',
+      phoneFmt ? '<p style="font-family:monospace;color:'+ac+';font-weight:700;font-size:1.1rem;margin:10px 0" data-field="phone">WhatsApp: '+phoneFmt+'</p>' : '',
+    ];
+
+    // FOOTER (4 estilos)
+    var footers = [
+      '<div style="background:#111827;color:#9ca3af;text-align:center;padding:14px;font-size:11px;margin-top:24px">'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+'</div>',
+      '<div style="text-align:center;font-size:11px;color:#9ca3af;margin-top:28px;padding-top:14px;border-top:1px solid #e5e7eb">'+razaoFmt+' &mdash; '+cnpjFmt+' &mdash; Todos os direitos reservados.</div>',
+      '<div style="background:'+ac+';color:#fff;text-align:center;padding:12px;font-size:11px;margin-top:24px">&copy; '+razaoFmt+' &mdash; Canal receptivo WhatsApp Business</div>',
+      '<div style="text-align:center;font-size:10px;color:#6b7280;margin-top:24px;padding:14px">'+razaoFmt+' &mdash; CNPJ '+cnpjFmt+' &mdash; '+munFmt+'/'+ufFmt+'</div>',
+    ];
+
+    var chosenHeader = pick(headers)();
+    var chosenBodyStyle = pick(bodyStyles);
+    var chosenBg = pick(bgs);
+    var chosenPhone = pick(phoneDivs);
+    var chosenFooter = pick(footers);
+
+    var genCss = '*{margin:0;padding:0;box-sizing:border-box}body{font-family:'+font+';background:'+chosenBg+';color:#333;line-height:1.8;font-size:15px}main{max-width:760px;margin:0 auto;padding:28px 24px}p{margin-bottom:10px}strong{color:#111}ul{margin:8px 0 8px 20px}li{margin-bottom:6px}'+chosenBodyStyle;
+
+    return headHtml+'<style>'+genCss+'</style></head><body>'+chosenHeader+'<main>'+chosenPhone+'<h2>Dados da Empresa</h2>'+infoBlock+phoneBlock+'<h2>Canal WhatsApp Business</h2>'+wabaInline+'<h2>Sobre a Empresa</h2><p>'+sob+'</p><h2>Regras de Atendimento</h2>'+rulesInline+'<h2>Privacidade e LGPD</h2><p>'+priv+'</p><h2>Termos de Uso</h2><p>'+term+'</p></main>'+chosenFooter+domScript+'</body></html>';
   }
 }
 
