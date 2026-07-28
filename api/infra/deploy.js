@@ -97,6 +97,7 @@ module.exports = async function handler(req, res) {
         'zaplifybr010.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBR010,
         'zaplifymk.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYMK,
         'bmfarm1.com': process.env.CLOUDFLARE_ZONE_BMFARM1,
+        'bmzaplifyvali.com': process.env.CLOUDFLARE_ZONE_BMZAPLIFYVALI,
       };
 
       // Busca todos os domínios wildcard do usuário
