@@ -100,6 +100,7 @@ module.exports = async function handler(req, res) {
         'bmzaplifyvali.com': process.env.CLOUDFLARE_ZONE_BMZAPLIFYVALI,
         'validbmfarme.com': process.env.CLOUDFLARE_ZONE_VALIDBMFARME,
         'zapbm01.com': process.env.CLOUDFLARE_ZONE_ZAPBM01,
+        'zapifyo9.com': process.env.CLOUDFLARE_ZONE_ZAPIFYO9,
       };
 
       // Busca todos os domínios wildcard do usuário
@@ -632,11 +633,11 @@ module.exports = async function handler(req, res) {
 
     // Publica o site (Cloudflare Workers ou Netlify)
     let workerName, url;
-    if (cfAccount === 'empresasverrificada' || cfAccount === 'zaplifydisparo') {
+    if (cfAccount === 'empresasverrificada' || cfAccount === 'zaplifydisparo' || cfAccount === 'zapliftyativos') {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
-      // ── Wildcard: TODOS os domínios de empresasverrificada usam wildcard ──
-      if (cfAccount === 'empresasverrificada') {
+      // ── Wildcard: TODOS os domínios de empresasverrificada E zapliftyativos usam wildcard ──
+      if (cfAccount === 'empresasverrificada' || cfAccount === 'zapliftyativos') {
         workerName = 'verificaconta-wildcard';
         url = `https://${cleanSubdomain}.${chosenDomain}`;
         console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
@@ -651,7 +652,11 @@ module.exports = async function handler(req, res) {
 
           if (cleanCode) {
             const axios = require('axios');
-            const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
+            // Usa token da conta correta: zapliftyativos ou empresasverrificada
+            const cfToken = cfAccount === 'zapliftyativos'
+              ? (process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN)
+              : process.env.CLOUDFLARE_API_TOKEN;
+            const cfHeaders = { Authorization: `Bearer ${cfToken}`, 'Content-Type': 'application/json' };
             const zoneIds = {
               'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
               'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
