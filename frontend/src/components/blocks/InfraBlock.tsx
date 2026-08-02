@@ -33,7 +33,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
-  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun'>('empresasverrificada');
+  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun' | 'zapliftyativos'>('empresasverrificada');
   const { user } = useAuth();
   const isRonaldo = user?.email === 'ronaldo@gmail.com' || user?.email === 'velhoronaldo@gmail.com' || user?.email === 'miguel@gmail.com';
   const isAdmin = user?.role === 'ADMIN';
@@ -97,7 +97,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           verificationMethod: method,
           clientId,
           cfAccount,
-          netlifyDomain: (cfAccount === 'netlify' || cfAccount === 'empresasverrificada') ? selectedNetlifyDomain : undefined,
+          netlifyDomain: (cfAccount === 'netlify' || cfAccount === 'empresasverrificada' || cfAccount === 'zapliftyativos') ? selectedNetlifyDomain : undefined,
           customRazao: razaoSocial || undefined,
           customFantasia: nomeFantasia || undefined,
         });
@@ -173,11 +173,23 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             <p className={`text-sm font-semibold ${cfAccount === 'empresasverrificada' ? 'text-blue-300' : 'text-slate-200'}`}>☁️ empresasverrificada</p>
             <p className="text-xs text-slate-500 mt-0.5">Subdomínio Workers (grátis)</p>
           </button>
+          <button
+            type="button"
+            onClick={() => setCfAccount('zapliftyativos')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              cfAccount === 'zapliftyativos'
+                ? 'border-green-500 bg-green-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${cfAccount === 'zapliftyativos' ? 'text-green-300' : 'text-slate-200'}`}>⚡ zapliftyativos</p>
+            <p className="text-xs text-slate-500 mt-0.5">Subdomínio Workers — nova conta</p>
+          </button>
         </div>
       </div>
 
       {/* Seletor de domínio */}
-      {(cfAccount === 'netlify' || cfAccount === 'empresasverrificada') && (
+      {(cfAccount === 'netlify' || cfAccount === 'empresasverrificada' || cfAccount === 'zapliftyativos') && (
         <div className="space-y-2">
           <label className="text-sm font-semibold text-slate-300">Domínio</label>
           <div className="grid gap-2 sm:grid-cols-3">
