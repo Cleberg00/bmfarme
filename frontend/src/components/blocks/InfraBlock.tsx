@@ -49,7 +49,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     ? ['zaplifyativos.com.br', 'verificaperfil.com.br', 'perfilvalidados.com']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
   // Domínios exclusivos da conta zapliftyativos
-  const zapliftyativosDomains = ['zapifyo9.com', 'ativosfarmezaplify.com'];
+  const zapliftyativosDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br'];
   const activeDomains = cfAccount === 'zapliftyativos' ? zapliftyativosDomains : netlifyDomains;
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
