@@ -111,10 +111,14 @@ module.exports = async function handler(req, res) {
       });
 
       let created = 0, skipped = 0, errors = 0;
+      const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br'];
       for (const domain of domains) {
         const baseDom = domain.baseDomain || 'verificaconta.com';
         const zoneId = zoneIds[baseDom];
         if (!zoneId) { skipped++; continue; }
+        // Usa token da conta correta
+        const isZaplifty = zapliftyDomains.includes(baseDom);
+        const useHeaders = isZaplifty ? { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' } : cfHeaders;
 
         let cleanCode = domain.metaVerificationCode || '';
         const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
@@ -125,7 +129,7 @@ module.exports = async function handler(req, res) {
         try {
           await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
             { type: 'TXT', name: domain.domainName, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
-            { headers: cfHeaders, timeout: 15000 }
+            { headers: useHeaders, timeout: 15000 }
           );
           created++;
         } catch (e) {
@@ -295,7 +299,11 @@ module.exports = async function handler(req, res) {
           cleanCode = cleanCode.replace('facebook-domain-verification=', '');
           if (cleanCode && baseDom) {
             const axios = require('axios');
-            const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
+            // Domínios da conta zapliftyativos usam token diferente
+            const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br'];
+            const isZaplifty = zapliftyDomains.includes(baseDom);
+            const cfToken = isZaplifty ? (process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN) : process.env.CLOUDFLARE_API_TOKEN;
+            const cfHeaders = { Authorization: `Bearer ${cfToken}`, 'Content-Type': 'application/json' };
             const zoneIds = {
               'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
               'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
