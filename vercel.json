@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "prisma generate --schema=prisma/schema.prisma && npm run build",
+  "buildCommand": "npx prisma generate --schema=prisma/schema.prisma && npm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "npm install && npm install --prefix frontend",
   "framework": null,
