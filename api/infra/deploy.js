@@ -635,7 +635,7 @@ module.exports = async function handler(req, res) {
       bairro: client.bairro, cep: client.cep,
       municipio: client.municipio, uf: client.uf, situacao: client.situacao,
       atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-      email: (domain && domain.domainName && domain.baseDomain) ? (domain.domainName + '@' + domain.baseDomain) : (client.email || 'contato@empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
+      email: (cleanSubdomain && netlifyDomain) ? (cleanSubdomain + '@' + netlifyDomain) : (client.email || 'contato@empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
     // Gera HTML com template fixo
