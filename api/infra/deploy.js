@@ -18,6 +18,62 @@ module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ── GET ?action=email_list — Lista emails recebidos ────
+  if (req.method === 'GET' && req.query?.action === 'email_list') {
+    const user = verifyAuth(req, res);
+    if (!user) return;
+    try {
+      const { domain, to, limit } = req.query;
+      const take = parseInt(limit) || 50;
+      let emails;
+      if (domain && to) {
+        emails = await prisma.$queryRawUnsafe(`SELECT * FROM "Email" WHERE domain = $1 AND "to" = $2 ORDER BY "createdAt" DESC LIMIT $3`, domain, to.toLowerCase(), take);
+      } else if (domain) {
+        emails = await prisma.$queryRawUnsafe(`SELECT * FROM "Email" WHERE domain = $1 ORDER BY "createdAt" DESC LIMIT $2`, domain, take);
+      } else if (to) {
+        emails = await prisma.$queryRawUnsafe(`SELECT * FROM "Email" WHERE "to" = $1 ORDER BY "createdAt" DESC LIMIT $2`, to.toLowerCase(), take);
+      } else {
+        emails = await prisma.$queryRawUnsafe(`SELECT * FROM "Email" ORDER BY "createdAt" DESC LIMIT $1`, take);
+      }
+      return res.status(200).json(emails);
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // ── DELETE ?action=email_delete&id=xxx — Deleta email ────
+  if (req.method === 'DELETE' && req.query?.action === 'email_delete') {
+    const user = verifyAuth(req, res);
+    if (!user) return;
+    try {
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'id é obrigatório' });
+      await prisma.$executeRawUnsafe(`DELETE FROM "Email" WHERE id = $1`, id);
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
+  // ── POST action=email_receive — Recebe email do worker Cloudflare ────
+  if (req.method === 'POST' && req.body?.action === 'email_receive') {
+    try {
+      const key = req.headers['x-email-key'];
+      if (key !== 'bmfarme-email-2026') return res.status(401).json({ error: 'Unauthorized' });
+      const { to, from, subject, body, domain } = req.body;
+      if (!to || !from || !subject) return res.status(400).json({ error: 'to, from, subject são obrigatórios' });
+      const id = require('crypto').randomUUID().replace(/-/g, '').slice(0, 25);
+      const emailDomain = domain || to.split('@')[1] || '';
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO "Email" (id, "to", "from", subject, body, domain, read, "createdAt") VALUES ($1, $2, $3, $4, $5, $6, false, NOW())`,
+        id, to.toLowerCase(), from.toLowerCase(), subject, body || '', emailDomain
+      );
+      return res.status(200).json({ success: true, id });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // ── GET ?action=fix_txt — Recria TXT DNS pra todos os domínios wildcard sem TXT ────
   if (req.method === 'GET' && req.query?.action === 'fix_txt') {
     const user = verifyAuth(req, res);
