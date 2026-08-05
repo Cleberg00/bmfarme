@@ -3,7 +3,6 @@ import api from '../../api/client';
 import CopyButton from '../ui/CopyButton';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import EmailInboxBlock from './EmailInboxBlock';
 
 type VerificationMethod = 'meta_tag' | 'html_file';
 
@@ -464,9 +463,6 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               <p>4. O arquivo está disponível em: <span className="font-mono text-amber-200">{deployed.workerUrl}/.well-known/facebook-domain-verification.html</span></p>
             </div>
           )}
-
-          {/* Caixa de email do domínio — códigos de verificação aparecem aqui */}
-          <EmailInboxBlock workerUrl={deployed.workerUrl} />
         </div>
       )}
 
