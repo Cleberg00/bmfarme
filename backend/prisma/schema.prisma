@@ -120,3 +120,15 @@ model BmAsset {
 
   @@unique([clientId, bmId])
 }
+
+
+model Email {
+  id        String   @id @default(cuid())
+  to        String   // email destino (ex: wellington@ativosfarmezaplify.com)
+  from      String   // email remetente
+  subject   String
+  body      String   @db.Text
+  domain    String   // domínio que recebeu (ex: ativosfarmezaplify.com)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
