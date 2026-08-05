@@ -197,7 +197,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-        email: (domain && domain.domainName && domain.baseDomain) ? (domain.domainName + '@' + domain.baseDomain) : (client.email || 'contato@empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
+        email: client.email || '', smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
         forceTemplateIndex: fixedIndex,
       });
@@ -253,7 +253,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-        email: (domain && domain.domainName && domain.baseDomain) ? (domain.domainName + '@' + domain.baseDomain) : (client.email || 'contato@empresa.com'), smsPhone: newPhone || client.telefone, smsCode: null,
+        email: client.email || '', smsPhone: newPhone || client.telefone, smsCode: null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
         forceTemplateIndex: newIndex,
         customRazao: customRazao || undefined,
@@ -394,7 +394,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-        email: (domain && domain.domainName && domain.baseDomain) ? (domain.domainName + '@' + domain.baseDomain) : (client.email || 'contato@empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
+        email: client.email || '', smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
       };
 
@@ -560,7 +560,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-        email: (domain && domain.domainName && domain.baseDomain) ? (domain.domainName + '@' + domain.baseDomain) : (client.email || 'contato@empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
+        email: client.email || '', smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode, verificationMethod: 'meta_tag',
       });
 
@@ -635,7 +635,7 @@ module.exports = async function handler(req, res) {
       bairro: client.bairro, cep: client.cep,
       municipio: client.municipio, uf: client.uf, situacao: client.situacao,
       atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-      email: (cleanSubdomain && netlifyDomain) ? (cleanSubdomain + '@' + netlifyDomain) : (client.email || 'contato@empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
+      email: client.email || '', smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
     // Gera HTML com template fixo
