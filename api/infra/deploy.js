@@ -834,10 +834,10 @@ module.exports = async function handler(req, res) {
         if (codeMatch) cleanCode = codeMatch[1];
 
         const zoneId = process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS || '';
-        const domain = netlifyDomain || 'verificaativos.shop';
+        const netlifyBaseDomain = netlifyDomain || 'verificaativos.shop';
         if (zoneId && cleanCode) {
-          await addDnsTxtRecord(zoneId, `${cleanSubdomain}.${domain}`, `facebook-domain-verification=${cleanCode}`);
-          console.log(`[TXT] Adicionado verificação Meta pra ${cleanSubdomain}.${domain}`);
+          await addDnsTxtRecord(zoneId, `${cleanSubdomain}.${netlifyBaseDomain}`, `facebook-domain-verification=${cleanCode}`);
+          console.log(`[TXT] Adicionado verificação Meta pra ${cleanSubdomain}.${netlifyBaseDomain}`);
         }
       } catch (txtErr) {
         console.log(`[TXT] Erro (não fatal): ${txtErr.message}`);
