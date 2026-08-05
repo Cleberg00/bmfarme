@@ -163,14 +163,3 @@ model WabaAsset {
   bmAsset     BmAsset?   @relation(fields: [bmAssetId], references: [id], onDelete: SetNull)
   user        User       @relation(fields: [userId], references: [id], onDelete: Restrict)
 }
-
-model Email {
-  id        String   @id @default(cuid())
-  to        String
-  from      String
-  subject   String
-  body      String   @db.Text
-  domain    String
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
