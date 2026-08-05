@@ -11,15 +11,30 @@ module.exports = async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const { domain, to, limit } = req.query;
-      const where = {};
-      if (domain) where.domain = domain;
-      if (to) where.to = to.toLowerCase();
+      const take = parseInt(limit) || 50;
 
-      const emails = await prisma.email.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        take: parseInt(limit) || 50,
-      });
+      let emails;
+      if (domain && to) {
+        emails = await prisma.$queryRawUnsafe(
+          `SELECT * FROM "Email" WHERE domain = $1 AND "to" = $2 ORDER BY "createdAt" DESC LIMIT $3`,
+          domain, to.toLowerCase(), take
+        );
+      } else if (domain) {
+        emails = await prisma.$queryRawUnsafe(
+          `SELECT * FROM "Email" WHERE domain = $1 ORDER BY "createdAt" DESC LIMIT $2`,
+          domain, take
+        );
+      } else if (to) {
+        emails = await prisma.$queryRawUnsafe(
+          `SELECT * FROM "Email" WHERE "to" = $1 ORDER BY "createdAt" DESC LIMIT $2`,
+          to.toLowerCase(), take
+        );
+      } else {
+        emails = await prisma.$queryRawUnsafe(
+          `SELECT * FROM "Email" ORDER BY "createdAt" DESC LIMIT $1`,
+          take
+        );
+      }
 
       return res.status(200).json(emails);
     } catch (error) {
@@ -31,7 +46,7 @@ module.exports = async function handler(req, res) {
     try {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'id é obrigatório' });
-      await prisma.email.delete({ where: { id } });
+      await prisma.$executeRawUnsafe(`DELETE FROM "Email" WHERE id = $1`, id);
       return res.status(200).json({ success: true });
     } catch (error) {
       return res.status(500).json({ error: error.message });

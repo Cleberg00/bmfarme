@@ -15,17 +15,15 @@ module.exports = async function handler(req, res) {
     const { to, from, subject, body, domain } = req.body;
     if (!to || !from || !subject) return res.status(400).json({ error: 'to, from, subject são obrigatórios' });
 
-    const email = await prisma.email.create({
-      data: {
-        to: to.toLowerCase(),
-        from: from.toLowerCase(),
-        subject,
-        body: body || '',
-        domain: domain || to.split('@')[1] || '',
-      }
-    });
+    const id = require('crypto').randomUUID().replace(/-/g, '').slice(0, 25);
+    const emailDomain = domain || to.split('@')[1] || '';
 
-    return res.status(200).json({ success: true, id: email.id });
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "Email" (id, "to", "from", subject, body, domain, read, "createdAt") VALUES ($1, $2, $3, $4, $5, $6, false, NOW())`,
+      id, to.toLowerCase(), from.toLowerCase(), subject, body || '', emailDomain
+    );
+
+    return res.status(200).json({ success: true, id });
   } catch (error) {
     console.error('[email/receive] Erro:', error.message);
     return res.status(500).json({ error: error.message });
