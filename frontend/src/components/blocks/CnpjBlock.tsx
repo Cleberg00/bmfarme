@@ -239,7 +239,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
               <FieldCopy label="Telefone Comercial" value={client.telefone} />
             </div>
             {workerUrl && <FieldCopy label="Site da empresa" value={workerUrl} />}
-            {client.email && <FieldCopy label="E-mail" value={client.email} />}
+            {workerUrl && <FieldCopy label="E-mail" value={(() => { try { const u = new URL(workerUrl); const parts = u.hostname.split('.'); const sub = parts[0]; const domain = parts.slice(1).join('.'); return sub + '@' + domain; } catch { return client.email || ''; } })()} />}
           </div>
 
           {client.atividadePrincipal && (
