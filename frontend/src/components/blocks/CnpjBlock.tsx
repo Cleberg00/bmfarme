@@ -3,7 +3,7 @@ import api from '../../api/client';
 import CopyButton from '../ui/CopyButton';
 import axios from 'axios';
 import TempMailBlock from './TempMailBlock';
-
+import EmailInboxBlock from './EmailInboxBlock';
 type ClientPayload = {
   id: string;
   cnpj: string;
@@ -251,6 +251,13 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2">📧 Email Temporário</p>
             <TempMailBlock razaoSocial={client.razaoSocial} />
           </div>
+
+          {/* Caixa de email do domínio */}
+          {workerUrl && (
+            <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 px-4 py-3">
+              <EmailInboxBlock workerUrl={workerUrl} />
+            </div>
+          )}
         </div>
       )}
     </div>
