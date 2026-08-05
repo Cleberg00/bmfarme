@@ -3,7 +3,6 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
-    "vercel-build": "prisma generate --schema=prisma/schema.prisma && npm run build --prefix frontend",
     "build": "npm run build --prefix frontend",
     "postinstall": "prisma generate --schema=prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=prisma/schema.prisma",
