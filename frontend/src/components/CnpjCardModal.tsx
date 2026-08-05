@@ -22,7 +22,7 @@ type CardData = {
   smsPhone: string;
 };
 
-type Props = { clientId: string; onClose: () => void };
+type Props = { clientId: string; workerUrl?: string | null; onClose: () => void };
 
 const FIELDS: { key: keyof CardData; label: string; hint?: string; wide?: boolean }[] = [
   { key: 'razaoSocial',        label: 'Nome Empresarial',          wide: true },
@@ -53,10 +53,21 @@ const EMPTY: CardData = {
   uf:'', email:'', telefone:'', smsPhone:'',
 };
 
-export default function CnpjCardModal({ clientId, onClose }: Props) {
+export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   const [data, setData]           = useState<CardData | null>(null);
   const [loading, setLoading]     = useState(true);
   const [generating, setGenerating] = useState(false);
+
+  // Gera email do domínio a partir da workerUrl
+  const domainEmail = workerUrl ? (() => {
+    try {
+      const u = new URL(workerUrl);
+      const parts = u.hostname.split('.');
+      const sub = parts[0];
+      const dom = parts.slice(1).join('.');
+      return `${sub}@${dom}`;
+    } catch { return ''; }
+  })() : '';
 
   useEffect(() => {
     const token = localStorage.getItem('bmfarm.token');
@@ -68,10 +79,10 @@ export default function CnpjCardModal({ clientId, onClose }: Props) {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(r => r.json())
-      .then(d => setData({ ...EMPTY, ...d }))
-      .catch(() => setData({ ...EMPTY }))
+      .then(d => setData({ ...EMPTY, ...d, email: domainEmail || d.email || '' }))
+      .catch(() => setData({ ...EMPTY, email: domainEmail }))
       .finally(() => setLoading(false));
-  }, [clientId]);
+  }, [clientId, domainEmail]);
 
   const handleChange = (key: keyof CardData, value: string) =>
     setData(prev => prev ? { ...prev, [key]: value } : prev);

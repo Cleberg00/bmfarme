@@ -327,7 +327,7 @@ export default function GodModePanel() {
 
       {/* Modal cartão CNPJ */}
       {showCard && clientId && (
-        <CnpjCardModal clientId={clientId} onClose={() => setShowCard(false)} />
+        <CnpjCardModal clientId={clientId} workerUrl={workerUrl} onClose={() => setShowCard(false)} />
       )}
 
       {/* Modal perfil */}
