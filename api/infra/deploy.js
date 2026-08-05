@@ -560,7 +560,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-        email: (domain?.domainName || subdomain || 'contato') + '@' + (domain?.baseDomain || netlifyDomain || selectedNetlifyDomain || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
+        email: (existing?.domainName || domainName || 'contato') + '@' + (existing?.baseDomain || domainName || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode, verificationMethod: 'meta_tag',
       });
 
@@ -635,7 +635,7 @@ module.exports = async function handler(req, res) {
       bairro: client.bairro, cep: client.cep,
       municipio: client.municipio, uf: client.uf, situacao: client.situacao,
       atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
-      email: (domain?.domainName || subdomain || 'contato') + '@' + (domain?.baseDomain || netlifyDomain || selectedNetlifyDomain || 'empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
+      email: (existing?.domainName || cleanSubdomain || 'contato') + '@' + (existing?.baseDomain || netlifyDomain || 'empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
     // Gera HTML com template fixo
