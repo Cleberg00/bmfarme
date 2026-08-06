@@ -201,7 +201,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
 <tr class="info-row">
   <td width="50%" class="section">
     <span class="section-title">ENDEREÇO ELETRÔNICO</span>
-    <div class="section-data">${esc(d.email||'')}</div>
+    <div class="section-data">${esc((d.email||'').toUpperCase())}</div>
   </td>
   <td width="2%" class="section-no-border-vertical"></td>
   <td width="48%" class="section">
