@@ -160,6 +160,7 @@ module.exports = async function handler(req, res) {
         'ativosfarmezaplify.com': process.env.CLOUDFLARE_ZONE_ATIVOSFARMEZAPLIFY,
         'maycontexeira.com.br': process.env.CLOUDFLARE_ZONE_MAYCONTEXEIRA,
         'realfarmezaplify.com': process.env.CLOUDFLARE_ZONE_REALFARMEZAPLIFY,
+        'zaplifydigital0.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL0,
       };
 
       // Busca todos os domínios wildcard do usuário
@@ -168,7 +169,7 @@ module.exports = async function handler(req, res) {
       });
 
       let created = 0, skipped = 0, errors = 0;
-      const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com'];
+      const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com'];
       for (const domain of domains) {
         const baseDom = domain.baseDomain || 'verificaconta.com';
         const zoneId = zoneIds[baseDom];
@@ -357,7 +358,7 @@ module.exports = async function handler(req, res) {
           if (cleanCode && baseDom) {
             const axios = require('axios');
             // Domínios da conta zapliftyativos usam token diferente
-            const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com'];
+            const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com'];
             const isZaplifty = zapliftyDomains.includes(baseDom);
             const cfToken = isZaplifty ? (process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN) : process.env.CLOUDFLARE_API_TOKEN;
             const cfHeaders = { Authorization: `Bearer ${cfToken}`, 'Content-Type': 'application/json' };
