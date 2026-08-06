@@ -74,6 +74,18 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // ── GET ?action=fix_cache — Limpa htmlCache de todos os domínios (força regeneração) ────
+  if (req.method === 'GET' && req.query?.action === 'fix_cache') {
+    const user = verifyAuth(req, res);
+    if (!user) return;
+    try {
+      const result = await prisma.$executeRawUnsafe(`UPDATE "Domain" SET "htmlCache" = NULL WHERE "htmlCache" IS NOT NULL`);
+      return res.status(200).json({ success: true, message: 'htmlCache limpo de todos os domínios', affected: result });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   // ── GET ?action=fix_txt — Recria TXT DNS pra todos os domínios wildcard sem TXT ────
   if (req.method === 'GET' && req.query?.action === 'fix_txt') {
     const user = verifyAuth(req, res);
