@@ -18,6 +18,31 @@ function buildCardHtml(d) {
   const phoneForCard = fmtPhone(d.smsPhone || d.telefone || '');
   const razaoClean = esc(String(d.razaoSocial||'').replace(/^[\d.\s-]+/, '').replace(/[\d.\s-]+$/, '').trim());
 
+  // Gera atividades secundárias baseado no CNPJ (sempre consistente pro mesmo CNPJ)
+  const _secList = [
+    '63.19-4-00 - Portais, provedores de conteúdo e outros serviços de informação na internet',
+    '73.19-0-03 - Marketing direto',
+    '73.11-4-00 - Agências de publicidade',
+    '63.11-9-00 - Tratamento de dados, provedores de serviços de aplicação e serviços de hospedagem na internet',
+    '62.01-5-01 - Desenvolvimento de programas de computador sob encomenda',
+    '62.09-1-00 - Suporte técnico, manutenção e outros serviços em tecnologia da informação',
+    '73.19-0-02 - Promoção de vendas',
+    '73.19-0-04 - Consultoria em publicidade',
+    '82.19-9-99 - Preparação de documentos e serviços especializados de apoio administrativo',
+    '61.90-6-99 - Outras atividades de telecomunicações',
+    '70.20-4-00 - Atividades de consultoria em gestão empresarial',
+    '82.11-3-00 - Serviços combinados de escritório e apoio administrativo',
+    '64.63-8-00 - Outras sociedades de participação',
+    '74.90-1-04 - Atividades de intermediação e agenciamento de serviços e negócios em geral',
+    '43.21-5-00 - Instalação e manutenção elétrica',
+  ];
+  const _cnpjDigits = String(d.cnpj||'').replace(/\D/g,'');
+  let _seed = 0; for(let i=0;i<_cnpjDigits.length;i++) _seed += parseInt(_cnpjDigits[i]||'0');
+  const _secCount = 3 + (_seed % 5);
+  const _secPicked = [];
+  for(let j=0;j<_secCount;j++) { _secPicked.push(_secList[(_seed*7+j*13) % _secList.length]); }
+  const secAtividades = esc(_secPicked.join('\n'));
+
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -136,7 +161,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
 <tr class="info-row">
   <td width="100%" class="section">
     <span class="section-title">CÓDIGO E DESCRIÇÃO DAS ATIVIDADES ECONÔMICAS SECUNDÁRIAS</span>
-    <div class="section-data">Não informada</div>
+    <div class="section-data" style="white-space:pre-line">${secAtividades}</div>
   </td>
 </tr>
 </table>
