@@ -29,6 +29,15 @@ function getProviders() {
       timeout: 15000,
     });
   }
+  // Número Virtual como provider adicional
+  if (process.env.NUMEROVIRTUAL_API_KEY) {
+    providers.push({
+      name: 'NUMEROVIRTUAL',
+      baseURL: 'https://app.numero-virtual.com/api/v1',
+      apiKey: process.env.NUMEROVIRTUAL_API_KEY,
+      timeout: 15000,
+    });
+  }
   return providers;
 }
 
@@ -55,7 +64,31 @@ async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider) 
 
   for (const provider of providers) {
     try {
-      // HeroSMS e SMS24h usam o mesmo country code: Brasil = 73
+      // ── NÚMERO VIRTUAL — API REST JSON ──
+      if (provider.name === 'NUMEROVIRTUAL') {
+        const headers = { Authorization: `Bearer ${provider.apiKey}`, 'Content-Type': 'application/json' };
+        // 1. Busca o serviceId pra WhatsApp/Facebook
+        const svcRes = await axios.get(`${provider.baseURL}/services`, { headers, timeout: provider.timeout });
+        const services = svcRes.data?.services || [];
+        // Busca por facebook, whatsapp, ou usa o primeiro disponível
+        let svcId = null;
+        const fbSvc = services.find(s => s.name?.toLowerCase().includes('facebook') || s.name?.toLowerCase().includes('whatsapp'));
+        if (fbSvc) svcId = fbSvc.id;
+        else if (services.length > 0) svcId = services[0].id;
+        if (!svcId) { lastError = new Error('Nenhum serviço disponível no Número Virtual'); continue; }
+
+        // 2. Solicita número
+        const actRes = await axios.post(`${provider.baseURL}/activations`, { serviceId: svcId }, { headers, timeout: provider.timeout });
+        const act = actRes.data;
+        if (act && act.phone && act.id) {
+          console.log(`[SMS] Número obtido via NUMEROVIRTUAL: ${act.phone}`);
+          return { externalId: String(act.id), phoneNumber: act.phone, provider: 'NUMEROVIRTUAL' };
+        }
+        lastError = new Error('Resposta inesperada do Número Virtual');
+        continue;
+      }
+
+      // ── SMS24H / HEROSMS — protocolo texto puro ──
       const countryCode = effectiveCountry;
       const extraParams = (provider.name === 'HEROSMS') ? { maxPrice: '0.15' } : {};
       const raw = await makeRequest(provider, { action: 'getNumber', service, country: countryCode, ...extraParams });
@@ -104,6 +137,25 @@ async function activateNumber(externalId, providerName) {
 }
 
 async function checkCode(externalId, providerName) {
+  // ── NÚMERO VIRTUAL — REST JSON ──
+  if (providerName === 'NUMEROVIRTUAL') {
+    const provider = getProviders().find(p => p.name === 'NUMEROVIRTUAL');
+    if (!provider) return { code: null, status: 'WAITING' };
+    try {
+      const headers = { Authorization: `Bearer ${provider.apiKey}` };
+      const res = await axios.get(`${provider.baseURL}/activations/${externalId}`, { headers, timeout: provider.timeout });
+      const data = res.data;
+      if (data.smsCode) return { code: data.smsCode, status: 'RECEIVED' };
+      if (data.status === 'cancelled') return { code: null, status: 'EXPIRED' };
+      if (data.status === 'expired') return { code: null, status: 'EXPIRED' };
+      return { code: null, status: 'WAITING' };
+    } catch (error) {
+      if (error.response?.status === 404) return { code: null, status: 'EXPIRED' };
+      throw Object.assign(new Error(error.response?.data?.error || error.message), { statusCode: 502 });
+    }
+  }
+
+  // ── SMS24H / HEROSMS — texto puro ──
   const provider = getProviders().find(p => p.name === providerName) || getProviders()[0];
   let raw;
   try {
@@ -126,6 +178,21 @@ async function checkCode(externalId, providerName) {
 }
 
 async function releaseNumber(externalId, confirmed = false, providerName) {
+  // ── NÚMERO VIRTUAL ──
+  if (providerName === 'NUMEROVIRTUAL') {
+    const provider = getProviders().find(p => p.name === 'NUMEROVIRTUAL');
+    if (!provider) return false;
+    try {
+      const headers = { Authorization: `Bearer ${provider.apiKey}` };
+      if (confirmed) {
+        await axios.post(`${provider.baseURL}/activations/${externalId}/complete`, {}, { headers, timeout: provider.timeout });
+      } else {
+        await axios.delete(`${provider.baseURL}/activations/${externalId}`, { headers, timeout: provider.timeout });
+      }
+      return true;
+    } catch { return false; }
+  }
+
   const provider = getProviders().find(p => p.name === providerName) || getProviders()[0];
   try {
     await makeRequest(provider, { action: 'setStatus', status: confirmed ? 6 : 8, id: externalId });
@@ -134,6 +201,17 @@ async function releaseNumber(externalId, confirmed = false, providerName) {
 }
 
 async function confirmSms(externalId, providerName) {
+  // ── NÚMERO VIRTUAL ──
+  if (providerName === 'NUMEROVIRTUAL') {
+    const provider = getProviders().find(p => p.name === 'NUMEROVIRTUAL');
+    if (!provider) return false;
+    try {
+      const headers = { Authorization: `Bearer ${provider.apiKey}` };
+      await axios.post(`${provider.baseURL}/activations/${externalId}/complete`, {}, { headers, timeout: provider.timeout });
+      return true;
+    } catch { return false; }
+  }
+
   const provider = getProviders().find(p => p.name === providerName) || getProviders()[0];
   try {
     await makeRequest(provider, { action: 'setStatus', status: 6, id: externalId });
@@ -153,6 +231,12 @@ async function getBalance() {
   const results = [];
   for (const provider of getProviders()) {
     try {
+      if (provider.name === 'NUMEROVIRTUAL') {
+        const headers = { Authorization: `Bearer ${provider.apiKey}` };
+        const res = await axios.get(`${provider.baseURL}/balance`, { headers, timeout: provider.timeout });
+        results.push({ provider: 'NUMEROVIRTUAL', balance: parseFloat(res.data?.balance || 0) });
+        continue;
+      }
       const raw = await makeRequest(provider, { action: 'getBalance' });
       if (raw.startsWith('ACCESS_BALANCE:')) {
         results.push({ provider: provider.name, balance: parseFloat(raw.split(':')[1]) });
