@@ -2,12 +2,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../_lib/prisma');
 const env = require('../_lib/env');
-const { setCors } = require('../_lib/auth');
+const { setCors, rateLimit } = require('../_lib/auth');
 
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
+
+  // Rate limit: 5 tentativas de login por minuto por IP
+  if (!rateLimit(req, res, { maxAttempts: 5, windowMs: 60000, message: 'Muitas tentativas de login. Aguarde 1 minuto.' })) return;
 
   try {
     const { email, password } = req.body;
@@ -25,7 +28,7 @@ module.exports = async function handler(req, res) {
     const token = jwt.sign(
       { email: user.email, role: user.role },
       env.jwtSecret,
-      { subject: user.id, expiresIn: '7d' }
+      { subject: user.id, expiresIn: '24h' }
     );
 
     return res.status(200).json({

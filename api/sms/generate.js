@@ -1,11 +1,14 @@
 const prisma = require('../_lib/prisma');
-const { verifyAuth, setCors } = require('../_lib/auth');
+const { verifyAuth, setCors, rateLimit } = require('../_lib/auth');
 const { buyNumber, activateNumber } = require('../_services/sms');
 
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
+
+  // Rate limit: 10 solicitações de SMS por minuto por IP
+  if (!rateLimit(req, res, { maxAttempts: 10, windowMs: 60000, message: 'Limite de solicitações SMS atingido. Aguarde 1 minuto.' })) return;
 
   const user = verifyAuth(req, res);
   if (!user) return;
