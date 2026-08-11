@@ -62,6 +62,10 @@ async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider, 
       }
       providers = [preferred];
     }
+  } else if (customApiKey) {
+    // Se tem key custom sem provider, aplica no primeiro (SMS24H)
+    providers[0].apiKey = customApiKey;
+    providers = [providers[0]];
   }
   
   let lastError;

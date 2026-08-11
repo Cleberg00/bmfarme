@@ -20,7 +20,16 @@ module.exports = async function handler(req, res) {
     const client = await prisma.client.findUnique({ where: { id: clientId } });
     if (!client) return res.status(404).json({ error: 'Cliente não encontrado.' });
 
-    const smsData = await buyNumber(service, undefined, preferredProvider, customApiKey);
+    // API key por equipe: Wesley/Denis/Vitória usam SMS24H com key própria
+    const teamKeys = {
+      'wesley@gmail.com': 'b31d9d27890c8bff97f3a27f7317a530',
+      'denis@gmail.com': 'b31d9d27890c8bff97f3a27f7317a530',
+      'vitoria@gmail.com': 'b31d9d27890c8bff97f3a27f7317a530',
+    };
+    const effectiveApiKey = customApiKey || teamKeys[user.email] || undefined;
+    const effectiveProvider = preferredProvider || (teamKeys[user.email] ? 'SMS24H' : undefined);
+
+    const smsData = await buyNumber(service, undefined, effectiveProvider, effectiveApiKey);
     if (smsData.externalId) await activateNumber(smsData.externalId, smsData.provider);
 
     const smsLog = await prisma.smsLog.create({
