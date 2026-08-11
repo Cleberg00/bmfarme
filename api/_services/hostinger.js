@@ -18,7 +18,7 @@ const HOSTINGER_TOKEN = process.env.HOSTINGER_API_TOKEN || '';
 const HOSTINGER_ORDER_ID = 1007983286;
 
 const FTP_HOST = '186.244.145.13';
-const FTP_USER = 'u249435360';
+const FTP_USER_PREFIX = 'u249435360';
 const FTP_PASS = process.env.HOSTINGER_FTP_PASS || '';
 const FTP_PORT = 21;
 
@@ -55,23 +55,23 @@ async function uploadHtmlFtp(domain, htmlContent) {
   const client = new ftp.Client();
   client.ftp.verbose = false;
   
+  // Username FTP é u249435360.dominio
+  const ftpUser = `${FTP_USER_PREFIX}.${domain}`;
+  
   try {
     await client.access({
       host: FTP_HOST,
       port: FTP_PORT,
-      user: FTP_USER,
+      user: ftpUser,
       password: FTP_PASS,
       secure: false,
     });
 
-    // Navega pro diretório do site
-    const sitePath = `/home/${FTP_USER}/domains/${domain}/public_html`;
-    
+    // Vai pro public_html (raiz padrão do FTP já é o public_html na Hostinger)
     try {
-      await client.ensureDir(sitePath);
+      await client.cd('/public_html');
     } catch {
-      // Tenta caminho alternativo
-      await client.ensureDir(`/domains/${domain}/public_html`);
+      // Já pode estar no public_html
     }
 
     // Upload do index.html como stream
@@ -79,7 +79,7 @@ async function uploadHtmlFtp(domain, htmlContent) {
     const stream = Readable.from([htmlContent]);
     await client.uploadFrom(stream, 'index.html');
 
-    console.log(`[Hostinger FTP] Upload OK: ${domain}/public_html/index.html`);
+    console.log(`[Hostinger FTP] Upload OK: ${domain}/public_html/index.html (user: ${ftpUser})`);
   } finally {
     client.close();
   }
@@ -95,8 +95,8 @@ async function deployHostingerSite(subdomain, htmlContent) {
   // 1. Cria o site via API
   const { domain, url } = await createHostingerSite(subdomain);
 
-  // 2. Aguarda um pouco pro site ser provisionado
-  await new Promise(r => setTimeout(r, 3000));
+  // 2. Aguarda pro site ser provisionado (FTP demora pra ativar)
+  await new Promise(r => setTimeout(r, 8000));
 
   // 3. Upload do HTML via FTP
   await uploadHtmlFtp(domain, htmlContent);
