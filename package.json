@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/client": "^5.22.0",
     "axios": "^1.7.2",
+    "basic-ftp": "^6.2.0",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "node-ssh": "^13.2.0"
