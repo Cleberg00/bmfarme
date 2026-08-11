@@ -60,31 +60,64 @@ async function uploadHtmlFtp(domain, htmlContent) {
   const client = new ftp.Client();
   client.ftp.verbose = false;
   
-  // Username FTP é u249435360.dominio
-  const ftpUser = `${FTP_USER_PREFIX}.${domain}`;
-  
   try {
+    // Tenta com username principal primeiro (acessa todos os sites)
     await client.access({
       host: FTP_HOST,
       port: FTP_PORT,
-      user: ftpUser,
+      user: FTP_USER_PREFIX,
       password: FTP_PASS,
       secure: false,
     });
 
-    // Vai pro public_html (raiz padrão do FTP já é o public_html na Hostinger)
-    try {
-      await client.cd('/public_html');
-    } catch {
-      // Já pode estar no public_html
+    // Navega pro diretório do site específico
+    const paths = [
+      `/domains/${domain}/public_html`,
+      `/home/${FTP_USER_PREFIX}/domains/${domain}/public_html`,
+      `./domains/${domain}/public_html`,
+    ];
+    
+    let connected = false;
+    for (const p of paths) {
+      try {
+        await client.cd(p);
+        connected = true;
+        break;
+      } catch { /* tenta próximo */ }
     }
 
-    // Upload do index.html como stream
+    if (!connected) {
+      // Fallback: tenta public_html direto (pode já estar no diretório certo)
+      try { await client.cd('/public_html'); } catch { /* ignora */ }
+    }
+
+    // Upload do index.html
     const { Readable } = require('stream');
     const stream = Readable.from([htmlContent]);
     await client.uploadFrom(stream, 'index.html');
 
-    console.log(`[Hostinger FTP] Upload OK: ${domain}/public_html/index.html (user: ${ftpUser})`);
+    console.log(`[Hostinger FTP] Upload OK: ${domain}/index.html (user: ${FTP_USER_PREFIX})`);
+  } catch (mainErr) {
+    // Se falhar com username principal, tenta com username do site
+    const client2 = new ftp.Client();
+    try {
+      await client2.access({
+        host: FTP_HOST,
+        port: FTP_PORT,
+        user: `${FTP_USER_PREFIX}.${domain}`,
+        password: FTP_PASS,
+        secure: false,
+      });
+      try { await client2.cd('/public_html'); } catch { /* ignora */ }
+      const { Readable } = require('stream');
+      const stream = Readable.from([htmlContent]);
+      await client2.uploadFrom(stream, 'index.html');
+      console.log(`[Hostinger FTP] Upload OK via user específico: ${domain}`);
+    } catch (siteErr) {
+      throw new Error(`FTP falhou: ${mainErr.message} | ${siteErr.message}`);
+    } finally {
+      client2.close();
+    }
   } finally {
     client.close();
   }
