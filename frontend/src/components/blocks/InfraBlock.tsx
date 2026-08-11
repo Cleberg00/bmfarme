@@ -279,10 +279,10 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           {(((cfAccount === 'porkbun' || cfAccount === 'dynadot') && customDomainName) || (cfAccount !== 'porkbun' && cfAccount !== 'dynadot' && subdomain)) && (
             <div className="flex items-center gap-2 mt-1">
               <span className="text-sm font-mono text-emerald-400 break-all">
-                {cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : `${subdomain}.${selectedNetlifyDomain}`}
+                {cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : cfAccount === 'hostinger' ? `${subdomain}.hostingersite.com` : `${subdomain}.${selectedNetlifyDomain}`}
               </span>
-              <CopyButton value={cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
-              {(cfAccount === 'porkbun' || cfAccount === 'dynadot' || cfAccount === 'empresasverrificada') && <span className="text-xs text-slate-500">← cole no Meta</span>}
+              <CopyButton value={cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : cfAccount === 'hostinger' ? `${subdomain}.hostingersite.com` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
+              {(cfAccount === 'porkbun' || cfAccount === 'dynadot' || cfAccount === 'empresasverrificada' || cfAccount === 'hostinger') && <span className="text-xs text-slate-500">← cole no Meta</span>}
             </div>
           )}
         </div>
