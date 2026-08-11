@@ -2,19 +2,14 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
 
-// Equipes: líder → membros que ele pode gerenciar
-const TEAMS = {
-  'wesley@gmail.com': ['denis@gmail.com', 'vitoria@gmail.com'],
-};
-
-function getTeamMembers(leaderEmail) {
-  return TEAMS[leaderEmail] || [];
-}
-
-function canManageUser(managerEmail, managerRole, targetEmail) {
-  if (managerRole === 'ADMIN') return true;
-  const team = getTeamMembers(managerEmail);
-  return team.includes(targetEmail);
+// Garante que a coluna createdBy existe (cria se não existir)
+let _colChecked = false;
+async function ensureCreatedByColumn() {
+  if (_colChecked) return;
+  try {
+    await prisma.$executeRawUnsafe(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "createdBy" TEXT`);
+  } catch { /* já existe ou outro erro benigno */ }
+  _colChecked = true;
 }
 
 module.exports = async function handler(req, res) {
@@ -24,22 +19,31 @@ module.exports = async function handler(req, res) {
   const user = verifyAuth(req, res);
   if (!user) return;
 
-  const isAdmin = user.role === 'ADMIN';
-  const isTeamLeader = !!TEAMS[user.email];
+  await ensureCreatedByColumn();
 
-  // PATCH (troca de senha/nome) — admin, líder de equipe, ou o próprio usuário
+  const isAdmin = user.role === 'ADMIN';
+
+  // Busca IDs dos membros da equipe (quem esse user criou)
+  async function getTeamIds() {
+    const team = await prisma.$queryRawUnsafe(`SELECT id, email FROM "User" WHERE "createdBy" = $1`, user.id);
+    return team || [];
+  }
+
+  async function isInMyTeam(targetId) {
+    if (isAdmin) return true;
+    if (targetId === user.id) return true;
+    const rows = await prisma.$queryRawUnsafe(`SELECT id FROM "User" WHERE id = $1 AND "createdBy" = $2`, targetId, user.id);
+    return rows && rows.length > 0;
+  }
+
+  // PATCH (troca de senha/nome)
   if (req.method === 'PATCH') {
     try {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'id é obrigatório.' });
 
-      // Busca o user alvo pra verificar permissão
-      const targetUser = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
-      if (!targetUser) return res.status(404).json({ error: 'Usuário não encontrado.' });
-
-      // Permissão: admin, próprio, ou líder de equipe do alvo
       const isSelf = id === user.id;
-      const canManage = canManageUser(user.email, user.role, targetUser.email);
+      const canManage = await isInMyTeam(id);
       if (!isSelf && !canManage)
         return res.status(403).json({ error: 'Sem permissão para alterar este usuário.' });
 
@@ -65,38 +69,29 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // GET — lista usuários (admin vê todos, líder vê sua equipe)
+  // GET — lista usuários (admin vê todos, líder vê sua equipe + ele)
   if (req.method === 'GET') {
-    if (!isAdmin && !isTeamLeader)
-      return res.status(403).json({ error: 'Sem permissão para listar usuários.' });
-
     try {
-      let where = {};
-      if (!isAdmin && isTeamLeader) {
-        // Líder vê apenas seus membros + ele mesmo
-        const teamEmails = [...getTeamMembers(user.email), user.email];
-        where = { email: { in: teamEmails } };
+      if (isAdmin) {
+        const users = await prisma.user.findMany({
+          select: { id: true, email: true, name: true, role: true, createdAt: true, _count: { select: { bmAssets: true } } },
+          orderBy: { createdAt: 'asc' },
+        });
+        return res.status(200).json(users);
       }
-
-      const users = await prisma.user.findMany({
-        where,
-        select: {
-          id: true, email: true, name: true, role: true, createdAt: true,
-          _count: { select: { bmAssets: true } }
-        },
-        orderBy: { createdAt: 'asc' },
-      });
-      return res.status(200).json(users);
+      // Não-admin: vê apenas quem ele criou + ele mesmo
+      const teamMembers = await prisma.$queryRawUnsafe(
+        `SELECT id, email, name, role, "createdAt" FROM "User" WHERE "createdBy" = $1 OR id = $1 ORDER BY "createdAt" ASC`,
+        user.id
+      );
+      return res.status(200).json(teamMembers.map(u => ({ ...u, _count: { bmAssets: 0 } })));
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
 
-  // POST — cria novo usuário (admin cria qualquer, líder cria na equipe dele)
+  // POST — cria novo usuário (qualquer um pode criar, fica vinculado a quem criou)
   if (req.method === 'POST') {
-    if (!isAdmin && !isTeamLeader)
-      return res.status(403).json({ error: 'Sem permissão para criar usuários.' });
-
     try {
       const { email, password, name, role } = req.body;
       if (!email || !password || !name)
@@ -105,7 +100,7 @@ module.exports = async function handler(req, res) {
       if (password.length < 6)
         return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres.' });
 
-      // Líder não pode criar ADMIN
+      // Só admin pode criar ADMIN
       if (!isAdmin && role === 'ADMIN')
         return res.status(403).json({ error: 'Apenas admin pode criar outros admins.' });
 
@@ -113,35 +108,30 @@ module.exports = async function handler(req, res) {
       if (existing) return res.status(409).json({ error: 'E-mail já cadastrado.' });
 
       const hashed = await bcrypt.hash(password, 10);
-      const newUser = await prisma.user.create({
-        data: {
-          email: String(email).toLowerCase(),
-          password: hashed,
-          name,
-          role: role === 'ADMIN' ? 'ADMIN' : 'OPERATOR',
-        },
-        select: { id: true, email: true, name: true, role: true, createdAt: true },
-      });
-      return res.status(201).json(newUser);
+      
+      // Cria o user e marca quem criou
+      const newUser = await prisma.$queryRawUnsafe(
+        `INSERT INTO "User" (id, email, password, name, role, "createdAt", "updatedAt", "createdBy") VALUES (gen_random_uuid()::text, $1, $2, $3, $4, NOW(), NOW(), $5) RETURNING id, email, name, role, "createdAt"`,
+        String(email).toLowerCase(), hashed, name, role === 'ADMIN' ? 'ADMIN' : 'OPERATOR', user.id
+      );
+      
+      return res.status(201).json(newUser[0] || newUser);
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
   }
 
-  // DELETE — remove usuário (admin remove qualquer, líder remove da equipe)
+  // DELETE — remove usuário
   if (req.method === 'DELETE') {
     try {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'id é obrigatório.' });
       if (id === user.id) return res.status(400).json({ error: 'Não é possível remover a própria conta.' });
 
-      const targetUser = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
-      if (!targetUser) return res.status(404).json({ error: 'Usuário não encontrado.' });
-
-      if (!canManageUser(user.email, user.role, targetUser.email))
+      const canManage = await isInMyTeam(id);
+      if (!canManage)
         return res.status(403).json({ error: 'Sem permissão para remover este usuário.' });
 
-      // Remove registros vinculados antes de deletar
       await prisma.bmAsset.deleteMany({ where: { userId: id } });
       await prisma.smsLog.deleteMany({ where: { userId: id } });
       await prisma.domain.deleteMany({ where: { userId: id } });

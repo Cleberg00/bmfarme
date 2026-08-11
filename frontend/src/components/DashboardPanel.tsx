@@ -37,7 +37,7 @@ type UserRecord = {
 export default function DashboardPanel({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-  const isTeamLeader = user?.email === 'wesley@gmail.com';
+  const isTeamLeader = true; // Qualquer user pode ter equipe agora (backend controla)
   const canManageUsers = isAdmin || isTeamLeader;
 
   const [days, setDays] = useState(7);
