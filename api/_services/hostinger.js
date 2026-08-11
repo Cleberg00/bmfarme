@@ -30,19 +30,24 @@ const FTP_PORT = 21;
 async function createHostingerSite(subdomain) {
   const domain = `${subdomain}.hostingersite.com`;
   
-  const res = await axios.post(`${HOSTINGER_API}/websites`, {
-    domain,
-    order_id: HOSTINGER_ORDER_ID,
-  }, {
-    headers: { Authorization: `Bearer ${HOSTINGER_TOKEN}`, 'Content-Type': 'application/json' },
-    timeout: 30000,
-  });
-
-  if (res.status !== 200 && res.status !== 201) {
-    throw new Error(`Hostinger: erro ao criar site - ${JSON.stringify(res.data)}`);
+  try {
+    await axios.post(`${HOSTINGER_API}/websites`, {
+      domain,
+      order_id: HOSTINGER_ORDER_ID,
+    }, {
+      headers: { Authorization: `Bearer ${HOSTINGER_TOKEN}`, 'Content-Type': 'application/json' },
+      timeout: 30000,
+    });
+    console.log(`[Hostinger] Site criado: ${domain}`);
+  } catch (e) {
+    // 422 = site já existe, tudo OK — vai direto pro upload
+    if (e.response?.status === 422) {
+      console.log(`[Hostinger] Site já existe: ${domain} — prosseguindo pro upload`);
+    } else {
+      throw new Error(`Hostinger: erro ao criar site - ${e.response?.data?.message || e.message}`);
+    }
   }
 
-  console.log(`[Hostinger] Site criado: ${domain}`);
   return { domain, url: `https://${domain}` };
 }
 
