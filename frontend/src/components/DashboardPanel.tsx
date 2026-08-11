@@ -37,6 +37,8 @@ type UserRecord = {
 export default function DashboardPanel({ onBack }: { onBack: () => void }) {
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  const isTeamLeader = user?.email === 'wesley@gmail.com';
+  const canManageUsers = isAdmin || isTeamLeader;
 
   const [days, setDays] = useState(7);
   const [data, setData] = useState<DashboardData | null>(null);
@@ -63,14 +65,14 @@ export default function DashboardPanel({ onBack }: { onBack: () => void }) {
   }, [days]);
 
   const loadUsers = useCallback(async () => {
-    if (!isAdmin) return;
+    if (!canManageUsers) return;
     setLoadingUsers(true);
     try {
       const { data: u } = await api.get('/auth/users');
       setUsers(Array.isArray(u) ? u : []);
     } catch { /* silencioso */ }
     finally { setLoadingUsers(false); }
-  }, [isAdmin]);
+  }, [canManageUsers]);
 
   useEffect(() => { loadDashboard(); }, [loadDashboard]);
   useEffect(() => { loadUsers(); }, [loadUsers]);
@@ -249,8 +251,8 @@ export default function DashboardPanel({ onBack }: { onBack: () => void }) {
           </>
         )}
 
-        {/* Gestão de usuários — só ADMIN */}
-        {isAdmin && (
+        {/* Gestão de usuários — ADMIN ou líder de equipe */}
+        {canManageUsers && (
           <div className="rounded-2xl border border-slate-700/50 bg-slate-900 p-5 space-y-5">
             <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400">👥 Gerenciar Usuários</h2>
 

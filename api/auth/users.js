@@ -2,6 +2,21 @@ const bcrypt = require('bcryptjs');
 const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
 
+// Equipes: líder → membros que ele pode gerenciar
+const TEAMS = {
+  'wesley@gmail.com': ['denis@gmail.com', 'vitoria@gmail.com'],
+};
+
+function getTeamMembers(leaderEmail) {
+  return TEAMS[leaderEmail] || [];
+}
+
+function canManageUser(managerEmail, managerRole, targetEmail) {
+  if (managerRole === 'ADMIN') return true;
+  const team = getTeamMembers(managerEmail);
+  return team.includes(targetEmail);
+}
+
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -9,13 +24,24 @@ module.exports = async function handler(req, res) {
   const user = verifyAuth(req, res);
   if (!user) return;
 
-  // PATCH (troca de senha/nome) — qualquer usuário pode, sem exigir ADMIN
+  const isAdmin = user.role === 'ADMIN';
+  const isTeamLeader = !!TEAMS[user.email];
+
+  // PATCH (troca de senha/nome) — admin, líder de equipe, ou o próprio usuário
   if (req.method === 'PATCH') {
     try {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'id é obrigatório.' });
-      if (user.role !== 'ADMIN' && id !== user.id)
-        return res.status(403).json({ error: 'Sem permissão para alterar outro usuário.' });
+
+      // Busca o user alvo pra verificar permissão
+      const targetUser = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
+      if (!targetUser) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+      // Permissão: admin, próprio, ou líder de equipe do alvo
+      const isSelf = id === user.id;
+      const canManage = canManageUser(user.email, user.role, targetUser.email);
+      if (!isSelf && !canManage)
+        return res.status(403).json({ error: 'Sem permissão para alterar este usuário.' });
 
       const { password, name } = req.body;
       const data = {};
@@ -39,14 +65,21 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // Apenas ADMIN pode gerenciar usuários abaixo
-  if (user.role !== 'ADMIN')
-    return res.status(403).json({ error: 'Apenas administradores podem gerenciar usuários.' });
-
-  // GET — lista todos os usuários
+  // GET — lista usuários (admin vê todos, líder vê sua equipe)
   if (req.method === 'GET') {
+    if (!isAdmin && !isTeamLeader)
+      return res.status(403).json({ error: 'Sem permissão para listar usuários.' });
+
     try {
+      let where = {};
+      if (!isAdmin && isTeamLeader) {
+        // Líder vê apenas seus membros + ele mesmo
+        const teamEmails = [...getTeamMembers(user.email), user.email];
+        where = { email: { in: teamEmails } };
+      }
+
       const users = await prisma.user.findMany({
+        where,
         select: {
           id: true, email: true, name: true, role: true, createdAt: true,
           _count: { select: { bmAssets: true } }
@@ -59,8 +92,11 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // POST — cria novo usuário
+  // POST — cria novo usuário (admin cria qualquer, líder cria na equipe dele)
   if (req.method === 'POST') {
+    if (!isAdmin && !isTeamLeader)
+      return res.status(403).json({ error: 'Sem permissão para criar usuários.' });
+
     try {
       const { email, password, name, role } = req.body;
       if (!email || !password || !name)
@@ -68,6 +104,10 @@ module.exports = async function handler(req, res) {
 
       if (password.length < 6)
         return res.status(400).json({ error: 'Senha deve ter no mínimo 6 caracteres.' });
+
+      // Líder não pode criar ADMIN
+      if (!isAdmin && role === 'ADMIN')
+        return res.status(403).json({ error: 'Apenas admin pode criar outros admins.' });
 
       const existing = await prisma.user.findUnique({ where: { email: String(email).toLowerCase() } });
       if (existing) return res.status(409).json({ error: 'E-mail já cadastrado.' });
@@ -88,14 +128,20 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // DELETE — remove usuário por id (query param)
+  // DELETE — remove usuário (admin remove qualquer, líder remove da equipe)
   if (req.method === 'DELETE') {
     try {
       const { id } = req.query;
       if (!id) return res.status(400).json({ error: 'id é obrigatório.' });
       if (id === user.id) return res.status(400).json({ error: 'Não é possível remover a própria conta.' });
 
-      // Remove registros vinculados antes de deletar o usuário
+      const targetUser = await prisma.user.findUnique({ where: { id }, select: { id: true, email: true } });
+      if (!targetUser) return res.status(404).json({ error: 'Usuário não encontrado.' });
+
+      if (!canManageUser(user.email, user.role, targetUser.email))
+        return res.status(403).json({ error: 'Sem permissão para remover este usuário.' });
+
+      // Remove registros vinculados antes de deletar
       await prisma.bmAsset.deleteMany({ where: { userId: id } });
       await prisma.smsLog.deleteMany({ where: { userId: id } });
       await prisma.domain.deleteMany({ where: { userId: id } });
