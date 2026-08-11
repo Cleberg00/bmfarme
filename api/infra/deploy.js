@@ -2,6 +2,7 @@ const prisma = require('../_lib/prisma');
 const { verifyAuth, setCors } = require('../_lib/auth');
 const { buildLandingHtml, createZone, addDnsTxtRecord, getZoneNameservers, deployWorker } = require('../_services/cloudflare');
 const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
+const { deployHostingerSite } = require('../_services/hostinger');
 const porkbun = require('../_services/porkbun');
 const dynadot = require('../_services/dynadot');
 
@@ -711,9 +712,14 @@ module.exports = async function handler(req, res) {
     // Gera HTML com template fixo
     const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
 
-    // Publica o site (Cloudflare Workers ou Netlify)
+    // Publica o site (Cloudflare Workers ou Netlify ou Hostinger)
     let workerName, url;
-    if (cfAccount === 'empresasverrificada' || cfAccount === 'zaplifydisparo' || cfAccount === 'zapliftyativos') {
+    if (cfAccount === 'hostinger') {
+      // ── Hostinger: cria site com domínio temporário + upload FTP ──
+      const result = await deployHostingerSite(cleanSubdomain, html);
+      workerName = result.domain;
+      url = result.url;
+    } else if (cfAccount === 'empresasverrificada' || cfAccount === 'zaplifydisparo' || cfAccount === 'zapliftyativos') {
       const chosenDomain = netlifyDomain || 'helixprobet.com';
 
       // ── Wildcard: TODOS os domínios de empresasverrificada E zapliftyativos usam wildcard ──

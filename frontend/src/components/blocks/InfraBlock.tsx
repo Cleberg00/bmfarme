@@ -34,7 +34,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
   const [method, setMethod] = useState<VerificationMethod>('meta_tag');
-  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun' | 'zapliftyativos'>('empresasverrificada');
+  const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun' | 'zapliftyativos' | 'hostinger'>('empresasverrificada');
   const { user } = useAuth();
   const isRonaldo = user?.email === 'ronaldo@gmail.com' || user?.email === 'velhoronaldo@gmail.com' || user?.email === 'miguel@gmail.com';
   const isAdmin = user?.role === 'ADMIN';
@@ -189,6 +189,18 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             <p className={`text-sm font-semibold ${cfAccount === 'zapliftyativos' ? 'text-green-300' : 'text-slate-200'}`}>⚡ zapliftyativos</p>
             <p className="text-xs text-slate-500 mt-0.5">Subdomínio Workers — nova conta</p>
           </button>
+          <button
+            type="button"
+            onClick={() => setCfAccount('hostinger')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              cfAccount === 'hostinger'
+                ? 'border-purple-500 bg-purple-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${cfAccount === 'hostinger' ? 'text-purple-300' : 'text-slate-200'}`}>🟣 Hostinger</p>
+            <p className="text-xs text-slate-500 mt-0.5">Domínio temporário .hostingersite.com</p>
+          </button>
         </div>
       </div>
 
@@ -261,7 +273,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               className="flex-1 bg-transparent px-4 py-3 text-slate-100 outline-none"
             />
             <span className="pr-3 text-xs text-slate-500 whitespace-nowrap">
-              {cfAccount === 'porkbun' ? '.xyz' : cfAccount === 'dynadot' ? '.cfd' : `.${selectedNetlifyDomain}`}
+              {cfAccount === 'porkbun' ? '.xyz' : cfAccount === 'dynadot' ? '.cfd' : cfAccount === 'hostinger' ? '.hostingersite.com' : `.${selectedNetlifyDomain}`}
             </span>
           </div>
           {(((cfAccount === 'porkbun' || cfAccount === 'dynadot') && customDomainName) || (cfAccount !== 'porkbun' && cfAccount !== 'dynadot' && subdomain)) && (
