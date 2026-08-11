@@ -95,6 +95,11 @@ module.exports = async function handler(req, res) {
       if (!id) return res.status(400).json({ error: 'id é obrigatório.' });
       if (id === user.id) return res.status(400).json({ error: 'Não é possível remover a própria conta.' });
 
+      // Remove registros vinculados antes de deletar o usuário
+      await prisma.bmAsset.deleteMany({ where: { userId: id } });
+      await prisma.smsLog.deleteMany({ where: { userId: id } });
+      await prisma.domain.deleteMany({ where: { userId: id } });
+      await prisma.client.deleteMany({ where: { userId: id } });
       await prisma.user.delete({ where: { id } });
       return res.status(200).json({ message: 'Usuário removido.' });
     } catch (error) {

@@ -202,7 +202,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const areaLabel = atividadeFmt || cnaeDescFmt || 'Atividade Empresarial';
   const fullAddress = enderFmt+(bairroFmt?' — '+bairroFmt:'')+' — '+munFmt+'/'+ufFmt+(cepFmt?' — CEP '+cepFmt:'');
 
-  const templateIndex = (typeof forceTemplateIndex === 'number') ? forceTemplateIndex : (Math.floor(Date.now() / 13) % 33);
+  const templateIndex = (typeof forceTemplateIndex === 'number') ? forceTemplateIndex : Math.floor(Math.random() * 72);
   console.log('[buildLandingHtml] CNPJ='+cnpj+' templateIndex='+templateIndex+' forced='+(typeof forceTemplateIndex === 'number'));
 
   const ogTags = '<meta property="og:type" content="website" />'+

@@ -17,7 +17,7 @@ export default function LoginPage() {
       await login(email, password);
     } catch (submitError) {
       const message = axios.isAxiosError(submitError)
-        ? submitError.response?.data?.message || submitError.message
+        ? submitError.response?.data?.error || submitError.response?.data?.message || 'Credenciais inválidas.'
         : submitError instanceof Error ? submitError.message : 'Falha ao autenticar.';
       setError(message);
     } finally {

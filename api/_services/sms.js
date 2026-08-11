@@ -48,7 +48,7 @@ function makeRequest(provider, params) {
   }).then(res => typeof res.data === 'string' ? res.data.trim() : String(res.data).trim());
 }
 
-async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider) {
+async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider, customApiKey) {
   const effectiveCountry = country || DEFAULT_COUNTRY;
   let providers = getProviders();
   
@@ -56,6 +56,10 @@ async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider) 
   if (preferredProvider) {
     const preferred = providers.find(p => p.name === preferredProvider);
     if (preferred) {
+      // Se tem API key customizada, substitui a key do provider
+      if (customApiKey) {
+        preferred.apiKey = customApiKey;
+      }
       providers = [preferred];
     }
   }
