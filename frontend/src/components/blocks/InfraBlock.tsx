@@ -44,7 +44,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const netlifyDomains = isRonaldo
     ? ['mettaativos.com', 'verifcationbm.com.br', 'bmseven.com', 'veridesk1.com', 'veridesk2.com', 'chegix.com']
     : isWesley
-    ? ['verificativos.com', 'ativoscontas.com', 'verificacontas.com']
+    ? ['kikilt.com']
     : isAdmin
     ? ['perfilbr.com', 'validarfm.com', 'verificabussines.com', 'verificadorbm.com', 'validacaopf.com', 'ativoson.com', 'verifcationbm.com', 'perfilbr01.com', 'vericationbm.com', 'zaplifyativos01.com', 'zaplifyvalidation.com', 'zaplify01.com', 'zaplifydigital.com', 'zaplifyportifolio.com', 'zaplifybm08.com', 'bmzaplifydigital.com', 'bmzaplify.com', 'zaplifybmfarme.com', 'bmzaplyf08.com', 'zaplifydigital03.com', 'zaplifybm1.com', 'zaplifyfm.com', 'bmzaplify10.com', 'zaplifyflow.com', 'zaplifymanager.com', 'zaplifybr.com', 'zaplifypf02.com', 'zaplifybr010.com', 'zaplifymk.com', 'bmfarm1.com', 'bmzaplifyvali.com', 'validbmfarme.com', 'zapbm01.com', 'ativosfarmezaplify.com', 'realfarmezaplify.com', 'zaplifydigital0.com']
     : isMacumbinha
@@ -53,7 +53,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     ? ['zaplifyativos.com.br', 'verificaperfil.com.br', 'perfilvalidados.com']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
   // Domínios exclusivos da conta zapliftyativos
-  const zapliftyativosDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com'];
+  const zapliftyativosDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com', 'kikilt.com'];
   const activeDomains = cfAccount === 'zapliftyativos' ? zapliftyativosDomains : netlifyDomains;
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
@@ -61,6 +61,13 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
   const [chosenLayout, setChosenLayout] = useState<number | null>(null);
+  // Equipe Wesley: força zapliftyativos e domínio kikilt.com
+  useEffect(() => {
+    if (isWesley) {
+      setCfAccount('zapliftyativos');
+      setSelectedNetlifyDomain('kikilt.com');
+    }
+  }, [isWesley]);
   // Sugere subdomínio automaticamente quando a razão social chega
   useEffect(() => {
     if (!razaoSocial) return;
@@ -136,7 +143,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   return (
     <div className="space-y-5">
 
-      {/* Seletor de conta */}
+      {/* Seletor de conta — esconde pra equipe Wesley (só zapliftyativos) */}
+      {!isWesley && (
       <div className="space-y-2">
         <label className="text-sm font-semibold text-slate-300">Publicar em</label>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -206,6 +214,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           </button>
         </div>
       </div>
+      )}
 
       {/* Seletor de domínio */}
       {(cfAccount === 'netlify' || cfAccount === 'empresasverrificada' || cfAccount === 'zapliftyativos') && (
