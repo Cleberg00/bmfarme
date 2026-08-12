@@ -229,6 +229,13 @@ module.exports = async function handler(req, res) {
       const domain = await prisma.domain.findFirst({ where: { domainName: subdomain, status: 'ACTIVE' } });
       if (!domain) return res.status(404).send('<html><body><h1>Site não encontrado</h1></body></html>');
 
+      // Se tem HTML cacheado, serve IMEDIATAMENTE (sem queries extras)
+      if (domain.htmlCache && !page) {
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        res.setHeader('Cache-Control', 'public, max-age=300');
+        return res.status(200).send(domain.htmlCache);
+      }
+
       const client = await prisma.client.findUnique({ where: { id: domain.clientId } });
       if (!client) return res.status(404).send('<html><body><h1>Cliente não encontrado</h1></body></html>');
 
@@ -245,16 +252,11 @@ module.exports = async function handler(req, res) {
         return res.status(200).send(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Termos de Uso — ${razao}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;background:#f5f5f5;color:#333;padding:40px 24px}main{max-width:800px;margin:0 auto;background:#fff;padding:40px;border-radius:4px}h1{font-size:24px;margin-bottom:24px;color:#111}h2{font-size:16px;margin:24px 0 12px}p{font-size:14px;line-height:1.9;margin-bottom:12px;color:#555}a{color:#2563eb}</style></head><body><main><h1>Termos de Uso</h1><p><strong>${razao}</strong> — CNPJ ${client.cnpj || ''}</p><h2>1. Aceitação</h2><p>Ao entrar em contato com nosso canal, o usuário declara que iniciou a comunicação de forma espontânea e voluntária.</p><h2>2. Uso do Canal</h2><p>Este canal de atendimento destina-se exclusivamente ao atendimento receptivo de clientes que entraram em contato por iniciativa própria para obter informações, esclarecimentos ou suporte.</p><h2>3. Proibições</h2><p>Não realizamos disparos em massa, telemarketing ativo ou comunicações não solicitadas. Todo atendimento segue as diretrizes do WhatsApp Business e Meta Platforms.</p><h2>4. Conformidade</h2><p>Todas as operações seguem as políticas da Meta Platforms, WhatsApp Business Policy e a legislação brasileira vigente.</p><p><a href="/">← Voltar ao início</a></p></main></body></html>`);
       }
 
+      // Se chegou aqui, não tem htmlCache — gera HTML dinâmico
       const smsLog = await prisma.smsLog.findFirst({
         where: { clientId: client.id, userId: domain.userId },
         orderBy: { createdAt: 'desc' },
       });
-
-      // Se tem HTML cacheado, serve direto (PATCH e deploy mantêm atualizado)
-      if (domain.htmlCache) {
-        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        return res.status(200).send(domain.htmlCache);
-      }
 
       const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
       const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
