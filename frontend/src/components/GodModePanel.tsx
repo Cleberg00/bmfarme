@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLang } from '../context/LangContext';
 import api from '../api/client';
 import CnpjBlock from './blocks/CnpjBlock';
 import InfraBlock from './blocks/InfraBlock';
@@ -139,6 +140,7 @@ function QuickPhoneUpdate() {
 export default function GodModePanel() {
   const { logout, user } = useAuth();
   const { colors } = useTheme();
+  const { t } = useLang();
   const [clientId, setClientId]     = useState<string | null>(null);
   const [clientData, setClientData] = useState<ClientData | null>(null);
   const [domainId, setDomainId]     = useState<string | null>(null);
@@ -267,7 +269,7 @@ export default function GodModePanel() {
           )}
 
           {/* Step 1 — CNPJ */}
-          <StepSection step={1} title="Consultar CNPJ" subtitle="Busque os dados da empresa pelo CNPJ">
+          <StepSection step={1} title={t.consultarCnpj} subtitle={t.busqueDados}>
             <CnpjBlock
               workerUrl={workerUrl}
               onClientReady={(id, data) => {
@@ -283,7 +285,7 @@ export default function GodModePanel() {
           </StepSection>
 
           {/* Step 2 — SMS */}
-          <StepSection step={2} title="Gerar SMS" subtitle="Gere um número virtual para verificação">
+          <StepSection step={2} title={t.gerarSms} subtitle={t.gerarNumero}>
             <SmsBlock
               clientId={clientId}
               onPhoneGenerated={(phone) => setSmsPhone(phone)}
@@ -296,7 +298,7 @@ export default function GodModePanel() {
           </StepSection>
 
           {/* Step 3 — Site */}
-          <StepSection step={3} title="Publicar Site" subtitle="Gera landing page no Cloudflare Workers para verificação Meta">
+          <StepSection step={3} title={t.publicarSite} subtitle={t.geraLanding}>
             <InfraBlock
               clientId={clientId}
               razaoSocial={clientData?.razaoSocial}
@@ -310,12 +312,12 @@ export default function GodModePanel() {
           </StepSection>
 
           {/* Step 4 — WABA */}
-          <StepSection step={4} title="Criar WABA" subtitle="Acesse o DataCrazy CRM e crie a WABA vinculada à BM verificada">
+          <StepSection step={4} title={t.criarWaba} subtitle={t.acesseDatacrazy}>
             <WabaBlock />
           </StepSection>
 
           {/* Step 5 — BM */}
-          <StepSection step={5} title="Registrar BM" subtitle="Registre o BM após verificação completa">
+          <StepSection step={5} title={t.registrarBm} subtitle={t.registreBm}>
             <TrackingBlock clientId={clientId} domainId={domainId} smsLogId={smsLogId} />
           </StepSection>
 
