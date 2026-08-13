@@ -110,9 +110,10 @@ module.exports = async function handler(req, res) {
       const hashed = await bcrypt.hash(password, 10);
       
       // Cria o user e marca quem criou
+      const userRole = role === 'ADMIN' ? 'ADMIN' : 'OPERATOR';
       const newUser = await prisma.$queryRawUnsafe(
-        `INSERT INTO "User" (id, email, password, name, role, "createdAt", "updatedAt", "createdBy") VALUES (gen_random_uuid()::text, $1, $2, $3, $4, NOW(), NOW(), $5) RETURNING id, email, name, role, "createdAt"`,
-        String(email).toLowerCase(), hashed, name, role === 'ADMIN' ? 'ADMIN' : 'OPERATOR', user.id
+        `INSERT INTO "User" (id, email, password, name, role, "createdAt", "updatedAt", "createdBy") VALUES (gen_random_uuid()::text, $1, $2, $3, $4::"UserRole", NOW(), NOW(), $5) RETURNING id, email, name, role, "createdAt"`,
+        String(email).toLowerCase(), hashed, name, userRole, user.id
       );
       
       return res.status(201).json(newUser[0] || newUser);
