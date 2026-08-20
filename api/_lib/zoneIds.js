@@ -134,17 +134,17 @@ function getCfHeaders(baseDomain) {
 }
 
 /**
- * Computa um template index determinístico [0..14] para um domainName.
+ * Computa um template index determinístico [0..4] para um domainName.
  * Usa hash djb2 sobre o domainName para distribuição uniforme.
  * @param {string} domainName - string não-vazia (subdomínio)
- * @returns {number} inteiro no range [0, 14]
+ * @returns {number} inteiro no range [0, 4]
  */
 function computeTemplateIndex(domainName) {
   let hash = 5381;
   for (let i = 0; i < domainName.length; i++) {
     hash = ((hash << 5) + hash + domainName.charCodeAt(i)) | 0; // hash * 33 + char
   }
-  return Math.abs(hash) % 15;
+  return Math.abs(hash) % 5;
 }
 
 module.exports = { ZONE_IDS, ZAPLIFTY_DOMAINS, getZoneId, getCfHeaders, computeTemplateIndex };
