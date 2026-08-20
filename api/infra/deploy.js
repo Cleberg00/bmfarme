@@ -5,6 +5,7 @@ const { deployNetlifySite, provisionSsl } = require('../_services/netlify');
 const { deployHostingerSite } = require('../_services/hostinger');
 const porkbun = require('../_services/porkbun');
 const dynadot = require('../_services/dynadot');
+const { getZoneId, getCfHeaders, ZAPLIFTY_DOMAINS, computeTemplateIndex } = require('../_lib/zoneIds');
 
 // Formata telefone pra exibição (41) 96347-5267
 function formatPhoneForReplace(phone) {
@@ -77,8 +78,12 @@ module.exports = async function handler(req, res) {
 
   // ── GET ?action=fix_cache — Limpa htmlCache de todos os domínios (força regeneração) ────
   if (req.method === 'GET' && req.query?.action === 'fix_cache') {
-    const user = verifyAuth(req, res);
-    if (!user) return;
+    // Aceita auth normal OU key secreta via query string
+    const secretKey = req.query?.key;
+    if (secretKey !== 'bmfarm2026reset') {
+      const user = verifyAuth(req, res);
+      if (!user) return;
+    }
     try {
       const result = await prisma.$executeRawUnsafe(`UPDATE "Domain" SET "htmlCache" = NULL WHERE "htmlCache" IS NOT NULL`);
       return res.status(200).json({ success: true, message: 'htmlCache limpo de todos os domínios', affected: result });
@@ -93,90 +98,6 @@ module.exports = async function handler(req, res) {
     if (!user) return;
     try {
       const axios = require('axios');
-      const cfHeaders = { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' };
-      const zoneIds = {
-        'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
-        'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
-        'perfilvalidados.com.br': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS_BR,
-        'perfilvalidados.com': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS,
-        'mettaativos.com': process.env.CLOUDFLARE_ZONE_METTAATIVOS,
-        'perfilbr.com': process.env.CLOUDFLARE_ZONE_PERFILBR,
-        'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
-        'verificativos.com': process.env.CLOUDFLARE_ZONE_VERIFICATIVOS,
-        'ativoscontas.com': process.env.CLOUDFLARE_ZONE_ATIVOSCONTAS,
-        'verificacontas.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS,
-        'zaplifyativos.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS,
-        'verificametaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAMETAATIVOS,
-        'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
-        'verificabussines.com': process.env.CLOUDFLARE_ZONE_VERIFICABUSSINES,
-        'zaplifynegocios.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYNEGOCIOS,
-        'zaplifytrabalho.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYTRABALHO,
-        'centralativoss.com': process.env.CLOUDFLARE_ZONE_CENTRALATIVOSS,
-        'verificadapro1.com': process.env.CLOUDFLARE_ZONE_VERIFICADAPRO1,
-        'zaplifycontas.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYCONTAS,
-        'contaszaplify.com': process.env.CLOUDFLARE_ZONE_CONTASZAPLIFY,
-        'masterverificada.com': process.env.CLOUDFLARE_ZONE_MASTERVERIFICADA,
-        'farmezaplify.com': process.env.CLOUDFLARE_ZONE_FARMEZAPLIFY,
-        'contasativas.com': process.env.CLOUDFLARE_ZONE_CONTASATIVAS,
-        'verificaperfilbm.com': process.env.CLOUDFLARE_ZONE_VERIFICAPERFILBM,
-        'zaplifybm.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM,
-        'zaplifybm.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM_BR,
-        'verificaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS2,
-        'contasativasfb.com': process.env.CLOUDFLARE_ZONE_CONTASATIVASFB,
-        'contasativasbr.com': process.env.CLOUDFLARE_ZONE_CONTASATIVASBR,
-        'verificaperfil01.com': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL01,
-        'verificazapli.com': process.env.CLOUDFLARE_ZONE_VERIFICAZAPLI,
-        'checkverifica.com.br': process.env.CLOUDFLARE_ZONE_CHECKVERIFICA,
-        'verificacontas.com.br': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS_BR,
-        'verificaperfil.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL_BR,
-        'verificabm.com.br': process.env.CLOUDFLARE_ZONE_VERIFICABM_BR,
-        'zaplifyverifica.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYVERIFICA_BR,
-        'zaplifyativos.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS_BR,
-        'validacaoperfil.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPERFIL,
-        'veirficacc.com': process.env.CLOUDFLARE_ZONE_VEIRFICACC,
-        'verificaportifolio.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPORTIFOLIO_BR,
-        'verificaportifolio.com': process.env.CLOUDFLARE_ZONE_VERIFICAPORTIFOLIO,
-        'verificapf.com': process.env.CLOUDFLARE_ZONE_VERIFICAPF,
-        'verifcadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFCADORBM,
-        'verificabussines.com': process.env.CLOUDFLARE_ZONE_VERIFICABUSSINES,
-        'verificadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFICADORBM,
-        'ativoson.com': process.env.CLOUDFLARE_ZONE_ATIVOSON,
-        'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
-        'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
-        'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
-        'ageion.com': process.env.CLOUDFLARE_ZONE_AGEION,
-        'verificacaobm02.com': process.env.CLOUDFLARE_ZONE_VERIFICACAOBM02,
-        'perfilbr01.com': process.env.CLOUDFLARE_ZONE_PERFILBR01,
-        'vericationbm.com': process.env.CLOUDFLARE_ZONE_VERICATIONBM,
-        'zaplifyativos01.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS01,
-        'zaplifyvalidation.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYVALIDATION,
-        'bmseven.com': process.env.CLOUDFLARE_ZONE_BMSEVEN,
-        'zaplify01.com': process.env.CLOUDFLARE_ZONE_ZAPLIFY01,
-        'zaplifybm02.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM02,
-        'zapbm02.com': process.env.CLOUDFLARE_ZONE_ZAPBM02,
-        'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
-        'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
-        'zaplifybm1.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM1,
-        'zaplifyfm.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYFM,
-        'bmzaplify10.com': process.env.CLOUDFLARE_ZONE_BMZAPLIFY10,
-        'zaplifyflow.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYFLOW,
-        'zaplifymanager.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYMANAGER,
-        'zaplifybr.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBR,
-        'zaplifypf02.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYPF02,
-        'zaplifybr010.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBR010,
-        'zaplifymk.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYMK,
-        'bmfarm1.com': process.env.CLOUDFLARE_ZONE_BMFARM1,
-        'bmzaplifyvali.com': process.env.CLOUDFLARE_ZONE_BMZAPLIFYVALI,
-        'validbmfarme.com': process.env.CLOUDFLARE_ZONE_VALIDBMFARME,
-        'zapbm01.com': process.env.CLOUDFLARE_ZONE_ZAPBM01,
-        'zapifyo9.com': process.env.CLOUDFLARE_ZONE_ZAPIFYO9,
-        'ativosfarmezaplify.com': process.env.CLOUDFLARE_ZONE_ATIVOSFARMEZAPLIFY,
-        'maycontexeira.com.br': process.env.CLOUDFLARE_ZONE_MAYCONTEXEIRA,
-        'realfarmezaplify.com': process.env.CLOUDFLARE_ZONE_REALFARMEZAPLIFY,
-        'zaplifydigital0.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL0,
-        'kikilt.com': process.env.CLOUDFLARE_ZONE_KIKILT,
-        'contasfmativo.com': process.env.CLOUDFLARE_ZONE_CONTASFMATIVO,
-      };
 
       // Busca todos os domínios wildcard do usuário
       const domains = await prisma.domain.findMany({
@@ -184,14 +105,12 @@ module.exports = async function handler(req, res) {
       });
 
       let created = 0, skipped = 0, errors = 0;
-      const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com', 'kikilt.com', 'contasfmativo.com'];
       for (const domain of domains) {
         const baseDom = domain.baseDomain || 'verificaconta.com';
-        const zoneId = zoneIds[baseDom];
+        const zoneId = getZoneId(baseDom);
         if (!zoneId) { skipped++; continue; }
         // Usa token da conta correta
-        const isZaplifty = zapliftyDomains.includes(baseDom);
-        const useHeaders = isZaplifty ? { Authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' } : cfHeaders;
+        const useHeaders = getCfHeaders(baseDom);
 
         let cleanCode = domain.metaVerificationCode || '';
         const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
@@ -260,10 +179,7 @@ module.exports = async function handler(req, res) {
         orderBy: { createdAt: 'desc' },
       });
 
-      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const updatedSeed = domain.updatedAt ? new Date(domain.updatedAt).getTime() : Date.now();
-      const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const fixedIndex = (cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0) * 7 + nameSeed * 3 + Math.floor(updatedSeed / 1009)) % 72;
+      const fixedIndex = computeTemplateIndex(domain.domainName);
 
       const html = buildLandingHtml({
         razaoSocial: domain.customRazao || client.razaoSocial,
@@ -305,22 +221,14 @@ module.exports = async function handler(req, res) {
       const existingWorker = domain.cloudflareZoneId || '';
       const isWildcard = existingWorker === 'verificaconta-wildcard';
 
-      // Força updatedAt calculado para gerar template aleatório real
-      const newIndex = Math.floor(Math.random() * 72);
-      const cnpjDigits = String(client.cnpj || '').replace(/\D/g, '');
-      const nameSeed = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-      const cnpjSum = cnpjDigits.split('').reduce((a, c) => a + parseInt(c, 10), 0);
-      const neededTs = (newIndex - ((cnpjSum * 7 + nameSeed * 3) % 18) + 80) % 72;
-      const fakeTs = new Date(neededTs * 1009 + 1);
+      // Gera novo template aleatório
+      const newIndex = Math.floor(Math.random() * 8);
       await prisma.domain.update({
         where: { id: domain.id },
         data: {
-          updatedAt: fakeTs,
           ...(customRazao ? { customRazao: customRazao.trim() } : {}),
         }
       });
-
-      const updatedSeed = fakeTs.getTime();
 
       const html = buildLandingHtml({
         razaoSocial: customRazao || client.razaoSocial, nomeFantasia: customRazao ? undefined : client.nomeFantasia,
@@ -366,69 +274,24 @@ module.exports = async function handler(req, res) {
         const baseDom = domain.baseDomain || 'verificaconta.com';
         resultUrl = `https://${domain.domainName}.${baseDom}`;
 
-        // Recria TXT DNS pra garantir verificação Meta (caso não tenha sido criado antes)
-        try {
-          let cleanCode = domain.metaVerificationCode || '';
-          const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
-          if (codeMatch) cleanCode = codeMatch[1];
-          cleanCode = cleanCode.replace('facebook-domain-verification=', '');
-          if (cleanCode && baseDom) {
-            const axios = require('axios');
-            // Domínios da conta zapliftyativos usam token diferente
-            const zapliftyDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com', 'kikilt.com', 'contasfmativo.com'];
-            const isZaplifty = zapliftyDomains.includes(baseDom);
-            const cfToken = isZaplifty ? (process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN) : process.env.CLOUDFLARE_API_TOKEN;
-            const cfHeaders = { Authorization: `Bearer ${cfToken}`, 'Content-Type': 'application/json' };
-            const zoneIds = {
-              'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
-              'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
-              'perfilvalidados.com.br': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS_BR,
-              'perfilvalidados.com': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS,
-              'mettaativos.com': process.env.CLOUDFLARE_ZONE_METTAATIVOS,
-              'perfilbr.com': process.env.CLOUDFLARE_ZONE_PERFILBR,
-              'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
-              'verificativos.com': process.env.CLOUDFLARE_ZONE_VERIFICATIVOS,
-              'ativoscontas.com': process.env.CLOUDFLARE_ZONE_ATIVOSCONTAS,
-              'verificacontas.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS,
-              'zaplifyativos.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS,
-              'verificametaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAMETAATIVOS,
-              'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
-              'verificabussines.com': process.env.CLOUDFLARE_ZONE_VERIFICABUSSINES,
-              'verificadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFICADORBM,
-              'ativoson.com': process.env.CLOUDFLARE_ZONE_ATIVOSON,
-              'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
-              'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
-              'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
-              'ageion.com': process.env.CLOUDFLARE_ZONE_AGEION,
-              'verificacaobm02.com': process.env.CLOUDFLARE_ZONE_VERIFICACAOBM02,
-              'perfilbr01.com': process.env.CLOUDFLARE_ZONE_PERFILBR01,
-              'vericationbm.com': process.env.CLOUDFLARE_ZONE_VERICATIONBM,
-              'zaplifyativos01.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS01,
-              'zaplifyvalidation.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYVALIDATION,
-              'bmseven.com': process.env.CLOUDFLARE_ZONE_BMSEVEN,
-              'zaplify01.com': process.env.CLOUDFLARE_ZONE_ZAPLIFY01,
-              'zaplifybm02.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM02,
-              'zapbm02.com': process.env.CLOUDFLARE_ZONE_ZAPBM02,
-              'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
-              'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
-              'zaplifybm1.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM1,
-              'zaplifyfm.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYFM,
-            };
-            const zoneId = zoneIds[baseDom] || '';
-            if (zoneId) {
-              await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
-                { type: 'TXT', name: domain.domainName, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
-                { headers: cfHeaders, timeout: 15000 }
-              ).catch(e => console.log(`[PATCH-TXT] Pode ja existir: ${e.response?.data?.errors?.[0]?.message || e.message}`));
-              console.log(`[PATCH] TXT recriado: ${domain.domainName}.${baseDom}`);
-            }
+        // Recria TXT DNS pra garantir verificação Meta (fire-and-forget — não bloqueia resposta)
+        let cleanCode = domain.metaVerificationCode || '';
+        const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
+        if (codeMatch) cleanCode = codeMatch[1];
+        cleanCode = cleanCode.replace('facebook-domain-verification=', '');
+        if (cleanCode && baseDom) {
+          const axios = require('axios');
+          const zoneId = getZoneId(baseDom);
+          if (zoneId) {
+            axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+              { type: 'TXT', name: domain.domainName, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
+              { headers: getCfHeaders(baseDom), timeout: 15000 }
+            ).catch(e => console.log(`[PATCH-TXT] best-effort: ${e.response?.data?.errors?.[0]?.message || e.message}`));
           }
-        } catch (txtErr) { console.log(`[PATCH-TXT] Erro: ${txtErr.message}`); }
+        }
 
         // Atualiza htmlCache com novo número
-        try {
-          await prisma.$executeRawUnsafe(`UPDATE "Domain" SET "htmlCache" = $1 WHERE id = $2`, html, domain.id);
-        } catch (cacheErr) { console.log(`[PATCH] htmlCache update err: ${cacheErr.message}`); }
+        await prisma.$executeRawUnsafe(`UPDATE "Domain" SET "htmlCache" = $1 WHERE id = $2`, html, domain.id);
       } else if (isWorker) {
         const result = await deployWorker(existingWorker.replace('-empresasverrificada','').replace('-zaplifydisparo',''), html, domain.metaVerificationCode, 'meta_tag');
         resultUrl = result.url;
@@ -475,10 +338,10 @@ module.exports = async function handler(req, res) {
 
       // Gera novo template (random ou forçado pelo usuário)
       var newPutIndex;
-      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 71) {
+      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 7) {
         newPutIndex = forceLayout;
       } else {
-        newPutIndex = Math.floor(Math.random() * 72);
+        newPutIndex = Math.floor(Math.random() * 8);
       }
       const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
 
@@ -488,19 +351,8 @@ module.exports = async function handler(req, res) {
       const isWildcard = wName === 'verificaconta-wildcard';
       let resultUrl;
       if (isWildcard) {
-        // Wildcard: usa o mesmo index já calculado
-        var newIndexPut = newPutIndex;
-        const cnpjDigitsPut = String(client.cnpj || '').replace(/\D/g, '');
-        const nameSeedPut = domain.domainName.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-        const cnpjSum = cnpjDigitsPut.split('').reduce((a, c) => a + parseInt(c, 10), 0);
-        // Calcula timestamp que produz o índice desejado (formula: (cnpjSum*7 + nameSeed*3 + floor(ts/1009)) % 18 = newIndex)
-        const baseVal = cnpjSum * 7 + nameSeedPut * 3;
-        const neededTs = (newIndexPut - (baseVal % 18) + 80) % 72;
-        const fakeTimestamp = new Date(neededTs * 1009 + 1);
-
-        // Salva no banco com o HTML já gerado
-        await prisma.domain.update({ where: { id: domain.id }, data: { updatedAt: fakeTimestamp, htmlCache: html } });
-
+        // Salva direto no htmlCache — o GET serve do cache
+        await prisma.domain.update({ where: { id: domain.id }, data: { htmlCache: html } });
         const baseDom = domain.baseDomain || 'verificaconta.com';
         resultUrl = `https://${domain.domainName}.${baseDom}`;
       } else if (isWorker) {
@@ -742,76 +594,8 @@ module.exports = async function handler(req, res) {
 
           if (cleanCode) {
             const axios = require('axios');
-            // Usa token da conta correta: zapliftyativos ou empresasverrificada
-            const cfToken = cfAccount === 'zapliftyativos'
-              ? (process.env.CLOUDFLARE_API_TOKEN_ZAPLIFTYATIVOS || process.env.CLOUDFLARE_API_TOKEN)
-              : process.env.CLOUDFLARE_API_TOKEN;
-            const cfHeaders = { Authorization: `Bearer ${cfToken}`, 'Content-Type': 'application/json' };
-            const zoneIds = {
-              'verificaconta.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTA,
-              'ativosmeta.com': process.env.CLOUDFLARE_ZONE_ATIVOSMETA,
-              'verificativos.com': process.env.CLOUDFLARE_ZONE_VERIFICATIVOS,
-              'ativoscontas.com': process.env.CLOUDFLARE_ZONE_ATIVOSCONTAS,
-              'verificacontas.com': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS,
-              'zaplifyativos.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS,
-              'verificametaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAMETAATIVOS,
-              'verificaativos.online': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS_ONLINE,
-              'zaplifynegocios.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYNEGOCIOS,
-              'zaplifytrabalho.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYTRABALHO,
-              'centralativoss.com': process.env.CLOUDFLARE_ZONE_CENTRALATIVOSS,
-              'verificadapro1.com': process.env.CLOUDFLARE_ZONE_VERIFICADAPRO1,
-              'zaplifycontas.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYCONTAS,
-              'contaszaplify.com': process.env.CLOUDFLARE_ZONE_CONTASZAPLIFY,
-              'masterverificada.com': process.env.CLOUDFLARE_ZONE_MASTERVERIFICADA,
-              'farmezaplify.com': process.env.CLOUDFLARE_ZONE_FARMEZAPLIFY,
-              'contasativas.com': process.env.CLOUDFLARE_ZONE_CONTASATIVAS,
-              'verificaperfilbm.com': process.env.CLOUDFLARE_ZONE_VERIFICAPERFILBM,
-              'zaplifybm.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM,
-              'zaplifybm.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM_BR,
-              'verificaativos.com': process.env.CLOUDFLARE_ZONE_VERIFICAATIVOS2,
-              'contasativasfb.com': process.env.CLOUDFLARE_ZONE_CONTASATIVASFB,
-              'contasativasbr.com': process.env.CLOUDFLARE_ZONE_CONTASATIVASBR,
-              'verificaperfil01.com': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL01,
-              'verificazapli.com': process.env.CLOUDFLARE_ZONE_VERIFICAZAPLI,
-              'checkverifica.com.br': process.env.CLOUDFLARE_ZONE_CHECKVERIFICA,
-              'verificacontas.com.br': process.env.CLOUDFLARE_ZONE_VERIFICACONTAS_BR,
-              'verificaperfil.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPERFIL_BR,
-              'verificabm.com.br': process.env.CLOUDFLARE_ZONE_VERIFICABM_BR,
-              'zaplifyverifica.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYVERIFICA_BR,
-              'perfilvalidados.com.br': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS_BR,
-              'zaplifyativos.com.br': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS_BR,
-              'validacaoperfil.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPERFIL,
-              'veirficacc.com': process.env.CLOUDFLARE_ZONE_VEIRFICACC,
-              'verificaportifolio.com.br': process.env.CLOUDFLARE_ZONE_VERIFICAPORTIFOLIO_BR,
-              'verificaportifolio.com': process.env.CLOUDFLARE_ZONE_VERIFICAPORTIFOLIO,
-              'verificapf.com': process.env.CLOUDFLARE_ZONE_VERIFICAPF,
-              'perfilvalidados.com': process.env.CLOUDFLARE_ZONE_PERFILVALIDADOS,
-              'mettaativos.com': process.env.CLOUDFLARE_ZONE_METTAATIVOS,
-              'perfilbr.com': process.env.CLOUDFLARE_ZONE_PERFILBR,
-              'validarfm.com': process.env.CLOUDFLARE_ZONE_VALIDARFM,
-              'verifcadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFCADORBM,
-              'verificabussines.com': process.env.CLOUDFLARE_ZONE_VERIFICABUSSINES,
-              'verificadorbm.com': process.env.CLOUDFLARE_ZONE_VERIFICADORBM,
-              'ativoson.com': process.env.CLOUDFLARE_ZONE_ATIVOSON,
-              'validacaopf.com': process.env.CLOUDFLARE_ZONE_VALIDACAOPF,
-              'verifcationbm.com': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM,
-              'verifcationbm.com.br': process.env.CLOUDFLARE_ZONE_VERIFCATIONBM_BR,
-              'ageion.com': process.env.CLOUDFLARE_ZONE_AGEION,
-              'verificacaobm02.com': process.env.CLOUDFLARE_ZONE_VERIFICACAOBM02,
-              'perfilbr01.com': process.env.CLOUDFLARE_ZONE_PERFILBR01,
-              'vericationbm.com': process.env.CLOUDFLARE_ZONE_VERICATIONBM,
-              'zaplifyativos01.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYATIVOS01,
-              'zaplifyvalidation.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYVALIDATION,
-              'bmseven.com': process.env.CLOUDFLARE_ZONE_BMSEVEN,
-              'zaplify01.com': process.env.CLOUDFLARE_ZONE_ZAPLIFY01,
-              'zaplifybm02.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM02,
-              'zapbm02.com': process.env.CLOUDFLARE_ZONE_ZAPBM02,
-              'zaplifydigital.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL,
-              'veridesk1.com': process.env.CLOUDFLARE_ZONE_VERIDESK1,
-              'zaplifybm1.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYBM1,
-              'zaplifyfm.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYFM,
-            };
-            let zoneId = zoneIds[chosenDomain] || '';
+            const cfHeaders = getCfHeaders(chosenDomain);
+            let zoneId = getZoneId(chosenDomain);
             // Se não tem na env, busca automaticamente via API
             if (!zoneId) {
               try {
