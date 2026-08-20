@@ -42,7 +42,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const isMacumbinha = user?.email === 'miguelmacumbinha@gmail.com' || user?.email === 'macumbinha@gmail.com';
   const isWesley = user?.email === 'wesley@gmail.com' || user?.email === 'denis@gmail.com' || user?.email === 'vitoria@gmail.com';
   const netlifyDomains = isRonaldo
-    ? ['mettaativos.com', 'verifcationbm.com.br', 'bmseven.com', 'veridesk1.com', 'veridesk2.com', 'chegix.com']
+    ? ['bmon3.com']
     : isWesley
     ? ['kikilt.com']
     : isAdmin
@@ -368,14 +368,14 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             <p className="text-xs font-bold uppercase tracking-widest text-purple-400">🎲 Trocar Layout do Site</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { id: 0, name: 'Grid 2 Col', desc: 'Dados + WABA lado a lado' },
-                { id: 1, name: 'Coluna Única', desc: 'Phone destaque no topo' },
-                { id: 2, name: 'Sidebar', desc: 'Menu lateral + conteúdo' },
-                { id: 3, name: 'Tabela', desc: 'Header escuro + tabela' },
-                { id: 4, name: 'Hero + Grid', desc: 'Banner colorido + 3 cards' },
-                { id: 5, name: 'Editorial', desc: 'Tipografia grande, bordas' },
-                { id: 6, name: 'Cards H', desc: 'Cards horizontais + ícones' },
-                { id: 7, name: 'Split 50/50', desc: 'Esquerda dados, direita texto' },
+                { id: 0, name: 'Two-Column', desc: 'Conteúdo + sidebar lateral' },
+                { id: 1, name: 'Bento Grid', desc: 'Cards em grid assimétrico' },
+                { id: 2, name: 'Timeline', desc: 'Linha do tempo vertical' },
+                { id: 3, name: 'Segments', desc: 'Seções com cabeçalhos' },
+                { id: 4, name: 'Editorial', desc: 'Jornal com sidebar info' },
+                { id: 5, name: 'Glass', desc: 'Cards blur + fundo animado' },
+                { id: 6, name: 'Panels', desc: 'Hero + painéis flutuantes' },
+                { id: 7, name: 'Brutalist', desc: 'Tipografia bold extrema' },
               ].map(l => (
                 <button
                   key={l.id}

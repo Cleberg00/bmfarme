@@ -88,6 +88,7 @@ const ZONE_IDS = {
   'zaplifydigital0.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYDIGITAL0,
   'kikilt.com': process.env.CLOUDFLARE_ZONE_KIKILT,
   'contasfmativo.com': process.env.CLOUDFLARE_ZONE_CONTASFMATIVO,
+  'bmon3.com': process.env.CLOUDFLARE_ZONE_BMON3,
 };
 
 /**
@@ -101,6 +102,7 @@ const ZAPLIFTY_DOMAINS = [
   'zaplifydigital0.com',
   'kikilt.com',
   'contasfmativo.com',
+  'bmon3.com',
 ];
 
 /**
