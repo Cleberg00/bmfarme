@@ -188,6 +188,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        porte: client.porte, naturezaJuridica: client.naturezaJuridica,
         email: (domain.domainName || 'contato') + '@' + (domain.baseDomain || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
         forceTemplateIndex: fixedIndex,
@@ -236,6 +237,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        porte: client.porte, naturezaJuridica: client.naturezaJuridica,
         email: (domain.domainName || 'contato') + '@' + (domain.baseDomain || 'empresa.com'), smsPhone: newPhone || client.telefone, smsCode: null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
         forceTemplateIndex: newIndex,
@@ -332,6 +334,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        porte: client.porte, naturezaJuridica: client.naturezaJuridica,
         email: (domain.domainName || 'contato') + '@' + (domain.baseDomain || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode: domain.metaVerificationCode, verificationMethod: 'meta_tag',
       };
@@ -487,6 +490,7 @@ module.exports = async function handler(req, res) {
         bairro: client.bairro, cep: client.cep,
         municipio: client.municipio, uf: client.uf, situacao: client.situacao,
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+        porte: client.porte, naturezaJuridica: client.naturezaJuridica,
         email: (existing?.domainName || domainName || 'contato') + '@' + (existing?.baseDomain || domainName || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode, verificationMethod: 'meta_tag',
         forceTemplateIndex: computeTemplateIndex(domainName),
@@ -563,6 +567,7 @@ module.exports = async function handler(req, res) {
       bairro: client.bairro, cep: client.cep,
       municipio: client.municipio, uf: client.uf, situacao: client.situacao,
       atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
+      porte: client.porte, naturezaJuridica: client.naturezaJuridica,
       email: (existing?.domainName || cleanSubdomain || 'contato') + '@' + (existing?.baseDomain || netlifyDomain || 'empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
