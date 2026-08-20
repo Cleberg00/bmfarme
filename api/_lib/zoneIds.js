@@ -89,6 +89,7 @@ const ZONE_IDS = {
   'kikilt.com': process.env.CLOUDFLARE_ZONE_KIKILT,
   'contasfmativo.com': process.env.CLOUDFLARE_ZONE_CONTASFMATIVO,
   'bmon3.com': process.env.CLOUDFLARE_ZONE_BMON3,
+  'contativas2026.com': process.env.CLOUDFLARE_ZONE_CONTATIVAS2026,
 };
 
 /**
@@ -103,6 +104,7 @@ const ZAPLIFTY_DOMAINS = [
   'kikilt.com',
   'contasfmativo.com',
   'bmon3.com',
+  'contativas2026.com',
 ];
 
 /**
