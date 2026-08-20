@@ -368,14 +368,16 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
             <p className="text-xs font-bold uppercase tracking-widest text-purple-400">🎲 Trocar Layout do Site</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { id: 0, name: 'Two-Column', desc: 'Conteúdo + sidebar lateral' },
-                { id: 1, name: 'Bento Grid', desc: 'Cards em grid assimétrico' },
-                { id: 2, name: 'Timeline', desc: 'Linha do tempo vertical' },
-                { id: 3, name: 'Segments', desc: 'Seções com cabeçalhos' },
-                { id: 4, name: 'Editorial', desc: 'Jornal com sidebar info' },
-                { id: 5, name: 'Glass', desc: 'Cards blur + fundo animado' },
-                { id: 6, name: 'Panels', desc: 'Hero + painéis flutuantes' },
-                { id: 7, name: 'Brutalist', desc: 'Tipografia bold extrema' },
+                { id: 0, name: 'Hero + Sidebar', desc: 'Hero grande + sidebar info' },
+                { id: 1, name: 'Bento Grid', desc: 'Grid assimétrico de cards' },
+                { id: 2, name: 'Split Screen', desc: 'Painel fixo + conteúdo scroll' },
+                { id: 3, name: 'Editorial', desc: 'Serif, estilo jornal/magazine' },
+                { id: 4, name: 'Timeline', desc: 'Linha do tempo com dots' },
+                { id: 5, name: 'Segments', desc: 'Visual de tabs com indicadores' },
+                { id: 6, name: 'Floating Cards', desc: 'Cards flutuantes + hero gradient' },
+                { id: 7, name: 'Brutalist', desc: 'Tipografia bold + bordas grossas' },
+                { id: 8, name: 'Dashboard', desc: 'Stats cards + terminal' },
+                { id: 9, name: 'Full-Page', desc: 'Seções full-height alternadas' },
               ].map(l => (
                 <button
                   key={l.id}
@@ -411,7 +413,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               }}
               className="w-full rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-purple-500 disabled:opacity-50"
             >
-              {loading ? 'Alterando...' : chosenLayout !== null ? `Aplicar Layout: ${['Grid 2 Col','Coluna Única','Sidebar','Tabela','Hero + Grid','Editorial','Cards H','Split 50/50'][chosenLayout]}` : '🎲 Aplicar Layout Aleatório'}
+              {loading ? 'Alterando...' : chosenLayout !== null ? `Aplicar Layout: ${['Hero+Sidebar','Bento Grid','Split Screen','Editorial','Timeline','Segments','Floating Cards','Brutalist','Dashboard','Full-Page'][chosenLayout]}` : '🎲 Aplicar Layout Aleatório'}
             </button>
           </div>
         )}
