@@ -61,6 +61,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   const [error, setError] = useState('');
   const [deployed, setDeployed] = useState<{ subdomain: string; workerUrl: string; domainId: string } | null>(null);
   const [chosenLayout, setChosenLayout] = useState<number | null>(null);
+  const [selectedLayout, setSelectedLayout] = useState<number>(0);
+  const [selectedColor, setSelectedColor] = useState<number>(0);
   // Equipe Wesley: força zapliftyativos e domínio kikilt.com
   useEffect(() => {
     if (isWesley) {
@@ -102,6 +104,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           metaVerificationCode: metaCode.trim(),
           customRazao: razaoSocial || undefined,
           customFantasia: nomeFantasia || undefined,
+          forceLayout: selectedLayout,
+          forceColor: selectedColor,
         });
         data = res.data;
       } else {
@@ -114,6 +118,8 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           netlifyDomain: (cfAccount === 'netlify' || cfAccount === 'empresasverrificada' || cfAccount === 'zapliftyativos') ? selectedNetlifyDomain : undefined,
           customRazao: razaoSocial || undefined,
           customFantasia: nomeFantasia || undefined,
+          forceLayout: selectedLayout,
+          forceColor: selectedColor,
         });
         data = res.data;
       }
@@ -333,6 +339,74 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           <span>Gere um número SMS no passo 3 antes de publicar para incluí-lo no site</span>
         </div>
       )}
+
+      {/* ── SELETOR DE LAYOUT + COR ── */}
+      <div className="space-y-4 rounded-xl border border-slate-700 bg-slate-800/40 p-4">
+        <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider">⚙️ Escolher Visual do Site</p>
+        
+        {/* Layouts */}
+        <div>
+          <p className="text-xs text-slate-400 mb-2">Layout:</p>
+          <div className="grid grid-cols-5 gap-2">
+            {[
+              { id: 0, icon: '◧', name: 'Hero+Sidebar' },
+              { id: 1, icon: '⊞', name: 'Bento Grid' },
+              { id: 2, icon: '◨', name: 'Split Screen' },
+              { id: 3, icon: '☰', name: 'Editorial' },
+              { id: 4, icon: '⋮', name: 'Timeline' },
+              { id: 5, icon: '◉', name: 'Segments' },
+              { id: 6, icon: '▣', name: 'Float Cards' },
+              { id: 7, icon: '▌', name: 'Brutalist' },
+              { id: 8, icon: '▦', name: 'Dashboard' },
+              { id: 9, icon: '▬', name: 'Full-Page' },
+            ].map(l => (
+              <button
+                key={l.id}
+                type="button"
+                onClick={() => setSelectedLayout(l.id)}
+                className={`flex flex-col items-center gap-1 rounded-lg border p-2 text-center transition ${
+                  selectedLayout === l.id
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : 'border-slate-700 bg-slate-800/60 hover:border-slate-500'
+                }`}
+              >
+                <span className="text-lg">{l.icon}</span>
+                <span className={`text-[9px] font-medium ${selectedLayout === l.id ? 'text-emerald-300' : 'text-slate-400'}`}>{l.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Cores */}
+        <div>
+          <p className="text-xs text-slate-400 mb-2">Cor de destaque:</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { id: 0, color: '#facc15', name: 'Amarelo' },
+              { id: 1, color: '#3b82f6', name: 'Azul' },
+              { id: 2, color: '#22c55e', name: 'Verde' },
+              { id: 3, color: '#a855f7', name: 'Roxo' },
+              { id: 4, color: '#f97316', name: 'Laranja' },
+              { id: 5, color: '#ec4899', name: 'Rosa' },
+              { id: 6, color: '#06b6d4', name: 'Ciano' },
+              { id: 7, color: '#ef4444', name: 'Vermelho' },
+              { id: 8, color: '#84cc16', name: 'Limão' },
+              { id: 9, color: '#f59e0b', name: 'Âmbar' },
+            ].map(c => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setSelectedColor(c.id)}
+                title={c.name}
+                className={`w-8 h-8 rounded-full border-2 transition ${
+                  selectedColor === c.id ? 'border-white scale-110' : 'border-transparent hover:scale-105'
+                }`}
+                style={{ backgroundColor: c.color }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Botões */}
       <div className="flex flex-wrap gap-3">

@@ -433,7 +433,7 @@ module.exports = async function handler(req, res) {
   // Registro de domínio automático (Porkbun ou Dynadot + Netlify)
   if (req.body?.action === 'register_domain') {
     try {
-      const { domainName, clientId, metaVerificationCode, customRazao, customFantasia } = req.body;
+      const { domainName, clientId, metaVerificationCode, customRazao, customFantasia, forceLayout, forceColor } = req.body;
       if (!domainName || !clientId || !metaVerificationCode)
         return res.status(400).json({ error: 'domainName, clientId e metaVerificationCode são obrigatórios.' });
 
@@ -493,7 +493,8 @@ module.exports = async function handler(req, res) {
         porte: client.porte, naturezaJuridica: client.naturezaJuridica,
         email: (existing?.domainName || domainName || 'contato') + '@' + (existing?.baseDomain || domainName || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode, verificationMethod: 'meta_tag',
-        forceTemplateIndex: computeTemplateIndex(domainName),
+        forceTemplateIndex: typeof forceLayout === 'number' ? forceLayout : computeTemplateIndex(domainName),
+        forceColorIndex: typeof forceColor === 'number' ? forceColor : undefined,
       });
 
       // 4. Deploy no Netlify com domínio customizado
@@ -525,7 +526,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount, customRazao, customFantasia, netlifyDomain } = req.body;
+    const { subdomain, metaVerificationCode, verificationMethod, clientId, cfAccount, customRazao, customFantasia, netlifyDomain, forceLayout, forceColor } = req.body;
 
     if (!subdomain || !metaVerificationCode || !clientId)
       return res.status(400).json({ error: 'subdomain, metaVerificationCode e clientId são obrigatórios.' });
@@ -572,7 +573,7 @@ module.exports = async function handler(req, res) {
     };
 
     // Gera HTML com template determinístico baseado no subdomínio
-    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain, forceTemplateIndex: computeTemplateIndex(cleanSubdomain) });
+    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain, forceTemplateIndex: typeof forceLayout === 'number' ? forceLayout : computeTemplateIndex(cleanSubdomain), forceColorIndex: typeof forceColor === 'number' ? forceColor : undefined });
 
     // Publica o site (Cloudflare Workers ou Netlify ou Hostinger)
     let workerName, url;
