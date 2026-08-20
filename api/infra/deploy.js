@@ -153,7 +153,7 @@ module.exports = async function handler(req, res) {
       // Se tem HTML cacheado, serve IMEDIATAMENTE (sem queries extras)
       if (domain.htmlCache && !page) {
         res.setHeader('Content-Type', 'text/html; charset=UTF-8');
-        res.setHeader('Cache-Control', 'public, max-age=300');
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
         return res.status(200).send(domain.htmlCache);
       }
 
