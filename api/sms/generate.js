@@ -25,6 +25,8 @@ module.exports = async function handler(req, res) {
       'wesley@gmail.com': 'b31d9d27890c8bff97f3a27f7317a530',
       'denis@gmail.com': 'b31d9d27890c8bff97f3a27f7317a530',
       'vitoria@gmail.com': 'b31d9d27890c8bff97f3a27f7317a530',
+      'ronaldo@gmail.com': '545b407cf7e4555d525d6d77eccd08f2',
+      'velhoronaldo@gmail.com': '545b407cf7e4555d525d6d77eccd08f2',
     };
     const effectiveApiKey = customApiKey || teamKeys[user.email] || undefined;
     const effectiveProvider = preferredProvider || (teamKeys[user.email] ? 'SMS24H' : undefined);
