@@ -169,7 +169,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   const emailFmt = esc(email || '');
   const atividadeFmt = esc(atividadePrincipal || '');
   const situacaoFmt = esc(situacao || 'ATIVA');
-  const enderFmt = esc((endereco||'') + (numero ? ', nÂº '+numero : ''));
+  const enderFmt = esc((endereco||'') + (numero ? ', n\u00ba '+numero : ''));
   const bairroFmt = esc(bairro||'');
   const munFmt = esc(municipio||'');
   const ufFmt = esc(uf||'');
@@ -308,10 +308,28 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // ═══════ 10 LAYOUTS ESTRUTURALMENTE DIFERENTES ═══════
   var accents = ['#facc15','#3b82f6','#22c55e','#a855f7','#f97316','#ec4899','#06b6d4','#ef4444','#84cc16','#f59e0b'];
   var AC = accents[Math.floor(Math.random() * accents.length)];
+  var wSvg='<svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
   var layoutType = templateIndex % 10;
 
   var initials = razaoFmt.split(' ').filter(function(w){return w.length>2;}).slice(0,2).map(function(w){return w[0];}).join('');
   if (!initials) initials = razaoFmt.substring(0,2).toUpperCase();
+
+  // Common CSS base shared across all layouts
+  var BASE='*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Inter",system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#e5e5e5;line-height:1.7;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}';
+  var CARD='background:#111;border:1px solid #1f1f1f;border-radius:14px;padding:28px';
+  var TBL='table{width:100%;border-collapse:collapse}td{padding:10px 14px;border-bottom:1px solid #1f1f1f;font-size:13px;color:#d4d4d4}td:first-child{font-weight:600;color:'+AC+';width:150px;font-size:11px;text-transform:uppercase;letter-spacing:.5px}@media(max-width:600px){td{display:block;padding:6px 0}td:first-child{width:auto;padding-bottom:2px}}';
+  var HDR='.hdr{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.95);backdrop-filter:blur(10px);border-bottom:1px solid #1f1f1f;padding:14px 0}.hdr .wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}.hdr .brand{display:flex;align-items:center;gap:10px}.hdr .ico{width:34px;height:34px;border-radius:8px;background:'+AC+';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0a0a0a}.hdr .nm{font-weight:600;font-size:14px;color:#fafafa}.hdr nav{display:flex;gap:18px;align-items:center}.hdr nav a{font-size:13px;color:#a3a3a3;transition:color .2s}.hdr nav a:hover{color:'+AC+'}.cta{background:'+AC+';color:#0a0a0a;font-weight:600;font-size:13px;padding:9px 18px;border-radius:7px;transition:opacity .2s}.cta:hover{opacity:.85}';
+  var WRAP='.wrap{max-width:1160px;margin:0 auto;padding:0 24px}';
+  var SECT='.sec-t{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:'+AC+';margin-bottom:10px;font-weight:700}.sec-h{font-size:1.5rem;font-weight:700;color:#fafafa;margin-bottom:24px;letter-spacing:-.5px}';
+  var LBL='.lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#737373;margin-bottom:4px}.val{font-size:13px;font-weight:600;color:#fafafa}';
+  var COMP='.compliance{'+CARD+'}.compliance p{font-size:12px;color:#a3a3a3;line-height:1.7;margin-bottom:8px}.compliance em{color:#d4d4d4;font-style:normal;font-weight:500}.compliance small{font-size:11px;color:#525252}';
+  var FT='.ft{border-top:1px solid #1f1f1f;padding:28px 0;text-align:center;font-size:12px;color:#525252}';
+  var PHONE_BIG='.phone-big{font-size:2.2rem;font-weight:800;color:'+AC+';margin:16px 0;letter-spacing:-1px}@media(max-width:600px){.phone-big{font-size:1.5rem}}';
+  var WCARD='.wcard{'+CARD+';padding:20px;display:flex;align-items:center;gap:14px}.wcard .wi{width:44px;height:44px;border-radius:10px;background:#25d366;display:flex;align-items:center;justify-content:center;flex-shrink:0}.wcard .wi svg{width:22px;height:22px;fill:#fff}.wcard .wl{font-size:11px;color:#a3a3a3}.wcard .wn{font-size:1.15rem;font-weight:700;color:#fafafa}';
+
+  // Header HTML builder
+  var hdrHtml = '<header class="hdr"><div class="wrap"><div class="brand"><div class="ico">'+initials+'</div><span class="nm" data-field="razao">'+razaoFmt+'</span></div><nav><a href="#sobre">Sobre</a><a href="#dados">Dados</a><a href="#contato">Contato</a>'+(phoneFmt?'<a class="cta" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
+  var footHtml = '<footer class="ft"><div class="wrap">\u00a9 '+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 '+munFmt+'/'+ufFmt+'</div></footer>';
 
   var css, html;
 
