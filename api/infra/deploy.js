@@ -223,7 +223,7 @@ module.exports = async function handler(req, res) {
       const isWildcard = existingWorker === 'verificaconta-wildcard';
 
       // Gera novo template aleatório
-      const newIndex = Math.floor(Math.random() * 8);
+      const newIndex = Math.floor(Math.random() * 10);
       await prisma.domain.update({
         where: { id: domain.id },
         data: {
@@ -341,10 +341,10 @@ module.exports = async function handler(req, res) {
 
       // Gera novo template (random ou forçado pelo usuário)
       var newPutIndex;
-      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 7) {
+      if (typeof forceLayout === 'number' && forceLayout >= 0 && forceLayout <= 9) {
         newPutIndex = forceLayout;
       } else {
-        newPutIndex = Math.floor(Math.random() * 8);
+        newPutIndex = Math.floor(Math.random() * 10);
       }
       const html = buildLandingHtml({ ...siteParams, subdomain: domain.domainName, forceTemplateIndex: newPutIndex });
 
