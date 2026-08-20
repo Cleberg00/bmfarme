@@ -489,6 +489,7 @@ module.exports = async function handler(req, res) {
         atividadePrincipal: client.atividadePrincipal, telefone: client.telefone,
         email: (existing?.domainName || domainName || 'contato') + '@' + (existing?.baseDomain || domainName || 'empresa.com'), smsPhone: smsLog?.phoneNumber || null, smsCode: smsLog?.smsCode || null,
         metaVerificationCode, verificationMethod: 'meta_tag',
+        forceTemplateIndex: computeTemplateIndex(domainName),
       });
 
       // 4. Deploy no Netlify com domínio customizado
@@ -565,8 +566,8 @@ module.exports = async function handler(req, res) {
       email: (existing?.domainName || cleanSubdomain || 'contato') + '@' + (existing?.baseDomain || netlifyDomain || 'empresa.com'), smsPhone, smsCode, metaVerificationCode, verificationMethod: method,
     };
 
-    // Gera HTML com template fixo
-    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain });
+    // Gera HTML com template determinístico baseado no subdomínio
+    const html = buildLandingHtml({ ...siteParams, subdomain: cleanSubdomain, forceTemplateIndex: computeTemplateIndex(cleanSubdomain) });
 
     // Publica o site (Cloudflare Workers ou Netlify ou Hostinger)
     let workerName, url;
