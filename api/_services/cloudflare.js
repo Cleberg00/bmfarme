@@ -231,172 +231,269 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     '<\/script>';
 
   // --- Build HTML ---
-  var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
-    +metaTag+ogTags
-    +'<title>'+razaoFmt+'</title>'
+
+  var layoutIdx = (typeof forceTemplateIndex === 'number') ? forceTemplateIndex % 10 : 0;
+
+  var wSvg = '<svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
+
+  var headBlock = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
+    +metaTag+ogTags+'<title>'+razaoFmt+'</title>'
     +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">'
     +'<script src="https://cdn.tailwindcss.com"><\/script>'
-    +'<style>'
-    +'body{font-family:"Inter",sans-serif}'
-    +'.card{background:#111;border:1px solid #1f1f1f;border-radius:1rem;padding:1.75rem}'
-    +'.chip{display:inline-block;font-size:0.625rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;padding:0.25rem 0.75rem;border-radius:9999px;background:'+accentHex+'20;color:'+accentHex+'}'
-    +'.btn-accent{display:inline-block;padding:0.65rem 1.5rem;border-radius:0.5rem;font-weight:600;font-size:0.875rem;color:#0a0a0a;background:'+accentHex+';transition:opacity .2s}'
-    +'.btn-accent:hover{opacity:0.85}'
-    +'.btn-wa{display:inline-flex;align-items:center;gap:0.5rem;padding:0.65rem 1.5rem;border-radius:0.5rem;font-weight:600;font-size:0.875rem;color:#fff;background:#25d366;transition:opacity .2s}'
-    +'.btn-wa:hover{opacity:0.85}'
-    +'.label{font-size:0.625rem;text-transform:uppercase;letter-spacing:0.08em;color:#737373;margin-bottom:0.25rem}'
-    +'.value{font-size:0.8125rem;font-weight:600;color:#fafafa}'
-    +'</style>'
+    +'<style>body{font-family:"Inter",sans-serif}.card{background:#111;border:1px solid #1f1f1f;border-radius:1rem;padding:1.75rem}.chip{display:inline-block;font-size:.625rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:.25rem .75rem;border-radius:9999px;background:'+accentHex+'20;color:'+accentHex+'}.btn-accent{display:inline-block;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#0a0a0a;background:'+accentHex+';transition:opacity .2s}.btn-accent:hover{opacity:.85}.btn-wa{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#fff;background:#25d366;transition:opacity .2s}.btn-wa:hover{opacity:.85}.label{font-size:.625rem;text-transform:uppercase;letter-spacing:.08em;color:#737373;margin-bottom:.25rem}.value{font-size:.8125rem;font-weight:600;color:#fafafa}</style>'
     +'</head><body class="bg-[#0a0a0a] text-gray-200 antialiased">';
 
-  // ===== HEADER (sticky) =====
-  html+='<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]">'
-    +'<div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3">'
-    +'<div class="flex items-center gap-3">'
-    +'<div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div>'
-    +'<div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span>'
-    +'<span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div>'
-    +'<span class="hidden sm:inline text-xs text-gray-600">'+munFmt+'/'+ufFmt+'</span>'
-    +'</div>'
-    +'<nav class="flex items-center gap-5 flex-wrap">'
-    +'<a href="#sobre" class="text-xs text-gray-400 hover:'+textAccent+' transition">Sobre</a>'
-    +'<a href="#servicos" class="text-xs text-gray-400 hover:'+textAccent+' transition">Servi\u00e7os</a>'
-    +'<a href="#registro" class="text-xs text-gray-400 hover:'+textAccent+' transition">Registro</a>'
-    +'<a href="#contato" class="text-xs text-gray-400 hover:'+textAccent+' transition">Contato</a>'
-    +(phoneFmt ? '<a href="'+waLink+'" class="btn-accent" data-field="phone">Agendar Hor\u00e1rio</a>' : '')
-    +'</nav>'
-    +'</div></header>';
+  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#registro" class="text-xs text-gray-400 hover:text-white">Registro</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
 
-  // ===== HERO (2-col grid) =====
-  html+='<section class="max-w-6xl mx-auto px-6 pt-20 pb-16">'
-    +'<div class="grid lg:grid-cols-2 gap-12 items-start">';
+  var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-center text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6">\u00a9 '+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div></footer>'+domScript+'</body></html>';
 
-  // Hero Left
-  html+='<div>'
-    +'<h1 class="text-4xl sm:text-5xl font-extrabold text-white leading-tight tracking-tight mb-5">'
-    +'Especialistas em <span class="'+textAccent+'">'+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+'</span></h1>'
-    +'<p class="text-gray-400 text-base mb-8 max-w-lg">'+razaoFmt+' oferece solu\u00e7\u00f5es de excel\u00eancia em '+(atividadeFmt||'servi\u00e7os empresariais')+', com atendimento de qualidade em '+munFmt+'/'+ufFmt+'. Entre em contato pelo nosso canal oficial.</p>';
+  // Reusable content blocks
+  var sobreText = razaoFmt+' \u00e9 uma empresa fundada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
 
-  if (phoneFmt) {
-    html+='<div class="card flex items-center gap-4 mb-6">'
-      +'<div class="w-11 h-11 rounded-xl bg-[#25d366] flex items-center justify-center flex-shrink-0">'
-      +'<svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>'
-      +'</div>'
-      +'<div><div class="text-[11px] text-gray-500">WhatsApp Business</div><div class="text-lg font-bold text-white" data-field="phone">'+phoneFmt+'</div></div>'
-      +'</div>';
-  }
-
-  html+='<div class="flex flex-wrap gap-3">'
-    +(phoneFmt ? '<a href="'+waLink+'" class="btn-wa"><svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>WhatsApp</a>' : '')
-    +'<a href="#sobre" class="btn-accent">Saiba Mais</a>'
-    +'</div>'
-    +'</div>';
-
-  // Hero Right â€” "Nossos Diferenciais" card
-  html+='<div class="card">'
-    +'<h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-4">Nossos Diferenciais</h3>'
-    +'<ul class="space-y-3">'
-    +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Atendimento receptivo e personalizado</li>'
-    +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Canal oficial verificado pela Meta</li>'
-    +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Conformidade LGPD e WhatsApp Business API</li>'
-    +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Empresa regularmente constitu\u00edda</li>'
-    +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Sem spam ou contatos n\u00e3o solicitados</li>'
-    +'</ul>'
-    +'<div class="mt-5 pt-4 border-t border-[#1f1f1f] text-xs text-gray-500">'
-    +'<span class="'+textAccent+' font-semibold">\u00d7</span> '+munFmt+'/'+ufFmt+(cepFmt?' \u2014 CEP '+cepFmt:'')
-    +'</div>'
-    +'</div>';
-
-  html+='</div></section>';
-
-  // ===== SOBRE section =====
-  html+='<section id="sobre" class="max-w-6xl mx-auto px-6 py-16">'
-    +'<span class="chip">Sobre</span>'
-    +'<h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2>'
-    +'<div class="card">'
-    +'<p class="text-sm text-gray-400 leading-relaxed mb-6">A '+razaoFmt+', empresa fundada e sediada em '+munFmt+'/'+ufFmt+', atua no segmento de '+(atividadeFmt||'atividade empresarial')+' com compromisso \u00e9tico e profissionalismo. Disponibiliza canal verificado de WhatsApp Business exclusivamente para demandas originadas pelo consumidor final, em total ader\u00eancia \u00e0s normas da Meta Platforms e legisla\u00e7\u00e3o brasileira.</p>'
-    +'<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">'
-    +'<div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-4"><div class="label">Raz\u00e3o Social</div><div class="value">'+razaoFmt+'</div></div>'
-    +(porteFmt ? '<div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-4"><div class="label">Porte</div><div class="value">'+porteFmt+'</div></div>' : '<div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-4"><div class="label">Situa\u00e7\u00e3o</div><div class="value">'+situacaoFmt+'</div></div>')
-    +'<div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-4"><div class="label">Atividade Principal</div><div class="value">'+(atividadeFmt||'Atividade Empresarial')+'</div></div>'
-    +'<div class="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-4"><div class="label">Munic\u00edpio/UF</div><div class="value">'+munFmt+'/'+ufFmt+'</div></div>'
-    +'</div>'
-    +'</div>'
-    +'</section>';
-
-  // ===== SERVICOS section =====
-  html+='<section id="servicos" class="max-w-6xl mx-auto px-6 py-16">'
-    +'<span class="chip">Servi\u00e7os</span>'
-    +'<h2 class="text-2xl font-bold text-white mt-3 mb-6">Nossos Servi\u00e7os</h2>'
-    +'<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">';
-
-  // Service card 1 â€” main activity
-  html+='<div class="card"><div class="w-10 h-10 rounded-lg '+btnBg+' flex items-center justify-center mb-4 text-[#0a0a0a] font-bold text-sm">01</div>'
-    +'<h3 class="text-sm font-bold text-white mb-2">'+(atividadeFmt||'Atividade Principal')+'</h3>'
-    +'<p class="text-xs text-gray-400 leading-relaxed">Servi\u00e7o principal da empresa, executado com qualidade e compromisso profissional, atendendo \u00e0s demandas do mercado local e regional.</p></div>';
-
-  // Service card 2
-  html+='<div class="card"><div class="w-10 h-10 rounded-lg bg-[#1f1f1f] flex items-center justify-center mb-4 '+textAccent+' font-bold text-sm">02</div>'
-    +'<h3 class="text-sm font-bold text-white mb-2">Consultoria Especializada</h3>'
-    +'<p class="text-xs text-gray-400 leading-relaxed">Orienta\u00e7\u00e3o t\u00e9cnica e acompanhamento personalizado para nossos clientes, garantindo as melhores solu\u00e7\u00f5es para cada necessidade.</p></div>';
-
-  // Service card 3
-  html+='<div class="card"><div class="w-10 h-10 rounded-lg bg-[#1f1f1f] flex items-center justify-center mb-4 '+textAccent+' font-bold text-sm">03</div>'
-    +'<h3 class="text-sm font-bold text-white mb-2">Atendimento ao Cliente</h3>'
-    +'<p class="text-xs text-gray-400 leading-relaxed">Suporte dedicado e receptivo, dispon\u00edvel atrav\u00e9s dos nossos canais oficiais para resolver suas d\u00favidas e solicita\u00e7\u00f5es.</p></div>';
-
-  html+='</div></section>';
-
-  // ===== REGISTRO section =====
-  html+='<section id="registro" class="max-w-6xl mx-auto px-6 py-16">'
-    +'<span class="chip">Registro</span>'
-    +'<h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2>'
-    +'<div class="card">'
-    +'<div class="grid sm:grid-cols-2 gap-x-8 gap-y-5">'
+  var registroGrid = '<div class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
     +'<div><div class="label">Raz\u00e3o Social</div><div class="value" data-field="razao">'+razaoFmt+'</div></div>'
     +'<div><div class="label">CNPJ</div><div class="value" data-field="cnpj">'+cnpjFmt+'</div></div>'
-    +'<div><div class="label">Situa\u00e7\u00e3o Cadastral</div><div class="value">'+situacaoFmt+'</div></div>'
-    +(natJurFmt ? '<div><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>' : '')
+    +'<div><div class="label">Situa\u00e7\u00e3o</div><div class="value">'+situacaoFmt+'</div></div>'
+    +(natJurFmt?'<div><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>':'')
     +'<div><div class="label">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'
-    +(cepFmt ? '<div><div class="label">CEP</div><div class="value">'+cepFmt+'</div></div>' : '')
-    +(emailFmt ? '<div><div class="label">Email</div><div class="value">'+emailFmt+'</div></div>' : '')
-    +(phoneFmt ? '<div><div class="label">Telefone</div><div class="value" data-field="phone">'+phoneFmt+'</div></div>' : '')
-    +'<div><div class="label">Site</div><div class="value '+textAccent+'">Dom\u00ednio Verificado</div></div>'
-    +'</div>'
-    +'</div>'
-    +'</section>';
+    +(cepFmt?'<div><div class="label">CEP</div><div class="value">'+cepFmt+'</div></div>':'')
+    +(porteFmt?'<div><div class="label">Porte</div><div class="value">'+porteFmt+'</div></div>':'')
+    +(emailFmt?'<div><div class="label">Email</div><div class="value">'+emailFmt+'</div></div>':'')
+    +(phoneFmt?'<div><div class="label">WhatsApp</div><div class="value" data-field="phone">'+phoneFmt+'</div></div>':'')
+    +'</div>';
 
-  // ===== CONTATO section =====
-  html+='<section id="contato" class="max-w-6xl mx-auto px-6 py-16">'
-    +'<span class="chip">Contato</span>'
-    +'<h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2>'
-    +'<div class="card">';
+  var wppCard = phoneFmt ? '<div class="card flex items-center gap-4"><div class="w-11 h-11 rounded-xl bg-[#25d366] flex items-center justify-center flex-shrink-0">'+wSvg+'</div><div><div class="text-[11px] text-gray-500">WhatsApp Business</div><div class="text-lg font-bold text-white" data-field="phone">'+phoneFmt+'</div></div></div>' : '';
 
-  if (phoneFmt) {
-    html+='<div class="flex items-center gap-5 mb-6">'
-      +'<div class="w-14 h-14 rounded-xl bg-[#25d366] flex items-center justify-center flex-shrink-0">'
-      +'<svg class="w-7 h-7 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>'
+  var html;
+
+  if (layoutIdx === 0) {
+    // Layout 0 - Hero + Sidebar
+    html = headBlock + headerHtml
+      +'<section class="max-w-6xl mx-auto px-6 pt-20 pb-16"><div class="grid lg:grid-cols-3 gap-10 items-start">'
+      +'<div class="lg:col-span-2">'
+      +'<h1 class="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-5">Especialistas em <span class="'+textAccent+'">'+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+'</span></h1>'
+      +'<p class="text-gray-400 text-base mb-8 max-w-lg">'+sobreText+'</p>'
+      +wppCard
+      +'<div class="flex flex-wrap gap-3 mt-6">'+(phoneFmt?'<a href="'+waLink+'" class="btn-wa">'+wSvg+' WhatsApp</a>':'')+'<a href="#sobre" class="btn-accent">Saiba Mais</a></div>'
       +'</div>'
-      +'<div><div class="text-xs text-gray-500">WhatsApp Business â€” Canal Oficial</div><div class="text-2xl font-extrabold '+textAccent+'" data-field="phone">'+phoneFmt+'</div></div>'
+      +'<div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-4">Nossos Diferenciais</h3>'
+      +'<ul class="space-y-3">'
+      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Atendimento receptivo e personalizado</li>'
+      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Canal oficial verificado pela Meta</li>'
+      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Conformidade LGPD e WhatsApp Business API</li>'
+      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Empresa regularmente constitu\u00edda</li>'
+      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Sem spam ou contatos n\u00e3o solicitados</li>'
+      +'</ul></div>'
+      +'</div></section>'
+      +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><div class="card"><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></div></section>'
+      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section id="contato" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
+      +wppCard
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +footBlock;
+
+  } else if (layoutIdx === 1) {
+    // Layout 1 - Centered Stack
+    html = headBlock + headerHtml
+      +'<section class="max-w-4xl mx-auto px-6 pt-24 pb-16 text-center">'
+      +'<h1 class="text-5xl sm:text-6xl font-black text-white leading-tight mb-4">'+razaoFmt+'</h1>'
+      +'<p class="text-gray-400 text-lg mb-8">'+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+' \u2014 '+munFmt+'/'+ufFmt+'</p>'
+      +'<div class="flex justify-center mb-12">'+wppCard+'</div>'
+      +'<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">'
+      +'<div class="card text-center"><div class="text-2xl font-bold '+textAccent+'">'+situacaoFmt+'</div><div class="label mt-1">Situa\u00e7\u00e3o</div></div>'
+      +'<div class="card text-center"><div class="text-2xl font-bold '+textAccent+'">'+munFmt+'</div><div class="label mt-1">Cidade</div></div>'
+      +'<div class="card text-center"><div class="text-2xl font-bold '+textAccent+'">'+ufFmt+'</div><div class="label mt-1">Estado</div></div>'
+      +'<div class="card text-center"><div class="text-2xl font-bold '+textAccent+'">'+(porteFmt||'ME')+'</div><div class="label mt-1">Porte</div></div>'
       +'</div>'
-      +'<a href="'+waLink+'" class="btn-wa mb-6"><svg class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>Iniciar Conversa</a>';
+      +'</section>'
+      +'<section id="sobre" class="max-w-3xl mx-auto px-6 py-16 text-center"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></section>'
+      +'<section id="registro" class="max-w-4xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section id="contato" class="max-w-3xl mx-auto px-6 py-16 text-center"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
+      +wppCard
+      +(phoneFmt?'<div class="mt-4"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +footBlock;
+
+  } else if (layoutIdx === 2) {
+    // Layout 2 - Split (sidebar left)
+    html = headBlock
+      +'<div class="flex min-h-screen">'
+      +'<aside class="hidden lg:flex flex-col w-72 bg-[#0f0f0f] border-r border-[#1f1f1f] p-6 sticky top-0 h-screen justify-between">'
+      +'<div>'
+      +'<div class="w-12 h-12 rounded-xl '+btnBg+' flex items-center justify-center font-bold text-lg text-[#0a0a0a] mb-4">'+initials+'</div>'
+      +'<h2 class="text-sm font-bold text-white mb-1" data-field="razao">'+razaoFmt+'</h2>'
+      +'<p class="text-[11px] text-gray-500 mb-4" data-field="cnpj">'+cnpjFmt+'</p>'
+      +(phoneFmt?'<p class="text-xs text-gray-400 mb-6" data-field="phone">'+phoneFmt+'</p>':'')
+      +'<nav class="space-y-3">'
+      +'<a href="#sobre" class="block text-xs text-gray-400 hover:text-white">Sobre</a>'
+      +'<a href="#registro" class="block text-xs text-gray-400 hover:text-white">Registro</a>'
+      +'<a href="#contato" class="block text-xs text-gray-400 hover:text-white">Contato</a>'
+      +'</nav>'
+      +'</div>'
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa text-xs w-full justify-center">'+wSvg+' WhatsApp</a>':'')
+      +'</aside>'
+      +'<main class="flex-1 overflow-y-auto">'
+      +headerHtml
+      +'<section id="sobre" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed mb-6">'+sobreText+'</p>'+wppCard+'</section>'
+      +'<section id="registro" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section id="contato" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
+      +wppCard
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +footBlock
+      +'</main></div>';
+
+  } else if (layoutIdx === 3) {
+    // Layout 3 - Bento Grid
+    html = headBlock + headerHtml
+      +'<section class="max-w-6xl mx-auto px-6 py-16">'
+      +'<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">'
+      +'<div class="card sm:col-span-2"><span class="chip">Empresa</span><h1 class="text-3xl font-extrabold text-white mt-3 mb-2" data-field="razao">'+razaoFmt+'</h1><p class="text-sm text-gray-400">'+(atividadeFmt||'Atividade Empresarial')+' \u2014 '+munFmt+'/'+ufFmt+'</p></div>'
+      +'<div class="card"><div class="label">CNPJ</div><div class="text-lg font-bold text-white" data-field="cnpj">'+cnpjFmt+'</div></div>'
+      +'<div class="card"><div class="label">Situa\u00e7\u00e3o</div><div class="text-lg font-bold '+textAccent+'">'+situacaoFmt+'</div></div>'
+      +(phoneFmt?'<div class="card"><div class="label">WhatsApp</div><div class="text-lg font-bold text-white" data-field="phone">'+phoneFmt+'</div><a href="'+waLink+'" class="btn-wa text-xs mt-3">'+wSvg+' Chamar</a></div>':'')
+      +'<div class="card"><div class="label">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'
+      +'<div class="card sm:col-span-2" id="sobre"><span class="chip">Sobre</span><p class="text-sm text-gray-400 mt-3 leading-relaxed">'+sobreText+'</p></div>'
+      +'<div class="card" id="contato"><span class="chip">Conformidade</span><div class="mt-3">'+complianceCompact+'</div></div>'
+      +'</div>'
+      +'</section>'
+      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +footBlock;
+
+  } else if (layoutIdx === 4) {
+    // Layout 4 - Timeline
+    html = headBlock + headerHtml
+      +'<section class="max-w-3xl mx-auto px-6 py-20">'
+      +'<h1 class="text-3xl font-extrabold text-white mb-12 text-center">'+razaoFmt+'</h1>'
+      +'<div class="relative border-l-2 border-[#1f1f1f] ml-4 space-y-12">'
+      +'<div class="relative pl-8" id="sobre"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">01 \u2014 Sobre</span><h2 class="text-xl font-bold text-white mt-2 mb-3">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p>'+wppCard+'</div>'
+      +'<div class="relative pl-8" id="registro"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">02 \u2014 Registro</span><h2 class="text-xl font-bold text-white mt-2 mb-3">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></div>'
+      +'<div class="relative pl-8" id="contato"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">03 \u2014 Contato</span><h2 class="text-xl font-bold text-white mt-2 mb-3">Fale Conosco</h2><div class="card">'
+      +wppCard
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></div>'
+      +'<div class="relative pl-8"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#1f1f1f]"></div><span class="chip">04 \u2014 Conformidade</span><p class="text-xs text-gray-500 mt-2">Conformidade integral com Meta Platforms, WhatsApp Business API e LGPD (Lei 13.709/2018).</p></div>'
+      +'</div>'
+      +'</section>'
+      +footBlock;
+
+  } else if (layoutIdx === 5) {
+    // Layout 5 - Full-Height Sections
+    html = headBlock + headerHtml
+      +'<section class="min-h-[80vh] flex items-center bg-[#0a0a0a]"><div class="max-w-4xl mx-auto px-6 text-center">'
+      +'<h1 class="text-5xl sm:text-6xl font-black text-white leading-tight mb-4">'+razaoFmt+'</h1>'
+      +'<p class="text-xl text-gray-400 mb-8">'+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+'</p>'
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa text-lg">'+wSvg+' WhatsApp: '+phoneFmt+'</a>':'')
+      +'</div></section>'
+      +'<section id="sobre" class="min-h-[80vh] flex items-center bg-[#0f0f14]"><div class="max-w-4xl mx-auto px-6">'
+      +'<span class="chip">Sobre</span><h2 class="text-3xl font-bold text-white mt-3 mb-6">'+displayName+'</h2>'
+      +'<p class="text-base text-gray-400 leading-relaxed mb-8">'+sobreText+'</p>'
+      +wppCard
+      +'</div></section>'
+      +'<section id="registro" class="min-h-[80vh] flex items-center bg-[#0a0a0a]"><div class="max-w-4xl mx-auto px-6">'
+      +'<span class="chip">Registro</span><h2 class="text-3xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2>'
+      +'<div class="card">'+registroGrid+'</div>'
+      +'</div></section>'
+      +'<section id="contato" class="min-h-[80vh] flex items-center bg-[#0f0f14]"><div class="max-w-4xl mx-auto px-6 text-center">'
+      +'<span class="chip">Contato</span><h2 class="text-3xl font-bold text-white mt-3 mb-6">Fale Conosco</h2>'
+      +wppCard
+      +(phoneFmt?'<div class="mt-6"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
+      +'<div class="mt-8 max-w-xl mx-auto">'+complianceCompact+'</div>'
+      +'</div></section>'
+      +footBlock;
+
+  } else if (layoutIdx === 6) {
+    // Layout 6 - Magazine 2-col
+    html = headBlock + headerHtml
+      +'<section class="max-w-6xl mx-auto px-6 py-20"><div class="grid lg:grid-cols-3 gap-12">'
+      +'<div class="lg:col-span-2">'
+      +'<h1 class="text-4xl font-serif font-bold text-white mb-8">'+razaoFmt+'</h1>'
+      +'<div id="sobre" class="mb-12"><span class="chip">Sobre</span><h2 class="text-xl font-serif font-bold text-white mt-3 mb-4">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></div>'
+      +'<div id="contato"><span class="chip">Contato</span><h2 class="text-xl font-serif font-bold text-white mt-3 mb-4">Fale Conosco</h2>'
+      +wppCard
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div>'
+      +'</div>'
+      +'<aside class="space-y-6">'
+      +'<div class="card"><div class="label">CNPJ</div><div class="value" data-field="cnpj">'+cnpjFmt+'</div></div>'
+      +'<div class="card"><div class="label">Situa\u00e7\u00e3o</div><div class="value '+textAccent+'">'+situacaoFmt+'</div></div>'
+      +(phoneFmt?'<div class="card"><div class="label">WhatsApp</div><div class="value" data-field="phone">'+phoneFmt+'</div></div>':'')
+      +'<div class="card"><div class="label">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'
+      +(porteFmt?'<div class="card"><div class="label">Porte</div><div class="value">'+porteFmt+'</div></div>':'')
+      +(natJurFmt?'<div class="card"><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>':'')
+      +'</aside>'
+      +'</div></section>'
+      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-serif font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +footBlock;
+
+  } else if (layoutIdx === 7) {
+    // Layout 7 - Dashboard
+    html = headBlock + headerHtml
+      +'<section class="max-w-6xl mx-auto px-6 pt-10 pb-6">'
+      +'<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">'
+      +'<div class="card text-center"><div class="label">Empresa</div><div class="text-sm font-mono font-bold text-white truncate" data-field="razao">'+razaoFmt+'</div></div>'
+      +'<div class="card text-center"><div class="label">CNPJ</div><div class="text-sm font-mono font-bold text-white" data-field="cnpj">'+cnpjFmt+'</div></div>'
+      +'<div class="card text-center"><div class="label">Status</div><div class="text-sm font-mono font-bold '+textAccent+'">'+situacaoFmt+'</div></div>'
+      +'<div class="card text-center"><div class="label">Cidade</div><div class="text-sm font-mono font-bold text-white">'+munFmt+'/'+ufFmt+'</div></div>'
+      +(phoneFmt?'<div class="card text-center"><div class="label">WhatsApp</div><div class="text-sm font-mono font-bold text-white" data-field="phone">'+phoneFmt+'</div></div>':'<div class="card text-center"><div class="label">Porte</div><div class="text-sm font-mono font-bold text-white">'+(porteFmt||'ME')+'</div></div>')
+      +'</div>'
+      +'</section>'
+      +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Sobre</h3><p class="text-sm text-gray-400 leading-relaxed font-mono">'+sobreText+'</p></div></section>'
+      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Registro</h3>'+registroGrid+'</div></section>'
+      +'<section id="contato" class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Contato</h3>'
+      +wppCard
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +footBlock;
+
+  } else if (layoutIdx === 8) {
+    // Layout 8 - Minimal Bold
+    html = headBlock + headerHtml
+      +'<section class="max-w-5xl mx-auto px-6 pt-24 pb-16">'
+      +'<h1 class="text-6xl sm:text-7xl font-black text-white leading-none mb-4" data-field="razao">'+razaoFmt+'</h1>'
+      +'<p class="text-lg text-gray-500 mb-2" data-field="cnpj">'+cnpjFmt+'</p>'
+      +(phoneFmt?'<p class="text-lg '+textAccent+' font-bold" data-field="phone">'+phoneFmt+'</p>':'')
+      +'</section>'
+      +'<div class="max-w-5xl mx-auto px-6"><div class="border-t-4 border-['+accentHex+']"></div></div>'
+      +'<section id="sobre" class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Sobre</h2><p class="text-base text-gray-400 leading-relaxed max-w-2xl">'+sobreText+'</p></section>'
+      +'<div class="max-w-5xl mx-auto px-6"><div class="border-t-4 border-['+accentHex+']"></div></div>'
+      +'<section id="registro" class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Registro</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<div class="max-w-5xl mx-auto px-6"><div class="border-t-4 border-['+accentHex+']"></div></div>'
+      +'<section id="contato" class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Contato</h2>'
+      +wppCard
+      +(phoneFmt?'<div class="mt-6"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
+      +'<div class="mt-10">'+complianceCompact+'</div></section>'
+      +footBlock;
+
+  } else {
+    // Layout 9 - Floating Hero
+    html = headBlock + headerHtml
+      +'<section class="min-h-[60vh] flex items-center justify-center" style="background:linear-gradient(135deg,#0a0a0a 0%,'+accentHex+'15 100%)">'
+      +'<div class="text-center px-6">'
+      +'<h1 class="text-5xl sm:text-6xl font-black text-white mb-4">'+razaoFmt+'</h1>'
+      +'<p class="text-xl text-gray-400">'+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+' \u2014 '+munFmt+'/'+ufFmt+'</p>'
+      +(phoneFmt?'<div class="mt-8"><a href="'+waLink+'" class="btn-wa text-lg">'+wSvg+' '+phoneFmt+'</a></div>':'')
+      +'</div>'
+      +'</section>'
+      +'<section class="max-w-6xl mx-auto px-6 -mt-20 relative z-10">'
+      +'<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">'
+      +'<div class="card" id="sobre"><span class="chip">Sobre</span><p class="text-sm text-gray-400 mt-3 leading-relaxed">'+sobreText+'</p></div>'
+      +wppCard
+      +'<div class="card"><div class="label">Situa\u00e7\u00e3o</div><div class="text-lg font-bold '+textAccent+'">'+situacaoFmt+'</div><div class="label mt-3">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'
+      +'</div>'
+      +'</section>'
+      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section id="contato" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
+      +wppCard
+      +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
+      +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +footBlock;
   }
-
-  html+='<div class="mt-4 pt-4 border-t border-[#1f1f1f]">'
-    +complianceCompact
-    +'</div>'
-    +'</div>'
-    +'</section>';
-
-  // ===== FOOTER =====
-  html+='<footer class="border-t border-[#1f1f1f] py-8 text-center text-xs text-gray-600">'
-    +'<div class="max-w-6xl mx-auto px-6">\u00a9 '+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div>'
-    +'</footer>';
-
-  html+=domScript+'</body></html>';
 
   return html;
 }
+
 
 /**
  * Publica (ou atualiza) um Cloudflare Worker com o HTML da landing page.
