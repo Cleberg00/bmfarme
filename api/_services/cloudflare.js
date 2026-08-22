@@ -250,16 +250,18 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // Reusable content blocks
   var sobreText = razaoFmt+' \u00e9 uma empresa fundada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
 
-  var registroGrid = '<div class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
-    +'<div><div class="label">Raz\u00e3o Social</div><div class="value" data-field="razao">'+razaoFmt+'</div></div>'
-    +'<div><div class="label">CNPJ</div><div class="value" data-field="cnpj">'+cnpjFmt+'</div></div>'
-    +'<div><div class="label">Situa\u00e7\u00e3o</div><div class="value">'+situacaoFmt+'</div></div>'
+  var registroGrid = '<div itemscope itemtype="https://schema.org/Organization" class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
+    +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div></div>'
+    +'<div><div class="label">CNPJ</div><div class="value" itemprop="taxID" data-field="cnpj">'+cnpjFmt+'</div></div>'
+    +'<div><div class="label">Situa\u00e7\u00e3o Cadastral</div><div class="value">'+situacaoFmt+'</div></div>'
     +(natJurFmt?'<div><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>':'')
-    +'<div><div class="label">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'
-    +(cepFmt?'<div><div class="label">CEP</div><div class="value">'+cepFmt+'</div></div>':'')
     +(porteFmt?'<div><div class="label">Porte</div><div class="value">'+porteFmt+'</div></div>':'')
-    +(emailFmt?'<div><div class="label">Email</div><div class="value">'+emailFmt+'</div></div>':'')
-    +(phoneFmt?'<div><div class="label">WhatsApp</div><div class="value" data-field="phone">'+phoneFmt+'</div></div>':'')
+    +'<div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><div class="label">Logradouro</div><div class="value" itemprop="streetAddress">'+enderFmt+'</div></div>'
+    +(bairroFmt?'<div><div class="label">Bairro</div><div class="value" itemprop="addressLocality">'+bairroFmt+'</div></div>':'')
+    +'<div><div class="label">Munic\u00edpio/UF</div><div class="value"><span itemprop="addressRegion">'+munFmt+'</span>/<span>'+ufFmt+'</span></div></div>'
+    +(cepFmt?'<div><div class="label">CEP</div><div class="value" itemprop="postalCode">'+cepFmt+'</div></div>':'')
+    +(emailFmt?'<div><div class="label">Email</div><div class="value" itemprop="email">'+emailFmt+'</div></div>':'')
+    +(phoneFmt?'<div><div class="label">Telefone / WhatsApp</div><div class="value" itemprop="telephone" data-field="phone">'+phoneFmt+'</div></div>':'')
     +'</div>';
 
   var wppCard = phoneFmt ? '<div class="card flex items-center gap-4"><div class="w-11 h-11 rounded-xl bg-[#25d366] flex items-center justify-center flex-shrink-0">'+wSvg+'</div><div><div class="text-[11px] text-gray-500">WhatsApp Business</div><div class="text-lg font-bold text-white" data-field="phone">'+phoneFmt+'</div></div></div>' : '';
