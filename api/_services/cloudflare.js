@@ -147,6 +147,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   function fmtCep(c) { var d=String(c||'').replace(/\D/g,''); return d.length===8 ? d.slice(0,2)+'.'+d.slice(2,5)+'-'+d.slice(5) : c; }
   function fmtPhone(t) { if(!t) return ''; var n=String(t).replace(/\D/g,''); if(n.startsWith('55')&&n.length>=12) n=n.slice(2); if(n.length===10) return '('+n.slice(0,2)+') '+n.slice(2,6)+'-'+n.slice(6); if(n.length===11) return '('+n.slice(0,2)+') '+n.slice(2,7)+'-'+n.slice(7); return t; }
   function cleanName(s) { return String(s||'').replace(/^[\d.\s-]+/,'').replace(/[\d.\s-]+$/,'').trim(); }
+  function toTitleCase(s) { return String(s||'').toLowerCase().replace(/(?:^|\s)\S/g, function(a){ return a.toUpperCase(); }); }
 
   // --- Verification code ---
   var verificationCode = metaVerificationCode || '';
@@ -157,6 +158,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   // --- Formatted values ---
   var razaoFmt = esc(cleanName(razaoSocial));
   var displayName = esc(cleanName(nomeFantasia || razaoSocial));
+  var razaoTitleCase = esc(toTitleCase(cleanName(razaoSocial)));
   var cnpjFmt = fmtCnpj(cnpj);
   var cepFmt = cep ? fmtCep(cep) : '';
   var phoneFmt = fmtPhone(smsPhone || '');
@@ -245,13 +247,13 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#registro" class="text-xs text-gray-400 hover:text-white">Registro</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
 
-  var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-center text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6">\u00a9 '+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div></footer>'+domScript+'</body></html>';
+  var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-center text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6"><div>\u00a9 '+razaoTitleCase+'</div><div>'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div></div></footer>'+domScript+'</body></html>';
 
   // Reusable content blocks
-  var sobreText = razaoFmt+' \u00e9 uma empresa fundada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
+  var sobreText = razaoTitleCase+' ('+razaoFmt+') \u00e9 uma empresa fundada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
 
   var registroGrid = '<div itemscope itemtype="https://schema.org/Organization" class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
-    +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div></div>'
+    +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div><div class="text-xs text-gray-500 mt-1" itemprop="name">'+razaoTitleCase+'</div></div>'
     +'<div><div class="label">CNPJ</div><div class="value" itemprop="taxID" data-field="cnpj">'+cnpjFmt+'</div></div>'
     +'<div><div class="label">Situa\u00e7\u00e3o Cadastral</div><div class="value">'+situacaoFmt+'</div></div>'
     +(natJurFmt?'<div><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>':'')
