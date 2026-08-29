@@ -92,6 +92,7 @@ const ZONE_IDS = {
   'contativas2026.com': process.env.CLOUDFLARE_ZONE_CONTATIVAS2026,
   'vortexmidiads.com': process.env.CLOUDFLARE_ZONE_VORTEXMIDIADS,
   'zapfyvortex.com': process.env.CLOUDFLARE_ZONE_ZAPFYVORTEX,
+  'vortexbr01.com': process.env.CLOUDFLARE_ZONE_VORTEXBR01,
 };
 
 /**
