@@ -91,6 +91,7 @@ const ZONE_IDS = {
   'bmon3.com': process.env.CLOUDFLARE_ZONE_BMON3,
   'contativas2026.com': process.env.CLOUDFLARE_ZONE_CONTATIVAS2026,
   'vortexmidiads.com': process.env.CLOUDFLARE_ZONE_VORTEXMIDIADS,
+  'zapfyvortex.com': process.env.CLOUDFLARE_ZONE_ZAPFYVORTEX,
 };
 
 /**
@@ -107,6 +108,7 @@ const ZAPLIFTY_DOMAINS = [
   'bmon3.com',
   'contativas2026.com',
   'vortexmidiads.com',
+  'zapfyvortex.com',
 ];
 
 /**
