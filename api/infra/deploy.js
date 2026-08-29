@@ -533,6 +533,10 @@ module.exports = async function handler(req, res) {
 
     const method = verificationMethod || 'meta_tag';
 
+    // Acumula problemas de infra (DNS/TXT/route) pra reportar no response
+    // em vez de engolir silenciosamente e o site publicar "com sucesso" sem TXT.
+    const infraWarnings = [];
+
     // Valida o subdomínio
     const cleanSubdomain = subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 30);
     if (!cleanSubdomain)
@@ -592,6 +596,12 @@ module.exports = async function handler(req, res) {
         console.log(`[CF] Wildcard ${chosenDomain} — skip deploy, subdomain=${cleanSubdomain}`);
 
         // Cria TXT record pra verificação Meta via DNS
+        // Helper: retorna true só quando o registro foi criado OU já existia (81057/81058).
+        // Erros de auth (token inválido) e outros são reportados em infraWarnings.
+        const isAlreadyExists = (e) => {
+          const code = e?.response?.data?.errors?.[0]?.code;
+          return code === 81057 || code === 81058 || code === 81053; // record already exists / identical
+        };
         try {
           let cleanCode = metaVerificationCode || '';
           const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
@@ -609,36 +619,46 @@ module.exports = async function handler(req, res) {
                 const zoneRes = await axios.get(`https://api.cloudflare.com/client/v4/zones?name=${chosenDomain}`, { headers: cfHeaders, timeout: 15000 });
                 zoneId = zoneRes.data?.result?.[0]?.id || '';
                 if (zoneId) console.log(`[DNS] Zone ID encontrado via API pra ${chosenDomain}: ${zoneId}`);
-              } catch { /* ignora */ }
+              } catch (e) {
+                infraWarnings.push(`Não consegui localizar a zona de ${chosenDomain} no Cloudflare (token inválido ou sem acesso): ${e.response?.data?.errors?.[0]?.message || e.message}`);
+              }
             }
             if (zoneId) {
               // Cria A record wildcard * (garante que qualquer subdomain resolve)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
                 { type: 'A', name: '*', content: '192.0.2.1', ttl: 1, proxied: true },
                 { headers: cfHeaders, timeout: 15000 }
-              ).catch(e => { /* wildcard pode já existir */ });
+              ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`A wildcard: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
 
               // Cria A record proxied pro subdomínio (garante que DNS resolve mesmo com TXT)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
                 { type: 'A', name: cleanSubdomain, content: '192.0.2.1', ttl: 1, proxied: true },
                 { headers: cfHeaders, timeout: 15000 }
-              ).catch(e => console.log(`[A] Pode ja existir: ${e.response?.data?.errors?.[0]?.message || e.message}`));
+              ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`A ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
 
-              // Cria TXT record pra verificação Meta
+              // Cria TXT record pra verificação Meta.
+              // IMPORTANTE: o Meta verifica o TXT no DOMÍNIO RAIZ (chosenDomain), não no subdomínio.
+              // Criamos no raiz (name: '@') E no subdomínio por garantia.
+              const txtContent = `facebook-domain-verification=${cleanCode}`;
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
-                { type: 'TXT', name: cleanSubdomain, content: `facebook-domain-verification=${cleanCode}`, ttl: 1 },
+                { type: 'TXT', name: '@', content: txtContent, ttl: 1 },
                 { headers: cfHeaders, timeout: 15000 }
-              ).catch(e => console.log(`[TXT] Pode ja existir: ${e.response?.data?.errors?.[0]?.message || e.message}`));
-              console.log(`[DNS] A + TXT criados: ${cleanSubdomain}.${chosenDomain}`);
+              ).then(() => console.log(`[TXT] Criado no raiz ${chosenDomain}`))
+               .catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT raiz ${chosenDomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
+
+              await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+                { type: 'TXT', name: cleanSubdomain, content: txtContent, ttl: 1 },
+                { headers: cfHeaders, timeout: 15000 }
+              ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
+              console.log(`[DNS] A + TXT processados pra ${cleanSubdomain}.${chosenDomain} (+ TXT raiz)`);
 
               // Cria worker route *.dominio.com/* se não existir (garante que o wildcard funciona)
               try {
                 const routePattern = `*.${chosenDomain}/*`;
-                const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
                 // Verifica se a route já existe
                 const existingRoutes = await axios.get(`https://api.cloudflare.com/client/v4/zones/${zoneId}/workers/routes`,
                   { headers: cfHeaders, timeout: 15000 }
-                ).catch(() => ({ data: { result: [] } }));
+                );
                 const routeExists = (existingRoutes.data?.result || []).some(r => r.pattern === routePattern);
                 if (!routeExists) {
                   await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/workers/routes`,
@@ -648,12 +668,18 @@ module.exports = async function handler(req, res) {
                   console.log(`[ROUTE] Worker route criada: ${routePattern} -> verificaconta-wildcard`);
                 }
               } catch (routeErr) {
-                console.log(`[ROUTE] Erro (pode já existir): ${routeErr.response?.data?.errors?.[0]?.message || routeErr.message}`);
+                const rc = routeErr?.response?.data?.errors?.[0];
+                // 10020 = route já existe; ignora. Outros erros reporta.
+                if (rc?.code !== 10020) {
+                  infraWarnings.push(`Worker route *.${chosenDomain}/*: ${rc?.message || routeErr.message}`);
+                }
               }
+            } else {
+              infraWarnings.push(`Zona do domínio ${chosenDomain} não encontrada — DNS/TXT/route NÃO foram criados. Verifique o token do Cloudflare e a env CLOUDFLARE_ZONE_*.`);
             }
           }
         } catch (txtErr) {
-          console.log(`[TXT] Erro geral: ${txtErr.message}`);
+          infraWarnings.push(`Erro geral na configuração DNS: ${txtErr.message}`);
         }
       } else {
         // Fluxo original: deploy Worker + Custom Domain
@@ -750,6 +776,8 @@ module.exports = async function handler(req, res) {
       subdomain: cleanSubdomain,
       smsPhone,
       smsCode,
+      infraWarnings,
+      infraOk: infraWarnings.length === 0,
     });
   } catch (error) {
     return res.status(error?.statusCode || 500).json({ error: typeof error?.message === 'string' ? error.message : 'Erro interno no deploy' });
