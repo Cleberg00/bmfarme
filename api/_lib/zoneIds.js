@@ -110,6 +110,7 @@ const ZAPLIFTY_DOMAINS = [
   'contativas2026.com',
   'vortexmidiads.com',
   'zapfyvortex.com',
+  'vortexbr01.com',
 ];
 
 /**

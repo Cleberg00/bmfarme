@@ -53,7 +53,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
     ? ['zaplifyativos.com.br', 'verificaperfil.com.br', 'perfilvalidados.com']
     : ['verificativos.com', 'ativoscontas.com', 'verificacontas.com'];
   // Domínios exclusivos da conta zapliftyativos
-  const zapliftyativosDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com', 'kikilt.com', 'contasfmativo.com', 'bmon3.com', 'contativas2026.com', 'vortexmidiads.com', 'zapfyvortex.com'];
+  const zapliftyativosDomains = ['zapifyo9.com', 'ativosfarmezaplify.com', 'maycontexeira.com.br', 'realfarmezaplify.com', 'zaplifydigital0.com', 'kikilt.com', 'contasfmativo.com', 'bmon3.com', 'contativas2026.com', 'vortexmidiads.com', 'zapfyvortex.com', 'vortexbr01.com'];
   const activeDomains = isWesley ? ['kikilt.com', 'vortexmidiads.com'] : cfAccount === 'zapliftyativos' ? zapliftyativosDomains : netlifyDomains;
   const [selectedNetlifyDomain, setSelectedNetlifyDomain] = useState(netlifyDomains[0]);
   const [customDomainName, setCustomDomainName] = useState('');
