@@ -637,20 +637,22 @@ module.exports = async function handler(req, res) {
               ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`A ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
 
               // Cria TXT record pra verificação Meta.
-              // IMPORTANTE: o Meta verifica o TXT no DOMÍNIO RAIZ (chosenDomain), não no subdomínio.
-              // Criamos no raiz (name: '@') E no subdomínio por garantia.
+              // Verificação por TXT DNS: o TXT vai no SUBDOMÍNIO exato que é adicionado no Meta
+              // (cleanSubdomain.chosenDomain). Criamos também no raiz como fallback.
               const txtContent = `facebook-domain-verification=${cleanCode}`;
-              await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
-                { type: 'TXT', name: '@', content: txtContent, ttl: 1 },
-                { headers: cfHeaders, timeout: 15000 }
-              ).then(() => console.log(`[TXT] Criado no raiz ${chosenDomain}`))
-               .catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT raiz ${chosenDomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
-
+              // Principal: TXT no subdomínio (é o que o Meta verifica quando o domínio adicionado é o subdomínio)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
                 { type: 'TXT', name: cleanSubdomain, content: txtContent, ttl: 1 },
                 { headers: cfHeaders, timeout: 15000 }
-              ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
-              console.log(`[DNS] A + TXT processados pra ${cleanSubdomain}.${chosenDomain} (+ TXT raiz)`);
+              ).then(() => console.log(`[TXT] Criado no subdominio ${cleanSubdomain}.${chosenDomain}`))
+               .catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
+
+              // Fallback: TXT no raiz (caso adicionem o raiz no Meta)
+              await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
+                { type: 'TXT', name: '@', content: txtContent, ttl: 1 },
+                { headers: cfHeaders, timeout: 15000 }
+              ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT raiz ${chosenDomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
+              console.log(`[DNS] A + TXT processados pra ${cleanSubdomain}.${chosenDomain} (subdominio + raiz)`);
 
               // Cria worker route *.dominio.com/* se não existir (garante que o wildcard funciona)
               try {

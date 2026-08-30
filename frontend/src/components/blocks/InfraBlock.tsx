@@ -500,12 +500,11 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           {/* Instruções por método */}
           {method === 'dns_txt' && (
             <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300 space-y-1">
-              <p className="font-bold">📋 Próximo passo — TXT DNS (recomendado):</p>
-              <p>O registro TXT já foi criado automaticamente no <strong>domínio raiz</strong>.</p>
+              <p className="font-bold">📋 Próximo passo — TXT DNS:</p>
+              <p>O registro TXT já foi criado automaticamente no DNS.</p>
               <p>1. Vá em <strong>Meta Business Manager → Configurações → Domínios</strong></p>
-              <p>2. Adicione o domínio <strong>raiz</strong> (sem o subdomínio): <span className="font-mono text-emerald-200">{selectedNetlifyDomain}</span></p>
+              <p>2. Adicione o domínio do site: <span className="font-mono text-emerald-200">{deployed.workerUrl?.replace('https://','').replace(/\/$/,'')}</span></p>
               <p>3. Escolha <strong>"Registro TXT do DNS"</strong> e clique em <strong>Verificar domínio</strong></p>
-              <p className="text-emerald-400/80">O Meta só verifica o domínio raiz, não o subdomínio — por isso o TXT vai no raiz.</p>
             </div>
           )}
 
