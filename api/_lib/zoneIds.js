@@ -93,6 +93,7 @@ const ZONE_IDS = {
   'vortexmidiads.com': process.env.CLOUDFLARE_ZONE_VORTEXMIDIADS,
   'zapfyvortex.com': process.env.CLOUDFLARE_ZONE_ZAPFYVORTEX,
   'vortexbr01.com': process.env.CLOUDFLARE_ZONE_VORTEXBR01,
+  'zaplifyvortez.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYVORTEZ,
 };
 
 /**
@@ -111,6 +112,7 @@ const ZAPLIFTY_DOMAINS = [
   'vortexmidiads.com',
   'zapfyvortex.com',
   'vortexbr01.com',
+  'zaplifyvortez.com',
 ];
 
 /**
