@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import EmailInboxBlock from './EmailInboxBlock';
 
-type VerificationMethod = 'meta_tag' | 'html_file';
+type VerificationMethod = 'dns_txt' | 'meta_tag' | 'html_file';
 
 type InfraBlockProps = {
   clientId: string | null;
@@ -16,6 +16,12 @@ type InfraBlockProps = {
 };
 
 const METHOD_OPTIONS: { value: VerificationMethod; label: string; description: string; icon: string }[] = [
+  {
+    value: 'dns_txt',
+    label: 'TXT DNS (recomendado)',
+    description: 'Cria o registro TXT no domínio raiz. Ideal para subdomínio — o Meta verifica o raiz.',
+    icon: '🌐',
+  },
   {
     value: 'meta_tag',
     label: 'Meta Tag HTML',
@@ -33,7 +39,7 @@ const METHOD_OPTIONS: { value: VerificationMethod; label: string; description: s
 export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPhone, onDomainReady }: InfraBlockProps) {
   const [subdomain, setSubdomain] = useState('');
   const [metaCode, setMetaCode] = useState('');
-  const [method, setMethod] = useState<VerificationMethod>('meta_tag');
+  const [method, setMethod] = useState<VerificationMethod>('dns_txt');
   const [cfAccount, setCfAccount] = useState<'empresasverrificada' | 'zaplifydisparo' | 'netlify' | 'dynadot' | 'porkbun' | 'zapliftyativos' | 'hostinger'>('empresasverrificada');
   const { user } = useAuth();
   const isRonaldo = user?.email === 'ronaldo@gmail.com' || user?.email === 'velhoronaldo@gmail.com' || user?.email === 'miguel@gmail.com';
@@ -492,6 +498,17 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
           </div>
 
           {/* Instruções por método */}
+          {method === 'dns_txt' && (
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-xs text-emerald-300 space-y-1">
+              <p className="font-bold">📋 Próximo passo — TXT DNS (recomendado):</p>
+              <p>O registro TXT já foi criado automaticamente no <strong>domínio raiz</strong>.</p>
+              <p>1. Vá em <strong>Meta Business Manager → Configurações → Domínios</strong></p>
+              <p>2. Adicione o domínio <strong>raiz</strong> (sem o subdomínio): <span className="font-mono text-emerald-200">{selectedNetlifyDomain}</span></p>
+              <p>3. Escolha <strong>"Registro TXT do DNS"</strong> e clique em <strong>Verificar domínio</strong></p>
+              <p className="text-emerald-400/80">O Meta só verifica o domínio raiz, não o subdomínio — por isso o TXT vai no raiz.</p>
+            </div>
+          )}
+
           {method === 'meta_tag' && (
             <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs text-amber-300 space-y-1">
               <p className="font-bold">📋 Próximo passo — Meta Tag:</p>
