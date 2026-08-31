@@ -141,7 +141,7 @@ function slugify(razaoSocial) {
  * Layout unico dark/corporativo com cor de destaque variavel (10 opcoes).
  * Validacao Meta: telefone em 3+ locais, DOM injection via JS, compliance LGPD/WABA.
  */
-function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, bairro, cep, municipio, uf, situacao, atividadePrincipal, telefone, email, smsPhone, smsCode, metaVerificationCode, verificationMethod, forceTemplateIndex, forceColorIndex, porte, naturezaJuridica, cnaeCode, cnaeDesc }) {
+function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, bairro, cep, municipio, uf, situacao, dataSituacao, dataAbertura, atividadePrincipal, telefone, email, smsPhone, smsCode, metaVerificationCode, verificationMethod, forceTemplateIndex, forceColorIndex, porte, naturezaJuridica, cnaeCode, cnaeDesc }) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtCnpj(c) { var d=String(c||'').replace(/\D/g,''); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
   function fmtCep(c) { var d=String(c||'').replace(/\D/g,''); return d.length===8 ? d.slice(0,2)+'.'+d.slice(2,5)+'-'+d.slice(5) : c; }
@@ -172,6 +172,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   var porteFmt = esc(porte || '');
   var natJurFmt = esc(naturezaJuridica || '');
   var cnaeDescFmt = esc(cnaeDesc || '');
+  var dataAberturaFmt = esc(dataAbertura || '');
+  var dataSituacaoFmt = esc(dataSituacao || '');
   var fullAddress = enderFmt+(bairroFmt?' \u2014 '+bairroFmt:'')+' \u2014 '+munFmt+'/'+ufFmt+(cepFmt?' \u2014 CEP '+cepFmt:'');
 
   // --- Accent color ---
@@ -250,12 +252,13 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-center text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6"><div>\u00a9 '+razaoTitleCase+'</div><div>'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div></div></footer>'+domScript+'</body></html>';
 
   // Reusable content blocks
-  var sobreText = razaoTitleCase+' ('+razaoFmt+') \u00e9 uma empresa fundada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
+  var sobreText = razaoTitleCase+' ('+razaoFmt+') \u00e9 uma empresa'+(dataAberturaFmt?' estabelecida desde '+dataAberturaFmt:'')+', sediada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
 
   var registroGrid = '<div itemscope itemtype="https://schema.org/Organization" class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
     +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div><div class="text-xs text-gray-500 mt-1" itemprop="name">'+razaoTitleCase+'</div></div>'
     +'<div><div class="label">CNPJ</div><div class="value" itemprop="taxID" data-field="cnpj">'+cnpjFmt+'</div></div>'
-    +'<div><div class="label">Situa\u00e7\u00e3o Cadastral</div><div class="value">'+situacaoFmt+'</div></div>'
+    +'<div><div class="label">Situa\u00e7\u00e3o Cadastral</div><div class="value">'+situacaoFmt+(dataSituacaoFmt?' (desde '+dataSituacaoFmt+')':'')+'</div></div>'
+    +(dataAberturaFmt?'<div><div class="label">Data de Abertura</div><div class="value" itemprop="foundingDate">'+dataAberturaFmt+'</div></div>':'')
     +(natJurFmt?'<div><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>':'')
     +(porteFmt?'<div><div class="label">Porte</div><div class="value">'+porteFmt+'</div></div>':'')
     +'<div itemprop="address" itemscope itemtype="https://schema.org/PostalAddress"><div class="label">Logradouro</div><div class="value" itemprop="streetAddress">'+enderFmt+'</div></div>'
