@@ -396,11 +396,12 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // ── GET — lista todos os domínios publicados ──────────────────────────
+  // ── GET — lista domínios publicados (filtrado por usuário; admin vê tudo) ──
   if (req.method === 'GET') {
     try {
+      const isAdminUser = user.role === 'ADMIN';
       const domains = await prisma.domain.findMany({
-        where: { status: 'ACTIVE' },
+        where: { status: 'ACTIVE', ...(isAdminUser ? {} : { userId: user.id }) },
         orderBy: { createdAt: 'desc' },
         include: {
           client: { select: { razaoSocial: true, cnpj: true } },
