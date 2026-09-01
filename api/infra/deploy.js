@@ -607,9 +607,12 @@ module.exports = async function handler(req, res) {
           let cleanCode = metaVerificationCode || '';
           const codeMatch = cleanCode.match(/content=["']([^"']+)["']/);
           if (codeMatch) cleanCode = codeMatch[1];
-          // Remove prefixo se vier completo
-          cleanCode = cleanCode.replace('facebook-domain-verification=', '');
+          // Remove prefixo se vier completo e limpa espaços
+          cleanCode = cleanCode.replace('facebook-domain-verification=', '').trim();
 
+          if (!cleanCode) {
+            infraWarnings.push('ATENÇÃO: código de verificação Meta vazio — o TXT DNS do subdomínio NÃO foi criado. O site sobe mas a Meta não vai verificar.');
+          }
           if (cleanCode) {
             const axios = require('axios');
             const cfHeaders = getCfHeaders(chosenDomain);
@@ -641,19 +644,38 @@ module.exports = async function handler(req, res) {
               // Verificação por TXT DNS: o TXT vai no SUBDOMÍNIO exato que é adicionado no Meta
               // (cleanSubdomain.chosenDomain). Criamos também no raiz como fallback.
               const txtContent = `facebook-domain-verification=${cleanCode}`;
+              let txtSubOk = false;
               // Principal: TXT no subdomínio (é o que o Meta verifica quando o domínio adicionado é o subdomínio)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
                 { type: 'TXT', name: cleanSubdomain, content: txtContent, ttl: 1 },
                 { headers: cfHeaders, timeout: 15000 }
-              ).then(() => console.log(`[TXT] Criado no subdominio ${cleanSubdomain}.${chosenDomain}`))
-               .catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
+              ).then(() => { txtSubOk = true; console.log(`[TXT] Criado no subdominio ${cleanSubdomain}.${chosenDomain}`); })
+               .catch(e => { if (isAlreadyExists(e)) { txtSubOk = true; } else { infraWarnings.push(`TXT ${cleanSubdomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); } });
 
               // Fallback: TXT no raiz (caso adicionem o raiz no Meta)
               await axios.post(`https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records`,
                 { type: 'TXT', name: '@', content: txtContent, ttl: 1 },
                 { headers: cfHeaders, timeout: 15000 }
               ).catch(e => { if (!isAlreadyExists(e)) infraWarnings.push(`TXT raiz ${chosenDomain}: ${e.response?.data?.errors?.[0]?.message || e.message}`); });
-              console.log(`[DNS] A + TXT processados pra ${cleanSubdomain}.${chosenDomain} (subdominio + raiz)`);
+
+              // VERIFICAÇÃO CRÍTICA: confirma que o TXT do subdomínio realmente existe na zona.
+              // O TXT do subdomínio é o que a Meta valida — não pode faltar.
+              try {
+                const check = await axios.get(
+                  `https://api.cloudflare.com/client/v4/zones/${zoneId}/dns_records?type=TXT&name=${encodeURIComponent(cleanSubdomain + '.' + chosenDomain)}`,
+                  { headers: cfHeaders, timeout: 15000 }
+                );
+                const found = (check.data?.result || []).some(r => (r.content || '').includes(cleanCode));
+                if (found) {
+                  txtSubOk = true;
+                  console.log(`[TXT] CONFIRMADO na zona: ${cleanSubdomain}.${chosenDomain}`);
+                } else if (!txtSubOk) {
+                  infraWarnings.push(`TXT do subdomínio ${cleanSubdomain}.${chosenDomain} NÃO foi confirmado na zona — a Meta pode não verificar. Tente republicar.`);
+                }
+              } catch (checkErr) {
+                if (!txtSubOk) infraWarnings.push(`Não consegui confirmar o TXT do subdomínio ${cleanSubdomain}: ${checkErr.response?.data?.errors?.[0]?.message || checkErr.message}`);
+              }
+              console.log(`[DNS] A + TXT processados pra ${cleanSubdomain}.${chosenDomain} (subdominio + raiz), txtSubOk=${txtSubOk}`);
 
               // Cria worker route *.dominio.com/* se não existir (garante que o wildcard funciona)
               try {
