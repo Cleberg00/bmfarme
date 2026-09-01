@@ -77,20 +77,25 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
   }, [isWesley]);
   // Sugere subdomínio automaticamente quando a razão social chega
   useEffect(() => {
-    if (!razaoSocial) return;
-    const stopWords = new Set(['de','da','do','dos','das','e','em','a','o','para','com','ltda','eireli','me','sa','ss','epp']);
-    const slug = razaoSocial
+    // Usa nome fantasia se existir (mais parecido com marca), senão razão social.
+    // A Meta aprova melhor quando o subdomínio bate com o nome da empresa (ex: mrvprime)
+    // e reprova/pede mais info quando o subdomínio tem prefixo numérico aleatório.
+    const base = nomeFantasia || razaoSocial;
+    if (!base) return;
+    const stopWords = new Set(['de','da','do','dos','das','e','em','a','o','para','com','ltda','eireli','me','sa','ss','epp','spe','incorporacoes','incorporacao']);
+    const slug = base
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '')
       .split(/\s+/)
-      .filter(w => w && !stopWords.has(w))
+      .filter(w => w && !stopWords.has(w) && !/^\d+$/.test(w)) // remove palavras que são só números
       .slice(0, 2)
       .join('')
+      .replace(/^\d+/, '')  // remove qualquer número no início (padrão que a Meta reprova)
       .slice(0, 20);
     setSubdomain(slug || 'empresa');
     setCustomDomainName(slug || 'empresa');
-  }, [razaoSocial]);
+  }, [razaoSocial, nomeFantasia]);
 
   const handleDeploy = async () => {
     if (!clientId || !subdomain || !metaCode) return;
@@ -291,7 +296,7 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
                 if (cfAccount === 'porkbun' || cfAccount === 'dynadot') setCustomDomainName(val);
                 else setSubdomain(val);
               }}
-              placeholder="nomedapessoa"
+              placeholder="nomedaempresa"
               maxLength={30}
               className="flex-1 bg-transparent px-4 py-3 text-slate-100 outline-none"
             />
@@ -306,6 +311,11 @@ export default function InfraBlock({ clientId, razaoSocial, nomeFantasia, smsPho
               </span>
               <CopyButton value={cfAccount === 'porkbun' ? `${customDomainName}.xyz` : cfAccount === 'dynadot' ? `${customDomainName}.cfd` : cfAccount === 'hostinger' ? `${subdomain}.hostingersite.com` : `${subdomain}.${selectedNetlifyDomain}`} label="Domínio" />
               {(cfAccount === 'porkbun' || cfAccount === 'dynadot' || cfAccount === 'empresasverrificada' || cfAccount === 'hostinger') && <span className="text-xs text-slate-500">← cole no Meta</span>}
+            </div>
+          )}
+          {/^\d/.test(subdomain) && cfAccount !== 'porkbun' && cfAccount !== 'dynadot' && (
+            <div className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+              ⚠️ Subdomínio começando com número tende a ser reprovado pela Meta. Use o nome da empresa (ex: <span className="font-mono">mrvprime</span>) em vez de números. As contas que passam com 2k usam o nome da empresa no subdomínio.
             </div>
           )}
         </div>
