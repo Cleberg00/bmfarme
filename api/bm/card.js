@@ -384,6 +384,23 @@ module.exports = async function handler(req, res) {
     try {
       const data = req.body;
       if (!data.razaoSocial) return res.status(400).json({ error: 'razaoSocial é obrigatório.' });
+
+      // ── action=save: grava os dados editados no Client, pra o SITE ficar
+      // idêntico ao documento (cartão CNPJ) que vai ser enviado à Meta.
+      if (req.query?.action === 'save' && req.query?.clientId) {
+        const clientId = req.query.clientId;
+        // Só campos textuais do cliente (não sobrescreve cnpj/id)
+        const upd = {};
+        const allowed = ['razaoSocial','nomeFantasia','endereco','numero','complemento','bairro','cep','municipio','uf','situacao','dataSituacao','dataAbertura','porte','naturezaJuridica','atividadePrincipal','telefone','email'];
+        for (const k of allowed) { if (typeof data[k] === 'string' && data[k].trim() !== '') upd[k] = data[k]; }
+        try {
+          await prisma.client.update({ where: { id: clientId }, data: upd });
+        } catch (e) {
+          return res.status(500).json({ error: 'Falha ao salvar dados do cliente: ' + e.message });
+        }
+        return res.status(200).json({ success: true, saved: Object.keys(upd) });
+      }
+
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.status(200).send(buildCardHtml(data));
     } catch (error) {

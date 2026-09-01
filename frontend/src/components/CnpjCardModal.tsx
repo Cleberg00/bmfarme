@@ -87,6 +87,31 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   const handleChange = (key: keyof CardData, value: string) =>
     setData(prev => prev ? { ...prev, [key]: value } : prev);
 
+  const [saving, setSaving] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
+
+  // Salva os dados editados no Client — o SITE passa a mostrar exatamente
+  // os mesmos dados do documento (cartão), evitando divergência na Meta.
+  const handleSave = async () => {
+    if (!data) return;
+    setSaving(true);
+    setSavedMsg('');
+    try {
+      const token = localStorage.getItem('bmfarm.token');
+      const base  = import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/api'
+        : '/api';
+      const res = await fetch(`${base}/bm/card?action=save&clientId=${clientId}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) setSavedMsg('✅ Dados salvos! Republique o site pra aplicar.');
+      else setSavedMsg('❌ Erro ao salvar.');
+    } catch { setSavedMsg('❌ Erro ao salvar.'); }
+    finally { setSaving(false); }
+  };
+
   const handleDownload = async () => {
     if (!data) return;
     setGenerating(true);
@@ -154,19 +179,25 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
         </div>
 
         {data && (
-          <div className="border-t border-slate-800 px-6 py-4 flex items-center justify-between gap-3">
-            <p className="text-xs text-slate-600">
-              💡 Clique em "Gerar PDF" → na nova aba pressione <kbd className="rounded bg-slate-700 px-1">Ctrl+P</kbd> → Salvar como PDF
+          <div className="border-t border-slate-800 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
+            <p className="text-xs text-slate-600 flex-1 min-w-[180px]">
+              {savedMsg || <>💾 "Salvar" aplica os dados no site também (documento = site). "Gerar PDF" → <kbd className="rounded bg-slate-700 px-1">Ctrl+P</kbd></>}
             </p>
-            <button type="button" onClick={handleDownload} disabled={generating}
-              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 transition disabled:opacity-50 shrink-0">
-              {generating ? (
-                <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" className="stroke-current opacity-20" strokeWidth="4"/>
-                  <path d="M22 12a10 10 0 0 0-10-10" className="stroke-current" strokeWidth="4" strokeLinecap="round"/>
-                </svg>Gerando...</>
-              ) : '🖨️ Gerar PDF'}
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button type="button" onClick={handleSave} disabled={saving}
+                className="flex items-center gap-2 rounded-xl border border-emerald-600 px-5 py-2.5 text-sm font-bold text-emerald-400 hover:bg-emerald-600/10 transition disabled:opacity-50">
+                {saving ? 'Salvando...' : '💾 Salvar dados'}
+              </button>
+              <button type="button" onClick={handleDownload} disabled={generating}
+                className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 transition disabled:opacity-50">
+                {generating ? (
+                  <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" className="stroke-current opacity-20" strokeWidth="4"/>
+                    <path d="M22 12a10 10 0 0 0-10-10" className="stroke-current" strokeWidth="4" strokeLinecap="round"/>
+                  </svg>Gerando...</>
+                ) : '🖨️ Gerar PDF'}
+              </button>
+            </div>
           </div>
         )}
       </div>
