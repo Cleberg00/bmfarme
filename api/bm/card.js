@@ -324,36 +324,48 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   // ── Padrão "LTDA estabelecida" ──────────────────────────────────────────
-  // Ajusta os dados pra o perfil que a Meta aprova (igual às contas que passam 2k):
-  // Sociedade Limitada, porte DEMAIS, data de abertura antiga, razão social sem
-  // prefixo numérico de MEI. Aplicado só quando o CNPJ é MEI/Empresário Individual.
+  // Normaliza TODOS os documentos pro perfil exato das contas que passam 2k
+  // (mrvprime / S.f. Desenvolvimento): Sociedade Empresária Limitada (206-2),
+  // porte DEMAIS, data de abertura ~2019, razão social LTDA sem prefixo numérico,
+  // telefone e email nunca vazios. Aplicado a todas as contas pra uniformizar.
   function aplicarPadraoLTDA(d) {
-    const isMEI = /213-?5/.test(String(d.naturezaJuridica || '')) ||
-                  /empres[aá]rio\s*\(?individual/i.test(String(d.naturezaJuridica || '')) ||
-                  /^\s*\d{2}[.\s]?\d{3}[.\s]?\d{3}\s+[A-ZÀ-Ú]/.test(String(d.razaoSocial || ''));
-    if (!isMEI) return d; // já é LTDA real (ex: mrvprime) — não mexe
-
-    // Razão social: remove o prefixo numérico do MEI ("60.646.314 ELIELTO..." -> "ELIELTO...")
+    // Razão social: remove prefixo numérico de MEI ("60.646.314 ELIELTO..." -> "ELIELTO...")
     let razao = String(d.razaoSocial || '').replace(/^\s*[\d.\s-]+\s+/, '').trim();
+    // Normaliza o sufixo societário pra LTDA:
+    //  - remove sufixos de outros tipos (S/A, S.A., SA, SS, EIRELI, ME, EPP) do fim
+    razao = razao.replace(/\s+(S\/?A|S\.A\.?|SS|EIRELI|-?\s*ME|EPP|SOCIEDADE\s+SIMPLES|SPE)\.?\s*$/i, '').trim();
     // Garante sufixo LTDA
     if (razao && !/\bLTDA\b/i.test(razao)) razao = razao + ' LTDA';
 
-    // Data de abertura antiga determinística por CNPJ (entre 2015 e 2019, estável pro mesmo CNPJ)
+    // Data de abertura ~2019 determinística por CNPJ (estável pro mesmo CNPJ)
     const dig = String(d.cnpj || '').replace(/\D/g, '');
     let seed = 0; for (let i = 0; i < dig.length; i++) seed += parseInt(dig[i] || '0');
-    const ano = 2015 + (seed % 5);            // 2015..2019
+    const ano = 2017 + (seed % 3);            // 2017..2019
     const mes = String(1 + (seed % 12)).padStart(2, '0');
     const dia = String(1 + (seed % 27)).padStart(2, '0');
-    const dataAntiga = `${dia}/${mes}/${ano}`;
+    const dataPadrao = `${dia}/${mes}/${ano}`;
+
+    // Telefone: nunca vazio — usa o telefone do cliente, senão o número SMS
+    const tel = (d.telefone && String(d.telefone).trim()) || (d.smsPhone && String(d.smsPhone).trim()) || '';
+
+    // Email: nunca vazio — se vazio, gera um genérico coerente com a empresa
+    let email = (d.email && String(d.email).trim()) || '';
+    if (!email) {
+      const slug = razao.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+        .replace(/\bltda\b/g,'').replace(/[^a-z0-9]/g,'').slice(0, 18) || 'contato';
+      email = `contato@${slug}.com.br`;
+    }
 
     return {
       ...d,
       razaoSocial:      razao || d.razaoSocial,
       naturezaJuridica: '206-2 - Sociedade Empresária Limitada',
       porte:            'DEMAIS',
-      dataAbertura:     dataAntiga,
-      situacao:         d.situacao || 'ATIVA',
-      dataSituacao:     d.dataSituacao || dataAntiga,
+      dataAbertura:     dataPadrao,
+      dataSituacao:     dataPadrao,
+      situacao:         'ATIVA',
+      telefone:         tel,
+      email:            email,
     };
   }
 
