@@ -16,7 +16,11 @@ function buildCardHtml(d) {
 
   const now = new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const phoneForCard = fmtPhone(d.smsPhone || d.telefone || '');
-  const razaoClean = esc(String(d.razaoSocial||'').replace(/^[\d.\s-]+/, '').replace(/[\d.\s-]+$/, '').trim());
+  let _razao = String(d.razaoSocial||'').replace(/^[\d.\s-]+/, '').replace(/[\d.\s-]+$/, '').trim();
+  // Normaliza sufixo societário pra LTDA (garante LTDA no NOME EMPRESARIAL do cartão)
+  _razao = _razao.replace(/\s+(S\/?A|S\.A\.?|SS|EIRELI|-?\s*ME|EPP|SOCIEDADE\s+SIMPLES|SPE)\.?\s*$/i, '').trim();
+  if (_razao && !/\bLTDA\b/i.test(_razao)) _razao = _razao + ' LTDA';
+  const razaoClean = esc(_razao);
 
   // Gera atividades secundárias baseado no CNPJ (sempre consistente pro mesmo CNPJ)
   const _secList = [
