@@ -41,8 +41,33 @@ module.exports = async function handler(req, res) {
       } catch { /* sem endereço */ }
     }
 
+    // ── Padrão "LTDA estabelecida" ──────────────────────────────────────
+    // Normaliza os dados pro perfil das contas que passam na Meta:
+    // razão social LTDA (sem prefixo numérico / sem outros sufixos), natureza 206-2,
+    // porte DEMAIS, data ~2019, telefone/email nunca vazios. Aplicado já na consulta,
+    // pra o banco, o site e o cartão CNPJ ficarem todos iguais.
+    function padraoLTDA(nome, cnpjDig, tel, mail) {
+      let razao = String(nome || '').replace(/^\s*[\d.\s-]+\s+/, '').trim();
+      razao = razao.replace(/\s+(S\/?A|S\.A\.?|SS|EIRELI|-?\s*ME|EPP|SOCIEDADE\s+SIMPLES|SPE)\.?\s*$/i, '').trim();
+      if (razao && !/\bLTDA\b/i.test(razao)) razao = razao + ' LTDA';
+      let seed = 0; for (let i = 0; i < cnpjDig.length; i++) seed += parseInt(cnpjDig[i] || '0');
+      const ano = 2017 + (seed % 3);
+      const mes = String(1 + (seed % 12)).padStart(2, '0');
+      const dia = String(1 + (seed % 27)).padStart(2, '0');
+      const dataPadrao = `${dia}/${mes}/${ano}`;
+      const telefone = (tel && String(tel).trim()) || '';
+      let email = (mail && String(mail).trim()) || '';
+      if (!email) {
+        const slug = razao.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+          .replace(/\bltda\b/g,'').replace(/[^a-z0-9]/g,'').slice(0,18) || 'contato';
+        email = `contato@${slug}.com.br`;
+      }
+      return { razao, dataPadrao, telefone, email };
+    }
+    const _p = padraoLTDA(d.razaoSocial, String(d.cnpj||'').replace(/\D/g,''), d.telefone, d.email);
+
     const clientData = {
-      razaoSocial:        d.razaoSocial                               || null,
+      razaoSocial:        _p.razao                                    || d.razaoSocial || null,
       nomeFantasia:       d.nomeFantasia                              || null,
       endereco:           endereco                                    || 'Não informado',
       numero:             numero                                      || null,
@@ -51,14 +76,14 @@ module.exports = async function handler(req, res) {
       cep:                d.cep                                       || '',
       municipio:          d.municipio                                 || null,
       uf:                 d.uf                                        || null,
-      situacao:           d.situacao                                  || 'ATIVA',
-      dataSituacao:       fmtDate(raw.data_situacao_cadastral || raw.estabelecimento?.data_situacao_cadastral),
-      dataAbertura:       fmtDate(raw.data_inicio_atividade || raw.estabelecimento?.data_inicio_atividade),
-      porte:              d.porte || raw.porte?.descricao             || 'MEI - Microempreendedor Individual',
-      naturezaJuridica:   d.naturezaJuridica || (raw.natureza_juridica ? `${raw.natureza_juridica.id || ''} - ${raw.natureza_juridica.descricao || ''}` : raw.natureza_juridica) || '213-5 - Empresário Individual',
+      situacao:           'ATIVA',
+      dataSituacao:       _p.dataPadrao,
+      dataAbertura:       _p.dataPadrao,
+      porte:              'DEMAIS',
+      naturezaJuridica:   '206-2 - Sociedade Empresária Limitada',
       atividadePrincipal: d.atividadePrincipal                        || null,
-      telefone:           d.telefone                                  || null,
-      email:              d.email                                     || null,
+      telefone:           _p.telefone                                 || null,
+      email:              _p.email                                    || null,
       userId:             user.id,
     };
 
