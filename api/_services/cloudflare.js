@@ -249,7 +249,19 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#registro" class="text-xs text-gray-400 hover:text-white">Registro</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
 
-  var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-center text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6"><div>\u00a9 '+razaoTitleCase+'</div><div>'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+' | '+munFmt+'/'+ufFmt+'</div></div></footer>'+domScript+'</body></html>';
+  var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6 text-center space-y-2">'
+    +'<div class="font-semibold text-gray-400">'+razaoTitleCase+'</div>'
+    +'<div>'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+'</div>'
+    +'<div>'+fullAddress+'</div>'
+    +(emailFmt?'<div>E-mail: '+emailFmt+'</div>':'')
+    +(phoneFmt?'<div>Telefone / WhatsApp: '+phoneFmt+'</div>':'')
+    +'<div class="pt-3 flex items-center justify-center gap-4 flex-wrap">'
+    +'<a href="?page=politica-de-privacidade" class="'+textAccent+' hover:underline">Pol\u00edtica de Privacidade</a>'
+    +'<span class="text-gray-700">|</span>'
+    +'<a href="?page=termos-de-uso" class="'+textAccent+' hover:underline">Termos de Uso</a>'
+    +'</div>'
+    +'<div class="pt-2 text-gray-700">\u00a9 '+(new Date().getFullYear())+' '+razaoTitleCase+'. Todos os direitos reservados.</div>'
+    +'</div></footer>'+domScript+'</body></html>';
 
   // Reusable content blocks
   var sobreText = razaoTitleCase+' ('+razaoFmt+') \u00e9 uma empresa'+(dataAberturaFmt?' estabelecida desde '+dataAberturaFmt:'')+', sediada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
