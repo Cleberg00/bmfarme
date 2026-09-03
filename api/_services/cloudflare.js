@@ -240,14 +240,41 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   var wSvg = '<svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
 
+  // JSON-LD structured data — a IA/crawler da Meta lê isso primeiro pra identificar o negócio
+  var jsonLd = '<script type="application/ld+json">'+JSON.stringify({
+    "@context":"https://schema.org","@type":"Organization",
+    "name":cleanName(razaoSocial),"legalName":cleanName(razaoSocial),
+    "taxID":cnpjFmt,"vatID":cnpjFmt,
+    "email":email||undefined,
+    "telephone":phoneFmt||undefined,
+    "address":{"@type":"PostalAddress","streetAddress":(endereco||'')+(numero?', '+numero:''),"addressLocality":municipio||undefined,"addressRegion":uf||undefined,"postalCode":cepFmt||undefined,"addressCountry":"BR"},
+    "url":"/"
+  })+'<\/script>';
+
   var headBlock = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
-    +metaTag+ogTags+'<title>'+razaoFmt+'</title>'
+    +metaTag+ogTags
+    +'<meta name="business:contact_data:street_address" content="'+esc((endereco||'')+(numero?', '+numero:''))+'" />'
+    +'<meta name="business:contact_data:locality" content="'+munFmt+'" />'
+    +'<meta name="business:contact_data:region" content="'+ufFmt+'" />'
+    +'<meta name="business:contact_data:postal_code" content="'+cepFmt+'" />'
+    +'<meta name="business:contact_data:country_name" content="Brasil" />'
+    +(email?'<meta name="business:contact_data:email" content="'+esc(email)+'" />':'')
+    +(phoneFmt?'<meta name="business:contact_data:phone_number" content="'+phoneFmt+'" />':'')
+    +'<title>'+razaoFmt+'</title>'
+    +jsonLd
     +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">'
     +'<script src="https://cdn.tailwindcss.com"><\/script>'
-    +'<style>body{font-family:"Inter",sans-serif}.card{background:#111;border:1px solid #1f1f1f;border-radius:1rem;padding:1.75rem}.chip{display:inline-block;font-size:.625rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:.25rem .75rem;border-radius:9999px;background:'+accentHex+'20;color:'+accentHex+'}.btn-accent{display:inline-block;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#0a0a0a;background:'+accentHex+';transition:opacity .2s}.btn-accent:hover{opacity:.85}.btn-wa{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#fff;background:#25d366;transition:opacity .2s}.btn-wa:hover{opacity:.85}.label{font-size:.625rem;text-transform:uppercase;letter-spacing:.08em;color:#737373;margin-bottom:.25rem}.value{font-size:.8125rem;font-weight:600;color:#fafafa}</style>'
-    +'</head><body class="bg-[#0a0a0a] text-gray-200 antialiased">';
+    +'<style>body{font-family:"Inter",sans-serif}.card{background:#111;border:1px solid #1f1f1f;border-radius:1rem;padding:1.75rem}.chip{display:inline-block;font-size:.625rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:.25rem .75rem;border-radius:9999px;background:'+accentHex+'20;color:'+accentHex+'}.btn-accent{display:inline-block;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#0a0a0a;background:'+accentHex+';transition:opacity .2s}.btn-accent:hover{opacity:.85}.btn-wa{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#fff;background:#25d366;transition:opacity .2s}.btn-wa:hover{opacity:.85}.label{font-size:.625rem;text-transform:uppercase;letter-spacing:.08em;color:#737373;margin-bottom:.25rem}.value{font-size:.8125rem;font-weight:600;color:#fafafa}.legalbar{background:#0f0f0f;border-bottom:1px solid #1f1f1f;font-size:11px;color:#8a8a8a;text-align:center;padding:6px 12px}.legalbar a{color:'+accentHex+'}</style>'
+    +'</head><body class="bg-[#0a0a0a] text-gray-200 antialiased">'
+    // Barra legal no TOPO do body (primeira coisa que a IA lê no conteúdo) — dados + links
+    +'<div class="legalbar" itemscope itemtype="https://schema.org/Organization">'
+    +'<span itemprop="legalName">'+razaoFmt+'</span> \u2014 CNPJ <span itemprop="taxID">'+cnpjFmt+'</span>'
+    +' \u2014 '+esc((endereco||'')+(numero?', '+numero:''))+(bairroFmt?', '+bairroFmt:'')+', '+munFmt+'/'+ufFmt+(cepFmt?' \u2014 CEP '+cepFmt:'')
+    +(emailFmt?' \u2014 '+emailFmt:'')
+    +' \u2014 <a href="?page=politica-de-privacidade">Privacidade</a> \u2014 <a href="?page=termos-de-uso">Termos</a>'
+    +'</div>';
 
-  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#registro" class="text-xs text-gray-400 hover:text-white">Registro</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
+  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#registro" class="text-xs text-gray-400 hover:text-white">Registro</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a><a href="?page=politica-de-privacidade" class="text-xs text-gray-400 hover:text-white">Privacidade</a><a href="?page=termos-de-uso" class="text-xs text-gray-400 hover:text-white">Termos</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
 
   var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6 text-center space-y-2">'
     +'<div class="font-semibold text-gray-400">'+razaoTitleCase+'</div>'
