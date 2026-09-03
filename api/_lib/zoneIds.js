@@ -96,6 +96,7 @@ const ZONE_IDS = {
   'zaplifyvortez.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYVORTEZ,
   'zaplifyvort.com': process.env.CLOUDFLARE_ZONE_ZAPLIFYVORT,
   'acobarrazapy.com': process.env.CLOUDFLARE_ZONE_ACOBARRAZAPY,
+  'validzaplifyaco.com': process.env.CLOUDFLARE_ZONE_VALIDZAPLIFYACO,
 };
 
 /**
@@ -117,6 +118,7 @@ const ZAPLIFTY_DOMAINS = [
   'zaplifyvortez.com',
   'zaplifyvort.com',
   'acobarrazapy.com',
+  'validzaplifyaco.com',
 ];
 
 /**
