@@ -15,7 +15,8 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [confirmed, setConfirmed] = useState(false);
-  const [provider, setProvider] = useState<'SMS24H' | 'HEROSMS'>('SMS24H');
+  const [provider, setProvider] = useState<'SMS24H' | 'HEROSMS' | 'NUMEROVIRTUAL'>('SMS24H');
+  const [nvApiKey, setNvApiKey] = useState('');
   const [startTime, setStartTime] = useState<number | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [generatedPhone, setGeneratedPhone] = useState<string | null>(null);
@@ -62,7 +63,9 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
     setGeneratedPhone(null);
     lastDeliveredCodeRef.current = null;
     try {
-      const { data } = await api.post('/sms/generate', { clientId, provider });
+      const payload: { clientId: string; provider: string; apiKey?: string } = { clientId, provider };
+      if (provider === 'NUMEROVIRTUAL' && nvApiKey.trim()) payload.apiKey = nvApiKey.trim();
+      const { data } = await api.post('/sms/generate', payload);
       const nextLogId: string = data.id ?? data.smsLog?.id;
       setLogId(nextLogId);
       setGeneratedPhone(data.phoneNumber || null);
@@ -110,7 +113,34 @@ export default function SmsBlock({ clientId, onSmsReady, onPhoneGenerated }: Sms
             <p className={`text-sm font-semibold ${provider === 'HEROSMS' ? 'text-purple-300' : 'text-slate-200'}`}>HeroSMS</p>
             <p className="text-xs text-slate-500 mt-0.5">Backup — hero-sms.com</p>
           </button>
+          <button
+            type="button"
+            onClick={() => setProvider('NUMEROVIRTUAL')}
+            className={`rounded-xl border px-4 py-3 text-left transition ${
+              provider === 'NUMEROVIRTUAL'
+                ? 'border-amber-500 bg-amber-500/10'
+                : 'border-slate-700 bg-slate-800/60 hover:border-slate-600'
+            }`}
+          >
+            <p className={`text-sm font-semibold ${provider === 'NUMEROVIRTUAL' ? 'text-amber-300' : 'text-slate-200'}`}>Outros</p>
+            <p className="text-xs text-slate-500 mt-0.5">Número Virtual — Outros apps/Site</p>
+          </button>
         </div>
+
+        {/* Campo API key — só pro Número Virtual */}
+        {provider === 'NUMEROVIRTUAL' && (
+          <div className="space-y-1.5 pt-1">
+            <label className="text-xs font-semibold text-slate-400">API Key do Número Virtual</label>
+            <input
+              type="text"
+              value={nvApiKey}
+              onChange={(e) => setNvApiKey(e.target.value)}
+              placeholder="nv_live_..."
+              className="w-full rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-amber-500 font-mono"
+            />
+            <p className="text-[11px] text-slate-500">Cole sua chave de app.numero-virtual.com. Serviço: "Outros apps/Site".</p>
+          </div>
+        )}
       </div>
 
       {/* Botão gerar */}

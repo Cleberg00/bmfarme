@@ -72,27 +72,23 @@ async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider, 
 
   for (const provider of providers) {
     try {
-      // ── NÚMERO VIRTUAL — API REST JSON ──
+      // ── NÚMERO VIRTUAL — API REST JSON (app.numero-virtual.com/api/v1) ──
       if (provider.name === 'NUMEROVIRTUAL') {
         const headers = { Authorization: `Bearer ${provider.apiKey}`, 'Content-Type': 'application/json' };
-        // 1. Busca o serviceId pra WhatsApp/Facebook
-        const svcRes = await axios.get(`${provider.baseURL}/services`, { headers, timeout: provider.timeout });
-        const services = svcRes.data?.services || [];
-        // Busca por facebook, whatsapp, ou usa o primeiro disponível
-        let svcId = null;
-        const fbSvc = services.find(s => s.name?.toLowerCase().includes('facebook') || s.name?.toLowerCase().includes('whatsapp'));
-        if (fbSvc) svcId = fbSvc.id;
-        else if (services.length > 0) svcId = services[0].id;
-        if (!svcId) { lastError = new Error('Nenhum serviço disponível no Número Virtual'); continue; }
+        // serviceId 60009 = "Outros apps/Site" (opção padrão pra receber qualquer SMS).
+        // Aceita override via `service` (número do serviceId) se vier.
+        const svcId = (service && /^\d+$/.test(String(service))) ? Number(service) : 60009;
 
-        // 2. Solicita número
+        // Solicita número. Resposta: { success, data:{ activationId, phoneNumber, status } }
         const actRes = await axios.post(`${provider.baseURL}/activations`, { serviceId: svcId }, { headers, timeout: provider.timeout });
-        const act = actRes.data;
-        if (act && act.phone && act.id) {
-          console.log(`[SMS] Número obtido via NUMEROVIRTUAL: ${act.phone}`);
-          return { externalId: String(act.id), phoneNumber: act.phone, provider: 'NUMEROVIRTUAL' };
+        const d = actRes.data?.data || actRes.data;
+        const id = d?.activationId || d?.id;
+        const phone = d?.phoneNumber || d?.phone;
+        if (id && phone) {
+          console.log(`[SMS] Número obtido via NUMEROVIRTUAL (Outros): ${phone}`);
+          return { externalId: String(id), phoneNumber: String(phone), provider: 'NUMEROVIRTUAL' };
         }
-        lastError = new Error('Resposta inesperada do Número Virtual');
+        lastError = new Error(actRes.data?.error || 'Resposta inesperada do Número Virtual');
         continue;
       }
 
@@ -137,6 +133,8 @@ async function buyNumber(service = DEFAULT_SERVICE, country, preferredProvider, 
 }
 
 async function activateNumber(externalId, providerName) {
+  // Número Virtual já entrega o número ativo ao comprar — não precisa de setStatus.
+  if (providerName === 'NUMEROVIRTUAL') return true;
   const provider = getProviders().find(p => p.name === providerName) || getProviders()[0];
   try {
     const raw = await makeRequest(provider, { action: 'setStatus', status: 1, id: externalId });
@@ -152,10 +150,10 @@ async function checkCode(externalId, providerName) {
     try {
       const headers = { Authorization: `Bearer ${provider.apiKey}` };
       const res = await axios.get(`${provider.baseURL}/activations/${externalId}`, { headers, timeout: provider.timeout });
-      const data = res.data;
-      if (data.smsCode) return { code: data.smsCode, status: 'RECEIVED' };
-      if (data.status === 'cancelled') return { code: null, status: 'EXPIRED' };
-      if (data.status === 'expired') return { code: null, status: 'EXPIRED' };
+      const data = res.data?.data || res.data;
+      if (data.smsCode) return { code: String(data.smsCode), status: 'RECEIVED' };
+      const st = String(data.status || '').toLowerCase();
+      if (st === 'cancelled' || st === 'expired') return { code: null, status: 'EXPIRED' };
       return { code: null, status: 'WAITING' };
     } catch (error) {
       if (error.response?.status === 404) return { code: null, status: 'EXPIRED' };
@@ -228,6 +226,17 @@ async function confirmSms(externalId, providerName) {
 }
 
 async function requestResend(externalId, providerName) {
+  // ── NÚMERO VIRTUAL — POST /activations/:id/retry ──
+  if (providerName === 'NUMEROVIRTUAL') {
+    const provider = getProviders().find(p => p.name === 'NUMEROVIRTUAL');
+    if (!provider) return false;
+    try {
+      const headers = { Authorization: `Bearer ${provider.apiKey}`, 'Content-Type': 'application/json' };
+      await axios.post(`${provider.baseURL}/activations/${externalId}/retry`, {}, { headers, timeout: provider.timeout });
+      return true;
+    } catch { return false; }
+  }
+
   const provider = getProviders().find(p => p.name === providerName) || getProviders()[0];
   try {
     const raw = await makeRequest(provider, { action: 'setStatus', status: 3, id: externalId });
@@ -242,7 +251,10 @@ async function getBalance() {
       if (provider.name === 'NUMEROVIRTUAL') {
         const headers = { Authorization: `Bearer ${provider.apiKey}` };
         const res = await axios.get(`${provider.baseURL}/balance`, { headers, timeout: provider.timeout });
-        results.push({ provider: 'NUMEROVIRTUAL', balance: parseFloat(res.data?.balance || 0) });
+        const d = res.data?.data || res.data;
+        // balance vem em centavos (ex: 1520 = R$ 15,20)
+        const cents = Number(d?.balance || 0);
+        results.push({ provider: 'NUMEROVIRTUAL', balance: cents / 100 });
         continue;
       }
       const raw = await makeRequest(provider, { action: 'getBalance' });
