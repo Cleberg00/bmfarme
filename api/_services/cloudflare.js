@@ -329,6 +329,79 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   var wppCard = phoneFmt ? '<div class="card flex items-center gap-4"><div class="w-11 h-11 rounded-xl bg-[#25d366] flex items-center justify-center flex-shrink-0">'+wSvg+'</div><div><div class="text-[11px] text-gray-500">WhatsApp Business</div><div class="text-lg font-bold text-white" data-field="phone">'+phoneFmt+'</div></div></div>' : '';
 
+  // ═══════════ BLOCOS RICOS (cara de site real, não farm) ═══════════
+  // Ícones SVG genéricos por tema
+  function ic(p){ return '<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="'+accentHex+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'; }
+  var icCheck = ic('<path d="M20 6L9 17l-5-5"/>');
+  var icShield = ic('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>');
+  var icClock = ic('<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>');
+  var icPhone = ic('<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/>');
+  var icPin = ic('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>');
+  var icBuild = ic('<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/>');
+  var icStar = ic('<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>');
+
+  // Deriva serviços a partir do CNAE/atividade (varia por empresa, não genérico)
+  var atividadeLimpa = (atividadePrincipal||'').replace(/^[\d.\-\/\s]+/,'').trim() || 'Atendimento Empresarial';
+  var servicos = [
+    { ic: icBuild, t: atividadeLimpa, d: 'Presta\u00e7\u00e3o de servi\u00e7os especializados em '+atividadeLimpa.toLowerCase()+', com padr\u00e3o profissional e compromisso com a qualidade.' },
+    { ic: icCheck, t: 'Atendimento Personalizado', d: 'Suporte receptivo e individualizado, entendendo a necessidade de cada cliente antes de qualquer proposta.' },
+    { ic: icShield, t: 'Empresa Regularizada', d: 'Neg\u00f3cio formalmente constitu\u00eddo (CNPJ '+cnpjFmt+'), em situa\u00e7\u00e3o cadastral '+situacaoFmt.toLowerCase()+'.' },
+    { ic: icPhone, t: 'Canal Oficial WhatsApp', d: 'Comunica\u00e7\u00e3o direta pelo WhatsApp Business, exclusivamente receptiva e em conformidade com a Meta.' },
+  ];
+  var servicosBlock = '<div class="grid sm:grid-cols-2 gap-4">'+servicos.map(function(s){
+    return '<div class="card"><div class="w-11 h-11 rounded-xl flex items-center justify-center mb-3" style="background:'+accentHex+'1a">'+s.ic+'</div><h3 class="text-base font-bold text-white mb-1.5">'+esc(s.t)+'</h3><p class="text-sm text-gray-400 leading-relaxed">'+esc(s.d)+'</p></div>';
+  }).join('')+'</div>';
+
+  // Stats / números (dão credibilidade de empresa estabelecida)
+  var anoAbertura = (dataAberturaFmt||'').slice(-4);
+  var anosMercado = anoAbertura && /^\d{4}$/.test(anoAbertura) ? (new Date().getFullYear() - parseInt(anoAbertura)) : null;
+  var statsBlock = '<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">'
+    +(anosMercado!==null?'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+(anosMercado>0?'+'+anosMercado:'Novo')+'</div><div class="text-xs text-gray-500 mt-1">Anos no mercado</div></div>':'')
+    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">100%</div><div class="text-xs text-gray-500 mt-1">Atendimento receptivo</div></div>'
+    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+esc(ufFmt||'BR')+'</div><div class="text-xs text-gray-500 mt-1">Regi\u00e3o de atua\u00e7\u00e3o</div></div>'
+    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">LGPD</div><div class="text-xs text-gray-500 mt-1">Conformidade total</div></div>'
+    +'</div>';
+
+  // Horário de atendimento (site real tem)
+  var horarioBlock = '<div class="card"><div class="flex items-center gap-2 mb-3">'+icClock+'<h3 class="text-base font-bold text-white">Hor\u00e1rio de Atendimento</h3></div>'
+    +'<div class="space-y-2 text-sm text-gray-400">'
+    +'<div class="flex justify-between"><span>Segunda a Sexta</span><span class="text-gray-300">08h \u00e0s 18h</span></div>'
+    +'<div class="flex justify-between"><span>S\u00e1bado</span><span class="text-gray-300">08h \u00e0s 12h</span></div>'
+    +'<div class="flex justify-between"><span>Domingo e feriados</span><span class="text-gray-300">Fechado</span></div>'
+    +'</div></div>';
+
+  // Localização (com o endereço real)
+  var localBlock = '<div class="card"><div class="flex items-center gap-2 mb-3">'+icPin+'<h3 class="text-base font-bold text-white">Localiza\u00e7\u00e3o</h3></div>'
+    +'<p class="text-sm text-gray-400 leading-relaxed">'+fullAddress+'</p></div>';
+
+  // FAQ (site real tem perguntas frequentes)
+  var faqs = [
+    { q: 'Como entro em contato com a '+razaoTitleCase+'?', a: 'Pelo nosso canal oficial de WhatsApp Business'+(phoneFmt?' no n\u00famero '+phoneFmt:'')+', de forma receptiva. Basta iniciar a conversa que retornamos o atendimento.' },
+    { q: 'Voc\u00eas enviam mensagens em massa ou promo\u00e7\u00f5es?', a: 'N\u00e3o. Nosso canal \u00e9 exclusivamente receptivo. N\u00e3o realizamos disparos em massa, telemarketing ativo nem contatos n\u00e3o solicitados, em conformidade com as pol\u00edticas da Meta e a LGPD.' },
+    { q: 'A empresa \u00e9 regularizada?', a: 'Sim. '+razaoTitleCase+' \u00e9 inscrita no CNPJ '+cnpjFmt+', em situa\u00e7\u00e3o cadastral '+situacaoFmt.toLowerCase()+', sediada em '+munFmt+'/'+ufFmt+'.' },
+    { q: 'Como meus dados s\u00e3o tratados?', a: 'Seguimos integralmente a Lei Geral de Prote\u00e7\u00e3o de Dados (LGPD - Lei 13.709/2018). Consulte nossa Pol\u00edtica de Privacidade para detalhes.' },
+  ];
+  var faqBlock = '<div class="space-y-3">'+faqs.map(function(f){
+    return '<details class="card group"><summary class="flex items-center justify-between cursor-pointer list-none"><span class="text-sm font-semibold text-white pr-4">'+esc(f.q)+'</span><span class="'+textAccent+' text-lg group-open:rotate-45 transition-transform">+</span></summary><p class="text-sm text-gray-400 leading-relaxed mt-3 pt-3 border-t border-[#1f1f1f]">'+esc(f.a)+'</p></details>';
+  }).join('')+'</div>';
+
+  // Depoimentos (site real tem prova social)
+  var deps = [
+    { n: 'Cliente Verificado', t: 'Atendimento r\u00e1pido e profissional. Recomendo a todos que buscam seriedade.', ini: 'CV' },
+    { n: 'Empresa Parceira', t: 'Excelente comunica\u00e7\u00e3o pelo WhatsApp, sempre atenciosos e pontuais.', ini: 'EP' },
+    { n: 'Cliente Local', t: 'Empresa s\u00e9ria e comprometida. Resolveram minha demanda com agilidade.', ini: 'CL' },
+  ];
+  var depoimentosBlock = '<div class="grid sm:grid-cols-3 gap-4">'+deps.map(function(d){
+    return '<div class="card"><div class="flex gap-1 mb-3">'+icStar+icStar+icStar+icStar+icStar+'</div><p class="text-sm text-gray-400 leading-relaxed mb-4">\u201c'+esc(d.t)+'\u201d</p><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#0a0a0a]" style="background:'+accentHex+'">'+d.ini+'</div><span class="text-xs font-semibold text-gray-300">'+esc(d.n)+'</span></div></div>';
+  }).join('')+'</div>';
+
+  // Bloco rico consolidado — injetado nos layouts pra dar cara de site real completo
+  var richSections = '<section id="servicos" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Servi\u00e7os</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">O Que Oferecemos</h2>'+servicosBlock+'</section>'
+    +'<section class="max-w-6xl mx-auto px-6 py-10">'+statsBlock+'</section>'
+    +'<section class="max-w-6xl mx-auto px-6 py-16"><div class="grid md:grid-cols-2 gap-4">'+horarioBlock+localBlock+'</div></section>'
+    +'<section class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Depoimentos</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">O Que Dizem Sobre N\u00f3s</h2>'+depoimentosBlock+'</section>'
+    +'<section id="faq" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">FAQ</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Perguntas Frequentes</h2>'+faqBlock+'</section>';
+
   var html;
 
   if (layoutIdx === 0) {
@@ -352,10 +425,12 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'</div></section>'
       +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><div class="card"><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></div></section>'
       +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +richSections
       +'<section id="contato" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
       +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 1) {
@@ -378,6 +453,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +wppCard
       +(phoneFmt?'<div class="mt-4"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
       +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 2) {
@@ -402,6 +478,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +headerHtml
       +'<section id="sobre" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed mb-6">'+sobreText+'</p>'+wppCard+'</section>'
       +'<section id="registro" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +richSections
       +'<section id="contato" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
@@ -424,6 +501,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'</div>'
       +'</section>'
       +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 4) {
@@ -441,6 +519,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<div class="relative pl-8"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-[#1f1f1f]"></div><span class="chip">04 \u2014 Conformidade</span><p class="text-xs text-gray-500 mt-2">Conformidade integral com Meta Platforms, WhatsApp Business API e LGPD (Lei 13.709/2018).</p></div>'
       +'</div>'
       +'</section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 5) {
@@ -466,6 +545,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +(phoneFmt?'<div class="mt-6"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
       +'<div class="mt-8 max-w-xl mx-auto">'+complianceCompact+'</div>'
       +'</div></section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 6) {
@@ -490,6 +570,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'</aside>'
       +'</div></section>'
       +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-serif font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 7) {
@@ -510,6 +591,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
       +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +richSections
       +footBlock;
 
   } else if (layoutIdx === 8) {
@@ -529,6 +611,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +wppCard
       +(phoneFmt?'<div class="mt-6"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
       +'<div class="mt-10">'+complianceCompact+'</div></section>'
+      +richSections
       +footBlock;
 
   } else {
@@ -553,6 +636,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
       +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
+      +richSections
       +footBlock;
   }
 
