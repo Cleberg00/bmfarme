@@ -251,8 +251,27 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     "url":"/"
   })+'<\/script>';
 
+  // --- Favicon SVG (data URI) — ícone com iniciais + cor accent. Sites reais têm favicon. ---
+  var faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="'+accentHex+'"/><text x="50%" y="50%" dy=".1em" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#0a0a0a" text-anchor="middle" dominant-baseline="middle">'+esc(initials)+'</text></svg>';
+  var faviconUri = 'data:image/svg+xml,'+encodeURIComponent(faviconSvg);
+
+  // --- OG image (data URI SVG) — imagem de preview com nome da empresa. Sites reais têm og:image. ---
+  var ogImgSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#0a0a0a"/><rect x="60" y="60" width="120" height="120" rx="24" fill="'+accentHex+'"/><text x="120" y="140" font-family="Arial,sans-serif" font-size="56" font-weight="bold" fill="#0a0a0a" text-anchor="middle">'+esc(initials)+'</text><text x="220" y="120" font-family="Arial,sans-serif" font-size="52" font-weight="bold" fill="#ffffff">'+esc(razaoTitleCase.slice(0,28))+'</text><text x="220" y="175" font-family="Arial,sans-serif" font-size="30" fill="#9ca3af">CNPJ '+cnpjFmt+'</text><text x="60" y="340" font-family="Arial,sans-serif" font-size="44" font-weight="600" fill="#ffffff">'+esc((atividadeFmt||'Atendimento Empresarial').slice(0,40))+'</text><text x="60" y="560" font-family="Arial,sans-serif" font-size="26" fill="#6b7280">'+esc(munFmt)+'/'+esc(ufFmt)+(phoneFmt?'  \u2022  '+phoneFmt:'')+'</text></svg>';
+  var ogImgUri = 'data:image/svg+xml,'+encodeURIComponent(ogImgSvg);
+
   var headBlock = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
     +metaTag+ogTags
+    +'<link rel="icon" type="image/svg+xml" href="'+faviconUri+'" />'
+    +'<meta property="og:image" content="'+ogImgUri+'" />'
+    +'<meta property="og:image:width" content="1200" />'
+    +'<meta property="og:image:height" content="630" />'
+    +'<meta property="og:locale" content="pt_BR" />'
+    +'<meta property="og:url" content="/" />'
+    +'<meta name="twitter:card" content="summary_large_image" />'
+    +'<meta name="twitter:title" content="'+razaoFmt+'" />'
+    +'<meta name="twitter:image" content="'+ogImgUri+'" />'
+    +'<meta name="robots" content="index, follow" />'
+    +'<link rel="canonical" href="/" />'
     +'<meta name="business:contact_data:street_address" content="'+esc((endereco||'')+(numero?', '+numero:''))+'" />'
     +'<meta name="business:contact_data:locality" content="'+munFmt+'" />'
     +'<meta name="business:contact_data:region" content="'+ufFmt+'" />'

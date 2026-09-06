@@ -144,8 +144,51 @@ module.exports = async function handler(req, res) {
       if (workerKey !== 'bmfarme-worker-2026')
         return res.status(401).json({ error: 'Unauthorized' });
 
-      const { subdomain, page } = req.query;
-      if (!subdomain) return res.status(400).json({ error: 'subdomain é obrigatório.' });
+      const { subdomain, page, rootDomain } = req.query;
+
+      // ── robots.txt — sites reais têm. Aponta pro sitemap. ──
+      if (page === 'robots' || page === 'robots.txt') {
+        const host = (rootDomain && subdomain && !subdomain.includes('.')) ? `${subdomain}.${rootDomain}` : (subdomain || rootDomain || '');
+        res.setHeader('Content-Type', 'text/plain; charset=UTF-8');
+        return res.status(200).send(`User-agent: *\nAllow: /\n\nSitemap: https://${host}/sitemap.xml\n`);
+      }
+
+      // ── sitemap.xml — sites reais têm. Lista as páginas do site. ──
+      if (page === 'sitemap' || page === 'sitemap.xml') {
+        const host = (rootDomain && subdomain && !subdomain.includes('.')) ? `${subdomain}.${rootDomain}` : (subdomain || rootDomain || '');
+        const today = new Date().toISOString().slice(0, 10);
+        res.setHeader('Content-Type', 'application/xml; charset=UTF-8');
+        return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<url><loc>https://${host}/</loc><lastmod>${today}</lastmod><priority>1.0</priority></url>\n<url><loc>https://${host}/?page=politica-de-privacidade</loc><lastmod>${today}</lastmod><priority>0.5</priority></url>\n<url><loc>https://${host}/?page=termos-de-uso</loc><lastmod>${today}</lastmod><priority>0.5</priority></url>\n</urlset>\n`);
+      }
+
+      // ── DOMÍNIO RAIZ (sem subdomínio, ou www) — o Meta rastreia o raiz na verificação.
+      // Serve o site mais recente publicado naquele baseDomain, pra o raiz NÃO ficar vazio.
+      const isRoot = !subdomain || subdomain === 'www' || subdomain === '@' || (rootDomain && subdomain === rootDomain);
+      if (isRoot) {
+        const base = rootDomain || (subdomain && subdomain.includes('.') ? subdomain : null);
+        let rootDom = null;
+        if (base) {
+          rootDom = await prisma.domain.findFirst({
+            where: { baseDomain: base, status: 'ACTIVE', htmlCache: { not: null } },
+            orderBy: { createdAt: 'desc' },
+          });
+        }
+        if (!rootDom) {
+          // fallback: qualquer site ativo com cache (garante conteúdo no raiz)
+          rootDom = await prisma.domain.findFirst({
+            where: { status: 'ACTIVE', htmlCache: { not: null }, ...(base ? { baseDomain: base } : {}) },
+            orderBy: { createdAt: 'desc' },
+          });
+        }
+        if (rootDom && rootDom.htmlCache) {
+          res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+          return res.status(200).send(rootDom.htmlCache);
+        }
+        // Sem nenhum site publicado ainda — página institucional mínima (não deixa vazio)
+        res.setHeader('Content-Type', 'text/html; charset=UTF-8');
+        return res.status(200).send('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>'+(base||'Empresa')+'</title></head><body style="font-family:Arial,sans-serif;background:#0a0a0a;color:#fff;text-align:center;padding:80px 20px"><h1>'+(base||'Portal Empresarial')+'</h1><p>Portal de atendimento empresarial. Canal oficial de contato via WhatsApp Business.</p></body></html>');
+      }
 
       const domain = await prisma.domain.findFirst({ where: { domainName: subdomain, status: 'ACTIVE' } });
       if (!domain) return res.status(404).send('<html><body><h1>Site não encontrado</h1></body></html>');
