@@ -249,12 +249,18 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   console.log('[buildLandingHtml] CNPJ='+cnpj+' segment='+segment+' dark='+skin.dark+' layout='+forceTemplateIndex);
 
+  // --- Title e Description COMERCIAIS (não "CNPJ/compliance") ---
+  var atvTitulo = ((atividadePrincipal||'').replace(/^[\d.\-\/\s]+(-\s*)?/,'').replace(/^-\s*/,'').trim() || 'Solu\u00e7\u00f5es Empresariais');
+  var atvTituloCap = atvTitulo.charAt(0).toUpperCase()+atvTitulo.slice(1);
+  var pageTitle = razaoTitleCase+' \u2014 '+atvTituloCap+' em '+munFmt+'/'+ufFmt;
+  var pageDesc = razaoTitleCase+' oferece '+atvTitulo.toLowerCase()+' em '+munFmt+'/'+ufFmt+'. Atendimento pelo WhatsApp, or\u00e7amento sem compromisso. Fale com a gente!';
   // --- OG Tags ---
   var ogTags = '<meta property="og:type" content="website" />'+
-    '<meta property="og:title" content="'+razaoFmt+'" />'+
+    '<meta property="og:title" content="'+esc(pageTitle)+'" />'+
     '<meta property="og:site_name" content="'+razaoFmt+'" />'+
-    '<meta property="og:description" content="'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+'. Empresa registrada, canal oficial de atendimento receptivo." />'+
-    '<meta name="description" content="'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+'. Empresa regularmente constitu\u00edda." />'+
+    '<meta property="og:description" content="'+esc(pageDesc)+'" />'+
+    '<meta name="description" content="'+esc(pageDesc)+'" />'+
+    '<meta name="keywords" content="'+esc(atvTitulo.toLowerCase())+', '+esc(munFmt)+', '+esc(razaoTitleCase)+', WhatsApp, or\u00e7amento" />'+
     '<meta name="author" content="'+razaoFmt+'" />'+
     '<meta name="company" content="'+razaoFmt+'" />';
 
@@ -346,7 +352,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<meta property="og:locale" content="pt_BR" />'
     +'<meta property="og:url" content="/" />'
     +'<meta name="twitter:card" content="summary_large_image" />'
-    +'<meta name="twitter:title" content="'+razaoFmt+'" />'
+    +'<meta name="twitter:title" content="'+esc(pageTitle)+'" />'
+    +'<meta name="twitter:description" content="'+esc(pageDesc)+'" />'
     +'<meta name="twitter:image" content="'+ogImgUri+'" />'
     +'<meta name="robots" content="index, follow" />'
     +'<link rel="canonical" href="/" />'
@@ -359,7 +366,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +(munFmt?'<meta name="geo.placename" content="'+munFmt+'" />':'')
     +(email?'<meta name="business:contact_data:email" content="'+esc(email)+'" />':'')
     +(phoneFmt?'<meta name="business:contact_data:phone_number" content="'+phoneFmt+'" />':'')
-    +'<title>'+razaoFmt+'</title>'
+    +'<title>'+esc(pageTitle)+'</title>'
     +jsonLd
     +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
     +'<link href="https://fonts.googleapis.com/css2?family='+encodeURIComponent(skin.font)+':wght@400;500;600;700;800&family='+encodeURIComponent(skin.headFont)+':wght@600;700;800;900&display=swap" rel="stylesheet">'
@@ -550,14 +557,36 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     geral: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="none" stroke="#fff" stroke-width="6" opacity=".7"><circle cx="400" cy="200" r="90"/><path d="M340 200 l40 40 80 -90"/></g>',
   };
   var bannerSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+skin.primary+'"/><stop offset="1" stop-color="'+skin.primary2+'"/></linearGradient></defs>'+(bannerCenas[segment]||bannerCenas.geral)+'</svg>';
-  var bannerUri = 'data:image/svg+xml,'+encodeURIComponent(bannerSvg);
+  var bannerSvgUri = 'data:image/svg+xml,'+encodeURIComponent(bannerSvg);
+
+  // ═══════════ FOTOS REAIS POR SEGMENTO (Unsplash — hotlink permitido pela licença) ═══════════
+  // Vários IDs por segmento; escolhe por seed pra variar entre empresas do mesmo ramo.
+  // Se a foto não carregar, cai no banner SVG (onerror) — nunca fica quebrado.
+  var fotosSegmento = {
+    construcao: ['1503387762-592deb58ef4e','1541888946425-d81bb19240f5','1621905251189-08b45d6a269e','1516156008625-3a9d6067fab5'],
+    saude: ['1519494026892-80bbd2d6fd0d','1631217868264-e5b90bb7e133','1576091160399-112ba8d25d1d','1666214280557-f1b5022eb634'],
+    juridico: ['1589829545856-d10d557cf95f','1505664194779-8beaceb93744','1436450412740-6b988f486c6b','1521791136064-7986c2920216'],
+    beleza: ['1560066984-138dadb4c035','1522337360788-8b13dee7a37e','1580618672591-eb180b1a973f','1595476108010-b4d1f102b1b1'],
+    alimentacao: ['1517248135467-4c7edcad34c4','1552566626-52f8b828add9','1414235077428-338989a2e8c0','1466978913421-dad2ebd01d17'],
+    comercio: ['1441986300917-64674bd600d8','1472851294608-062f824d29cc','1481437156560-3205f6a55735','1533090161767-e6ffed986c88'],
+    transporte: ['1601584115197-04ecc0da31d7','1519003722824-194d4455a60c','1586528116311-ad8dd3c8310d','1601584115197-04ecc0da31d7'],
+    tech: ['1519389950473-47ba0277781c','1461749280684-dccba630e2f6','1517430816045-df4b7de11d1d','1498050108023-c5249f4df085'],
+    educacao: ['1523240795612-9a054b0db644','1503676260728-1c00da094a0b','1522202176988-66273c2fd55f','1509062522246-3755977927d7'],
+    imobiliaria: ['1560518883-ce09059eeffa','1560448204-e02f11c3d0e2','1512917774080-9991f1c4c750','1570129477492-45c003edd2be'],
+    geral: ['1497366216548-37526070297c','1486406146926-c627a92ad1ab','1497366811353-6870744d04b2','1524758631624-e2822e304c36'],
+  };
+  var fotoIds = fotosSegmento[segment] || fotosSegmento.geral;
+  var fotoId = fotoIds[((seedNum >>> 3) >>> 0) % fotoIds.length];
+  var fotoUrl = 'https://images.unsplash.com/photo-'+fotoId+'?auto=format&fit=crop&w=900&q=70';
+  // A imagem principal usa a foto; onerror troca pro SVG
+  var bannerUri = fotoUrl;
   // Chips de destaque (comerciais) pro showcase
   var chipsPool = ['Or\u00e7amento sem compromisso','Atendimento r\u00e1pido','Equipe qualificada','Compromisso com prazos','Pre\u00e7o justo','Garantia no servi\u00e7o','Atende '+munFmt];
   var diferenciaisChips = '';
   for (var xc=0; xc<4; xc++){ var ci=((seedNum + xc*131) >>> 0) % chipsPool.length; diferenciaisChips += '<span class="chip">'+esc(chipsPool[ci])+'</span>'; }
   // Showcase visual = imagem grande + texto do negócio (no lugar dos campos de cartório)
   var showcaseBlock = '<div class="grid md:grid-cols-2 gap-6 items-center">'
-    +'<div class="rounded-2xl overflow-hidden" style="aspect-ratio:16/10;min-height:220px"><img src="'+bannerUri+'" alt="'+esc(razaoTitleCase)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>'
+    +'<div class="rounded-2xl overflow-hidden" style="aspect-ratio:16/10;min-height:220px"><img src="'+bannerUri+'" alt="'+esc(razaoTitleCase)+' - '+esc(atvBaixa)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.onerror=null;this.src=\''+bannerSvgUri+'\'"></div>'
     +'<div><h3 class="text-xl font-bold text-white mb-3">'+esc(razaoTitleCase)+'</h3><p class="text-sm text-gray-400 leading-relaxed mb-4">'+valorFrase+'</p>'
     +'<div class="flex flex-wrap gap-2">'+diferenciaisChips+'</div></div>'
     +'</div>';
