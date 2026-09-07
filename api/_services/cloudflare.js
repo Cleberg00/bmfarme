@@ -379,10 +379,55 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<span itemprop="legalName">'+razaoFmt+'</span> \u2014 CNPJ <span itemprop="taxID">'+cnpjFmt+'</span>'
     +' \u2014 '+esc((endereco||'')+(numero?', '+numero:''))+(bairroFmt?', '+bairroFmt:'')+', '+munFmt+'/'+ufFmt+(cepFmt?' \u2014 CEP '+cepFmt:'')
     +(emailFmt?' \u2014 '+emailFmt:'')
-    +' \u2014 <a href="?page=politica-de-privacidade">Privacidade</a> \u2014 <a href="?page=termos-de-uso">Termos</a>'
+    +' \u2014 <a href="?page=politica-de-privacidade" data-modal="privacidade">Privacidade</a> \u2014 <a href="?page=termos-de-uso" data-modal="termos">Termos</a>'
     +'</div>';
 
-  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-[#0a0a0a]">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#registro" class="text-xs text-gray-400 hover:text-white">Registro</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a><a href="?page=politica-de-privacidade" class="text-xs text-gray-400 hover:text-white">Privacidade</a><a href="?page=termos-de-uso" class="text-xs text-gray-400 hover:text-white">Termos</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
+  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-white">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Sobre</a><a href="#servicos" class="text-xs text-gray-400 hover:text-white">Servi\u00e7os</a><a href="#faq" class="text-xs text-gray-400 hover:text-white">FAQ</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a><a href="?page=politica-de-privacidade" data-modal="privacidade" class="text-xs text-gray-400 hover:text-white">Privacidade</a><a href="?page=termos-de-uso" data-modal="termos" class="text-xs text-gray-400 hover:text-white">Termos</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
+
+  // ═══════════ INTERATIVIDADE REAL (navegação, modais, WhatsApp, formulário) ═══════════
+  // Botão flutuante de WhatsApp (todo site de negócio real tem)
+  var floatWa = phoneFmt ? '<a href="'+waLink+'" target="_blank" rel="noopener" aria-label="Fale no WhatsApp" style="position:fixed;right:20px;bottom:20px;z-index:60;width:56px;height:56px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(37,211,102,.5);animation:waPulse 2.5s infinite">'+wSvg+'</a>' : '';
+
+  // Conteúdo legal (mesmo texto das páginas ?page= servidas pelo backend) — em modal, funciona sempre
+  var privTexto = ''
+    +'<h4>1. Identifica\u00e7\u00e3o do Controlador</h4><p>'+razaoTitleCase+', inscrita no CNPJ '+cnpjFmt+', com sede em '+fullAddress+(emailFmt?', e-mail '+emailFmt:'')+(phoneFmt?', telefone '+phoneFmt:'')+', \u00e9 a controladora dos dados tratados neste canal.</p>'
+    +'<h4>2. Coleta de Dados</h4><p>Os dados fornecidos pelos usu\u00e1rios s\u00e3o utilizados exclusivamente para atender \u00e0s solicita\u00e7\u00f5es feitas de forma volunt\u00e1ria. N\u00e3o coletamos dados sem consentimento expresso.</p>'
+    +'<h4>3. Uso dos Dados</h4><p>As informa\u00e7\u00f5es s\u00e3o usadas apenas para responder \u00e0s solicita\u00e7\u00f5es do usu\u00e1rio. N\u00e3o compartilhamos dados com terceiros para fins de marketing.</p>'
+    +'<h4>4. Base Legal e LGPD</h4><p>Em conformidade com a LGPD (Lei 13.709/2018), o tratamento se baseia no consentimento e no leg\u00edtimo interesse de atendimento. O usu\u00e1rio pode solicitar acesso, corre\u00e7\u00e3o ou exclus\u00e3o de seus dados a qualquer momento.</p>'
+    +'<h4>5. Reten\u00e7\u00e3o e Seguran\u00e7a</h4><p>Os dados s\u00e3o retidos apenas pelo tempo necess\u00e1rio ao atendimento e protegidos por medidas t\u00e9cnicas adequadas.</p>'
+    +'<h4>6. Canal de Atendimento</h4><p>Nosso canal WhatsApp Business \u00e9 exclusivamente receptivo. N\u00e3o realizamos disparos em massa, telemarketing ou contatos n\u00e3o solicitados.</p>';
+  var termTexto = ''
+    +'<h4>1. Identifica\u00e7\u00e3o</h4><p>Este canal \u00e9 operado por '+razaoTitleCase+', CNPJ '+cnpjFmt+', com sede em '+fullAddress+(emailFmt?', e-mail '+emailFmt:'')+(phoneFmt?', telefone '+phoneFmt:'')+'.</p>'
+    +'<h4>2. Aceita\u00e7\u00e3o</h4><p>Ao entrar em contato com nosso canal, o usu\u00e1rio declara que iniciou a comunica\u00e7\u00e3o de forma espont\u00e2nea e volunt\u00e1ria.</p>'
+    +'<h4>3. Uso do Canal</h4><p>Este canal destina-se exclusivamente ao atendimento receptivo de clientes que entraram em contato por iniciativa pr\u00f3pria.</p>'
+    +'<h4>4. Proibi\u00e7\u00f5es</h4><p>N\u00e3o realizamos disparos em massa, telemarketing ativo ou comunica\u00e7\u00f5es n\u00e3o solicitadas. Todo atendimento segue as diretrizes do WhatsApp Business e Meta Platforms.</p>'
+    +'<h4>5. Conformidade</h4><p>Todo o conte\u00fado pertence a '+razaoTitleCase+'. Opera\u00e7\u00f5es seguem as pol\u00edticas da Meta Platforms, WhatsApp Business Policy e a legisla\u00e7\u00e3o brasileira (CDC e LGPD).</p>';
+  var modalCss = 'position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);padding:20px';
+  var modalBoxCss = 'background:var(--surf);color:var(--strong);max-width:640px;width:100%;max-height:85vh;overflow-y:auto;border-radius:16px;padding:32px;position:relative';
+  function modalBox(id, titulo, corpo){
+    return '<div class="site-modal" id="modal-'+id+'" style="'+modalCss+'"><div style="'+modalBoxCss+'">'
+      +'<button data-close="'+id+'" aria-label="Fechar" style="position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:18px;cursor:pointer">\u00d7</button>'
+      +'<h3 style="font-size:22px;font-weight:800;margin-bottom:6px">'+titulo+'</h3>'
+      +'<p style="font-size:12px;color:var(--muted);margin-bottom:20px">'+razaoTitleCase+' \u2014 CNPJ '+cnpjFmt+'</p>'
+      +'<div class="modal-body" style="font-size:14px;line-height:1.8;color:var(--muted)">'+corpo+'</div>'
+      +'</div></div>';
+  }
+  var modaisHtml = '<style>.modal-body h4{font-size:15px;font-weight:700;color:var(--strong);margin:16px 0 6px}.site-modal.open{display:flex!important}@keyframes waPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}</style>'
+    + modalBox('privacidade','Pol\u00edtica de Privacidade', privTexto)
+    + modalBox('termos','Termos de Uso', termTexto);
+
+  // JS: scroll suave, abrir/fechar modais, formulário → WhatsApp
+  var waMsgBase = phoneDigits ? 'https://wa.me/'+phoneDigits+'?text=' : '';
+  var interactScript = '<script>(function(){'
+    +'document.querySelectorAll(\'a[href^="#"]\').forEach(function(a){a.addEventListener("click",function(e){var t=document.querySelector(a.getAttribute("href"));if(t){e.preventDefault();t.scrollIntoView({behavior:"smooth"});}});});'
+    +'function openM(id){var m=document.getElementById("modal-"+id);if(m){m.classList.add("open");document.body.style.overflow="hidden";}}'
+    +'function closeM(){document.querySelectorAll(".site-modal").forEach(function(m){m.classList.remove("open");});document.body.style.overflow="";}'
+    +'document.querySelectorAll("[data-modal]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();openM(a.getAttribute("data-modal"));});});'
+    +'document.querySelectorAll("[data-close]").forEach(function(b){b.addEventListener("click",closeM);});'
+    +'document.querySelectorAll(".site-modal").forEach(function(m){m.addEventListener("click",function(e){if(e.target===m)closeM();});});'
+    +'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeM();});'
+    +'var f=document.getElementById("contato-form");if(f){f.addEventListener("submit",function(e){e.preventDefault();var nome=(f.querySelector("[name=nome]")||{}).value||"";var msg=(f.querySelector("[name=msg]")||{}).value||"";var txt=encodeURIComponent("Ola! Meu nome e "+nome+". "+msg);window.open("'+waMsgBase+'"+txt,"_blank");});}'
+    +'})();<\/script>';
 
   var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6 text-center space-y-2">'
     +'<div class="font-semibold text-gray-400">'+razaoTitleCase+'</div>'
@@ -391,12 +436,12 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +(emailFmt?'<div>E-mail: '+emailFmt+'</div>':'')
     +(phoneFmt?'<div>Telefone / WhatsApp: '+phoneFmt+'</div>':'')
     +'<div class="pt-3 flex items-center justify-center gap-4 flex-wrap">'
-    +'<a href="?page=politica-de-privacidade" class="'+textAccent+' hover:underline">Pol\u00edtica de Privacidade</a>'
+    +'<a href="?page=politica-de-privacidade" data-modal="privacidade" class="'+textAccent+' hover:underline">Pol\u00edtica de Privacidade</a>'
     +'<span class="text-gray-700">|</span>'
-    +'<a href="?page=termos-de-uso" class="'+textAccent+' hover:underline">Termos de Uso</a>'
+    +'<a href="?page=termos-de-uso" data-modal="termos" class="'+textAccent+' hover:underline">Termos de Uso</a>'
     +'</div>'
     +'<div class="pt-2 text-gray-700">\u00a9 '+(new Date().getFullYear())+' '+razaoTitleCase+'. Todos os direitos reservados.</div>'
-    +'</div></footer>'+domScript+'</body></html>';
+    +'</div></footer>'+floatWa+modaisHtml+domScript+interactScript+'</body></html>';
 
   // Reusable content blocks
   var sobreText = razaoTitleCase+' ('+razaoFmt+') \u00e9 uma empresa'+(dataAberturaFmt?' estabelecida desde '+dataAberturaFmt:'')+', sediada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
@@ -530,7 +575,18 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<section class="max-w-6xl mx-auto px-6 py-10">'+statsBlock+'</section>'
     +'<section class="max-w-6xl mx-auto px-6 py-16"><div class="grid md:grid-cols-2 gap-4">'+horarioBlock+localBlock+'</div></section>'
     +'<section class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Depoimentos</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">O Que Dizem Sobre N\u00f3s</h2>'+depoimentosBlock+'</section>'
-    +'<section id="faq" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">FAQ</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Perguntas Frequentes</h2>'+faqBlock+'</section>';
+    +'<section id="faq" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">FAQ</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Perguntas Frequentes</h2>'+faqBlock+'</section>'
+    // Formulário de contato funcional (envia pro WhatsApp) + mapa real do endereço
+    +'<section id="fale" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Fale Conosco</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Envie uma Mensagem</h2>'
+    +'<div class="grid md:grid-cols-2 gap-4">'
+    +'<div class="card"><form id="contato-form" class="space-y-3">'
+    +'<div><label class="label" for="cf-nome">Seu nome</label><input id="cf-nome" name="nome" required placeholder="Nome completo" style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem"></div>'
+    +'<div><label class="label" for="cf-msg">Mensagem</label><textarea id="cf-msg" name="msg" rows="4" required placeholder="Como podemos ajudar?" style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem;resize:vertical"></textarea></div>'
+    +'<button type="submit" class="btn-wa" style="width:100%;justify-content:center">'+wSvg+' Enviar pelo WhatsApp</button>'
+    +'<p class="text-xs" style="color:var(--muted)">Ao enviar, voc\u00ea inicia uma conversa no nosso WhatsApp de forma volunt\u00e1ria.</p>'
+    +'</form></div>'
+    +'<div class="card" style="padding:0;overflow:hidden;min-height:280px"><iframe title="Mapa" width="100%" height="100%" style="border:0;min-height:280px" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q='+encodeURIComponent(fullAddress.replace(/ \u2014 /g,', '))+'&output=embed"></iframe></div>'
+    +'</div></section>';
 
   var html;
 
