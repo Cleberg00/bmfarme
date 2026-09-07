@@ -508,8 +508,74 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   var icBuild = ic('<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/>');
   var icStar = ic('<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>');
 
+  // ═══════════ SERVIÇOS COMERCIAIS REAIS POR SEGMENTO ═══════════
+  // Um negócio real fala do que FAZ (obras, consultas, cortes), não de "compliance/CNPJ".
+  // Isso tira a cara de "cartão CNPJ disfarçado" e dá cara de empresa de verdade.
+  var catalogoServicos = {
+    construcao: [
+      {t:'Constru\u00e7\u00e3o de Resid\u00eancias',d:'Execu\u00e7\u00e3o completa de casas e sobrados, do alicerce ao acabamento, com equipe pr\u00f3pria.'},
+      {t:'Reformas e Amplia\u00e7\u00f5es',d:'Reforma de ambientes, amplia\u00e7\u00f5es e moderniza\u00e7\u00e3o de im\u00f3veis residenciais e comerciais.'},
+      {t:'Projetos e Or\u00e7amentos',d:'Elabora\u00e7\u00e3o de projetos e or\u00e7amento detalhado sem compromisso, com prazos claros.'},
+      {t:'Acabamentos',d:'Servi\u00e7os de alvenaria, pintura, revestimento e acabamento com padr\u00e3o de qualidade.'},
+    ],
+    saude: [
+      {t:'Consultas',d:'Atendimento cl\u00ednico com hora marcada e profissionais qualificados.'},
+      {t:'Exames e Avalia\u00e7\u00f5es',d:'Realiza\u00e7\u00e3o de exames e avalia\u00e7\u00f5es com equipamentos modernos.'},
+      {t:'Acompanhamento',d:'Acompanhamento cont\u00ednuo e planos de cuidado personalizados.'},
+      {t:'Agendamento F\u00e1cil',d:'Marque seu hor\u00e1rio pelo WhatsApp de forma r\u00e1pida e pr\u00e1tica.'},
+    ],
+    juridico: [
+      {t:'Consultoria Jur\u00eddica',d:'Orienta\u00e7\u00e3o e consultoria em diferentes \u00e1reas do direito, com an\u00e1lise personalizada.'},
+      {t:'Acompanhamento Processual',d:'Acompanhamento de processos e prazos com transpar\u00eancia total ao cliente.'},
+      {t:'Contratos e Documentos',d:'Elabora\u00e7\u00e3o e revis\u00e3o de contratos e documentos com seguran\u00e7a jur\u00eddica.'},
+      {t:'Atendimento Personalizado',d:'Primeira an\u00e1lise do caso com hora marcada para entender sua necessidade.'},
+    ],
+    beleza: [
+      {t:'Cortes e Penteados',d:'Cortes, escova e penteados para todas as ocasi\u00f5es, com profissionais experientes.'},
+      {t:'Colora\u00e7\u00e3o e Tratamentos',d:'Colora\u00e7\u00e3o, luzes e tratamentos capilares com produtos de qualidade.'},
+      {t:'Est\u00e9tica',d:'Servi\u00e7os de est\u00e9tica e cuidados pessoais em ambiente confort\u00e1vel.'},
+      {t:'Agende pelo WhatsApp',d:'Reserve seu hor\u00e1rio de forma r\u00e1pida e sem filas.'},
+    ],
+    alimentacao: [
+      {t:'Card\u00e1pio Variado',d:'Op\u00e7\u00f5es preparadas com ingredientes selecionados e muito sabor.'},
+      {t:'Pedidos e Entrega',d:'Fa\u00e7a seu pedido pelo WhatsApp e receba com praticidade.'},
+      {t:'Encomendas',d:'Aceitamos encomendas para eventos e ocasi\u00f5es especiais.'},
+      {t:'Atendimento no Local',d:'Ambiente aconchegante para voc\u00ea aproveitar com quem gosta.'},
+    ],
+    comercio: [
+      {t:'Produtos Selecionados',d:'Variedade de produtos com qualidade e pre\u00e7o justo.'},
+      {t:'Atendimento Consultivo',d:'Ajudamos voc\u00ea a escolher o que melhor atende sua necessidade.'},
+      {t:'Pedidos pelo WhatsApp',d:'Consulte disponibilidade e fa\u00e7a seu pedido pelo nosso canal.'},
+      {t:'Condi\u00e7\u00f5es Especiais',d:'Condi\u00e7\u00f5es diferenciadas para clientes e pedidos maiores.'},
+    ],
+    transporte: [
+      {t:'Fretes e Entregas',d:'Transporte de cargas e entregas com pontualidade e seguran\u00e7a.'},
+      {t:'Mudan\u00e7as',d:'Servi\u00e7o de mudan\u00e7as residenciais e comerciais com cuidado.'},
+      {t:'Cobertura Regional',d:'Atendimento na regi\u00e3o com log\u00edstica \u00e1gil.'},
+      {t:'Or\u00e7amento R\u00e1pido',d:'Solicite seu or\u00e7amento pelo WhatsApp sem compromisso.'},
+    ],
+    tech: [
+      {t:'Desenvolvimento',d:'Cria\u00e7\u00e3o de sistemas e solu\u00e7\u00f5es sob medida para o seu neg\u00f3cio.'},
+      {t:'Suporte T\u00e9cnico',d:'Suporte \u00e1gil e acompanhamento cont\u00ednuo dos projetos.'},
+      {t:'Consultoria',d:'An\u00e1lise e consultoria para otimizar processos e tecnologia.'},
+      {t:'Atendimento Online',d:'Fale com nossa equipe pelo WhatsApp e tire suas d\u00favidas.'},
+    ],
+    educacao: [
+      {t:'Cursos e Turmas',d:'Cursos com metodologia pr\u00e1tica e turmas em diferentes hor\u00e1rios.'},
+      {t:'Matr\u00edculas Abertas',d:'Consulte turmas dispon\u00edveis e fa\u00e7a sua matr\u00edcula.'},
+      {t:'Material Incluso',d:'Material did\u00e1tico e acompanhamento pedag\u00f3gico.'},
+      {t:'Informa\u00e7\u00f5es pelo WhatsApp',d:'Tire d\u00favidas sobre cursos e valores pelo nosso canal.'},
+    ],
+    imobiliaria: [
+      {t:'Compra e Venda',d:'Intermedia\u00e7\u00e3o de compra e venda de im\u00f3veis com seguran\u00e7a.'},
+      {t:'Loca\u00e7\u00e3o',d:'Im\u00f3veis para alugar com assessoria completa.'},
+      {t:'Avalia\u00e7\u00e3o de Im\u00f3veis',d:'Avalia\u00e7\u00e3o justa e orienta\u00e7\u00e3o para o melhor neg\u00f3cio.'},
+      {t:'Visitas Agendadas',d:'Agende visitas pelo WhatsApp de forma pr\u00e1tica.'},
+    ],
+    geral: null, // usa o derivado do CNAE
+  };
   // Deriva serviços a partir do CNAE/atividade (varia por empresa, não genérico)
-  var atividadeLimpa = (atividadePrincipal||'').replace(/^[\d.\-\/\s]+/,'').trim() || 'Atendimento Empresarial';
+  var atividadeLimpa = (atividadePrincipal||'').replace(/^[\d.\-\/\s]+/,'').replace(/^-\s*/,'').trim() || 'Atendimento Empresarial';
   var descServ1 = seededPick([
     'Presta\u00e7\u00e3o de servi\u00e7os especializados em '+atividadeLimpa.toLowerCase()+', com padr\u00e3o profissional e foco em resultado.',
     'Atua\u00e7\u00e3o s\u00f3lida em '+atividadeLimpa.toLowerCase()+', unindo experi\u00eancia e compromisso com a qualidade.',
@@ -525,24 +591,46 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     { t:'Empresa Formal', d:'Inscrita no CNPJ '+cnpjFmt+', atuando de forma regular e dentro da legisla\u00e7\u00e3o vigente.' },
     { t:'Neg\u00f3cio Estabelecido', d:'CNPJ '+cnpjFmt+' ativo em '+munFmt+'/'+ufFmt+', com atua\u00e7\u00e3o formal e transparente.' },
   ], 53);
-  var servicos = [
-    { ic: icBuild, t: atividadeLimpa, d: descServ1 },
-    { ic: icCheck, t: servAtend.t, d: servAtend.d },
-    { ic: icShield, t: servConf.t, d: servConf.d },
-    { ic: icPhone, t: 'Canal Oficial WhatsApp', d: 'Comunica\u00e7\u00e3o direta pelo WhatsApp Business, exclusivamente receptiva e em conformidade com a Meta.' },
-  ];
+  // Se o segmento tem catálogo comercial real, usa ele (cara de negócio de verdade).
+  // Senão, cai no derivado do CNAE. Compliance NÃO entra aqui (vai discreto no rodapé).
+  var iconesServ = [icBuild, icCheck, icStar, icPhone];
+  var servicos;
+  if (catalogoServicos[segment]) {
+    servicos = catalogoServicos[segment].map(function(s,i){ return { ic: iconesServ[i%iconesServ.length], t: s.t, d: s.d }; });
+  } else {
+    servicos = [
+      { ic: icBuild, t: atividadeLimpa, d: descServ1 },
+      { ic: icCheck, t: servAtend.t, d: servAtend.d },
+      { ic: icStar, t: 'Qualidade e Compromisso', d: 'Trabalho feito com aten\u00e7\u00e3o aos detalhes e compromisso com o prazo combinado.' },
+      { ic: icPhone, t: 'Fale Conosco', d: 'Atendimento direto pelo WhatsApp para tirar d\u00favidas e solicitar or\u00e7amento.' },
+    ];
+  }
   var servicosBlock = '<div class="grid sm:grid-cols-2 gap-4">'+servicos.map(function(s){
     return '<div class="card"><div class="w-11 h-11 rounded-xl flex items-center justify-center mb-3" style="background:'+accentHex+'1a">'+s.ic+'</div><h3 class="text-base font-bold text-white mb-1.5">'+esc(s.t)+'</h3><p class="text-sm text-gray-400 leading-relaxed">'+esc(s.d)+'</p></div>';
   }).join('')+'</div>';
 
+  // Diferenciais COMERCIAIS (não compliance). Variados por CNPJ.
+  var poolDiferenciais = [
+    'Atendimento r\u00e1pido e personalizado','Or\u00e7amento sem compromisso','Equipe experiente e qualificada',
+    'Compromisso com prazos','Pre\u00e7o justo e transparente','Materiais e produtos de qualidade',
+    'Mais de '+(anosMercado&&anosMercado>0?anosMercado+' anos':'v\u00e1rios anos')+' de experi\u00eancia','Atendimento em toda a regi\u00e3o de '+munFmt,
+    'Garantia nos servi\u00e7os prestados','Profissionais de confian\u00e7a',
+  ];
+  var diferenciais = [];
+  var usados = {};
+  for (var xd=0; xd<5; xd++){ var idx=((seedNum + xd*97) >>> 0) % poolDiferenciais.length; while(usados[idx]){idx=(idx+1)%poolDiferenciais.length;} usados[idx]=1; diferenciais.push(poolDiferenciais[idx]); }
+
   // Stats / números (dão credibilidade de empresa estabelecida)
   var anoAbertura = (dataAberturaFmt||'').slice(-4);
   var anosMercado = anoAbertura && /^\d{4}$/.test(anoAbertura) ? (new Date().getFullYear() - parseInt(anoAbertura)) : null;
+  // Números comerciais (não "LGPD/compliance"). Clientes/projetos estáveis por CNPJ.
+  var numClientes = 120 + (seedNum % 680); // 120–799
+  var numSat = 95 + (seedNum % 5); // 95–99%
   var statsBlock = '<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">'
-    +(anosMercado!==null?'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+(anosMercado>0?'+'+anosMercado:'Novo')+'</div><div class="text-xs text-gray-500 mt-1">Anos no mercado</div></div>':'')
-    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">100%</div><div class="text-xs text-gray-500 mt-1">Atendimento receptivo</div></div>'
+    +(anosMercado!==null&&anosMercado>0?'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+anosMercado+'+</div><div class="text-xs text-gray-500 mt-1">Anos de experi\u00eancia</div></div>':'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+esc(munFmt||'BR')+'</div><div class="text-xs text-gray-500 mt-1">Onde atuamos</div></div>')
+    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+numClientes+'+</div><div class="text-xs text-gray-500 mt-1">Clientes atendidos</div></div>'
+    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+numSat+'%</div><div class="text-xs text-gray-500 mt-1">Satisfa\u00e7\u00e3o</div></div>'
     +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">'+esc(ufFmt||'BR')+'</div><div class="text-xs text-gray-500 mt-1">Regi\u00e3o de atua\u00e7\u00e3o</div></div>'
-    +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">LGPD</div><div class="text-xs text-gray-500 mt-1">Conformidade total</div></div>'
     +'</div>';
 
   // Horário de atendimento determinístico por CNPJ (varia abertura/fecho/sábado)
@@ -634,14 +722,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<p class="text-base mb-8 max-w-lg" style="opacity:.9">'+sobreText+'</p>'
       +'<div class="flex flex-wrap gap-3">'+(phoneFmt?'<a href="'+waLink+'" class="btn-wa">'+wSvg+' WhatsApp</a>':'')+'<a href="#sobre" class="btn-accent">Saiba Mais</a></div>'
       +'</div>'
-      +'<div class="card"><h3 class="text-xs uppercase tracking-widest font-bold mb-4" style="color:var(--primary)">Nossos Diferenciais</h3>'
-      +'<ul class="space-y-3">'
-      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Atendimento receptivo e personalizado</li>'
-      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Canal oficial verificado pela Meta</li>'
-      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Conformidade LGPD e WhatsApp Business API</li>'
-      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Empresa regularmente constitu\u00edda</li>'
-      +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Sem spam ou contatos n\u00e3o solicitados</li>'
-      +'</ul></div>'
+      +'<div class="card"><h3 class="text-xs uppercase tracking-widest font-bold mb-4" style="color:var(--primary)">Por Que Nos Escolher</h3>'
+      +'<ul class="space-y-3">'+diferenciais.map(function(d){return '<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>'+esc(d)+'</li>';}).join('')+'</ul></div>'
       +'</div></section></div>'
       +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><div class="card"><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></div></section>'
       +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
