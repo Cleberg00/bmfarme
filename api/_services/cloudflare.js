@@ -441,19 +441,73 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'var f=document.getElementById("contato-form");if(f){f.addEventListener("submit",function(e){e.preventDefault();var nome=(f.querySelector("[name=nome]")||{}).value||"";var msg=(f.querySelector("[name=msg]")||{}).value||"";var txt=encodeURIComponent("Ola! Meu nome e "+nome+". "+msg);window.open("'+waMsgBase+'"+txt,"_blank");});}'
     +'})();<\/script>';
 
-  var footBlock = '<footer class="border-t border-[#1f1f1f] py-8 text-xs text-gray-600"><div class="max-w-6xl mx-auto px-6 text-center space-y-2">'
-    +'<div class="font-semibold text-gray-400">'+razaoTitleCase+'</div>'
-    +'<div>'+razaoFmt+' \u2014 CNPJ '+cnpjFmt+'</div>'
-    +'<div>'+fullAddress+'</div>'
-    +(emailFmt?'<div>E-mail: '+emailFmt+'</div>':'')
-    +(phoneFmt?'<div>Telefone / WhatsApp: '+phoneFmt+'</div>':'')
-    +'<div class="pt-3 flex items-center justify-center gap-4 flex-wrap">'
-    +'<a href="?page=politica-de-privacidade" data-modal="privacidade" class="'+textAccent+' hover:underline">Pol\u00edtica de Privacidade</a>'
-    +'<span class="text-gray-700">|</span>'
-    +'<a href="?page=termos-de-uso" data-modal="termos" class="'+textAccent+' hover:underline">Termos de Uso</a>'
+  // ═══════════ RODAPÉ PROFISSIONAL 4 COLUNAS (igual site de empresa real) ═══════════
+  // Ícones sociais SVG
+  var svgFb = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>';
+  var svgIg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 01-1.38-.9 3.7 3.7 0 01-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zm0 1.44c-3.14 0-3.51.01-4.75.07-1.15.05-1.77.24-2.19.4-.55.21-.94.47-1.35.88-.41.41-.67.8-.88 1.35-.16.42-.35 1.04-.4 2.19-.06 1.24-.07 1.61-.07 4.75s.01 3.51.07 4.75c.05 1.15.24 1.77.4 2.19.21.55.47.94.88 1.35.41.41.8.67 1.35.88.42.16 1.04.35 2.19.4 1.24.06 1.61.07 4.75.07s3.51-.01 4.75-.07c1.15-.05 1.77-.24 2.19-.4.55-.21.94-.47 1.35-.88.41-.41.67-.8.88-1.35.16-.42.35-1.04.4-2.19.06-1.24.07-1.61.07-4.75s-.01-3.51-.07-4.75c-.05-1.15-.24-1.77-.4-2.19a3.6 3.6 0 00-.88-1.35 3.6 3.6 0 00-1.35-.88c-.42-.16-1.04-.35-2.19-.4-1.24-.06-1.61-.07-4.75-.07zm0 2.45a5.95 5.95 0 110 11.9 5.95 5.95 0 010-11.9zm0 9.81a3.86 3.86 0 100-7.72 3.86 3.86 0 000 7.72zm7.58-10.05a1.39 1.39 0 11-2.78 0 1.39 1.39 0 012.78 0z"/></svg>';
+  var svgLi = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.66H9.35V9h3.41v1.56h.05c.48-.9 1.63-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 110-4.13 2.06 2.06 0 010 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.8 0 0 .78 0 1.75v20.5C0 23.22.8 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.75V1.75C24 .78 23.2 0 22.22 0z"/></svg>';
+  var footSocial = '<div class="flex gap-3 mt-4">'
+    +'<a href="'+sameAs[0]+'" target="_blank" rel="noopener nofollow" aria-label="Facebook" style="color:var(--muted)">'+svgFb+'</a>'
+    +'<a href="'+sameAs[1]+'" target="_blank" rel="noopener nofollow" aria-label="Instagram" style="color:var(--muted)">'+svgIg+'</a>'
+    +'<a href="'+sameAs[2]+'" target="_blank" rel="noopener nofollow" aria-label="LinkedIn" style="color:var(--muted)">'+svgLi+'</a>'
+    +'</div>';
+  // Lista de serviços pro rodapé (nomes por segmento — independente do catálogo completo)
+  var footServMap = {
+    construcao:['Constru\u00e7\u00e3o de Resid\u00eancias','Reformas e Amplia\u00e7\u00f5es','Projetos e Or\u00e7amentos','Acabamentos'],
+    saude:['Consultas','Exames e Avalia\u00e7\u00f5es','Acompanhamento','Agendamento'],
+    juridico:['Consultoria Jur\u00eddica','Acompanhamento Processual','Contratos e Documentos','Atendimento'],
+    beleza:['Cortes e Penteados','Colora\u00e7\u00e3o e Tratamentos','Est\u00e9tica','Agendamento'],
+    alimentacao:['Card\u00e1pio','Pedidos e Entrega','Encomendas','Atendimento no Local'],
+    comercio:['Produtos','Atendimento Consultivo','Pedidos','Condi\u00e7\u00f5es Especiais'],
+    transporte:['Fretes e Entregas','Mudan\u00e7as','Cobertura Regional','Or\u00e7amentos'],
+    tech:['Desenvolvimento','Suporte T\u00e9cnico','Consultoria','Atendimento Online'],
+    educacao:['Cursos e Turmas','Matr\u00edculas','Material Did\u00e1tico','Informa\u00e7\u00f5es'],
+    imobiliaria:['Compra e Venda','Loca\u00e7\u00e3o','Avalia\u00e7\u00e3o','Visitas'],
+  };
+  var footServNames = footServMap[segment] || ['Nossos Servi\u00e7os','Atendimento','Or\u00e7amentos','Suporte'];
+  var footServCol = footServNames.map(function(n){ return '<li><a href="#servicos" class="hover:underline" style="color:var(--muted)">\u203a '+esc(n)+'</a></li>'; }).join('');
+  var footMenuCol = ['Home|#top','Quem Somos|#sobre','Servi\u00e7os|#servicos','Perguntas|#faq','Contato|#fale'].map(function(m){ var p=m.split('|'); return '<li><a href="'+p[1]+'" class="hover:underline" style="color:var(--muted)">\u203a '+esc(p[0])+'</a></li>'; }).join('');
+  var footIconPin = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+skin.primary+'" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+  var footIconTel = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+skin.primary+'" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>';
+  var footIconMail = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+skin.primary+'" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>';
+  var footBlock = '<footer style="background:var(--strong);color:#cbd5e1">'
+    +'<div class="max-w-6xl mx-auto px-6 py-14 grid gap-10 md:grid-cols-2 lg:grid-cols-4">'
+    // Col 1 — marca
+    +'<div>'
+    +'<div class="flex items-center gap-2 mb-3"><div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white" style="background:'+skin.primary+'">'+initials+'</div><span class="font-bold text-white text-lg">'+esc(displayName)+'</span></div>'
+    +'<div class="text-sm font-semibold text-white mt-2">'+razaoTitleCase+'</div>'
+    +'<div class="text-xs" style="color:'+skin.primary+'">CNPJ: '+cnpjFmt+'</div>'
+    +footSocial
     +'</div>'
-    +'<div class="pt-2 text-gray-700">\u00a9 '+(new Date().getFullYear())+' '+razaoTitleCase+'. Todos os direitos reservados.</div>'
-    +'</div></footer>'+floatWa+modaisHtml+domScript+interactScript+'</body></html>';
+    // Col 2 — contato
+    +'<div>'
+    +'<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4" style="border-bottom:2px solid '+skin.primary+';display:inline-block;padding-bottom:4px">Contato</h4>'
+    +'<ul class="space-y-4 text-sm">'
+    +'<li class="flex gap-2">'+footIconPin+'<span><strong class="text-white block text-xs uppercase">Endere\u00e7o</strong>'+fullAddress+'</span></li>'
+    +(phoneFmt?'<li class="flex gap-2">'+footIconTel+'<span><strong class="text-white block text-xs uppercase">Telefone</strong>'+phoneFmt+'</span></li>':'')
+    +(emailFmt?'<li class="flex gap-2">'+footIconMail+'<span><strong class="text-white block text-xs uppercase">E-mail</strong>'+emailFmt+'</span></li>':'')
+    +'</ul>'
+    +'</div>'
+    // Col 3 — serviços
+    +'<div>'
+    +'<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4" style="border-bottom:2px solid '+skin.primary+';display:inline-block;padding-bottom:4px">Servi\u00e7os</h4>'
+    +'<ul class="space-y-2 text-sm">'+footServCol+'</ul>'
+    +'</div>'
+    // Col 4 — site
+    +'<div>'
+    +'<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4" style="border-bottom:2px solid '+skin.primary+';display:inline-block;padding-bottom:4px">Site</h4>'
+    +'<ul class="space-y-2 text-sm">'+footMenuCol
+    +'<li><a href="?page=politica-de-privacidade" data-modal="privacidade" class="hover:underline" style="color:var(--muted)">\u203a Privacidade</a></li>'
+    +'<li><a href="?page=termos-de-uso" data-modal="termos" class="hover:underline" style="color:var(--muted)">\u203a Termos de Uso</a></li>'
+    +'</ul>'
+    +'</div>'
+    +'</div>'
+    // Barra inferior
+    +'<div style="border-top:1px solid rgba(255,255,255,.1)"><div class="max-w-6xl mx-auto px-6 py-5 text-center text-xs" style="color:rgba(255,255,255,.5)">'
+    +'\u00a9 '+(new Date().getFullYear())+' '+razaoTitleCase+'. Todos os direitos reservados.<br>'
+    +razaoFmt+' \u2014 CNPJ '+cnpjFmt+' \u2014 '+fullAddress
+    +'</div></div>'
+    +'</footer>'+floatWa+modaisHtml+domScript+interactScript+'</body></html>';
 
   // Reusable content blocks — "Sobre" rico e variado por CNPJ (não frase-template repetida)
   var anoAb = (dataAberturaFmt||'').slice(-4);
