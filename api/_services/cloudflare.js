@@ -398,10 +398,10 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<span itemprop="legalName">'+razaoFmt+'</span> \u2014 CNPJ <span itemprop="taxID">'+cnpjFmt+'</span>'
     +' \u2014 '+esc((endereco||'')+(numero?', '+numero:''))+(bairroFmt?', '+bairroFmt:'')+', '+munFmt+'/'+ufFmt+(cepFmt?' \u2014 CEP '+cepFmt:'')
     +(emailFmt?' \u2014 '+emailFmt:'')
-    +' \u2014 <a href="?page=politica-de-privacidade">Privacidade</a> \u2014 <a href="?page=termos-de-uso">Termos</a>'
+    +' \u2014 <a href="?page=politica-de-privacidade" data-modal="privacidade">Privacidade</a> \u2014 <a href="?page=termos-de-uso" data-modal="termos">Termos</a>'
     +'</div>';
 
-  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-white">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="?page=sobre" class="text-xs text-gray-400 hover:text-white">Quem Somos</a><a href="#servicos" class="text-xs text-gray-400 hover:text-white">Servi\u00e7os</a><a href="#galeria" class="text-xs text-gray-400 hover:text-white">Galeria</a><a href="#faq" class="text-xs text-gray-400 hover:text-white">FAQ</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
+  var headerHtml = '<header class="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur border-b border-[#1f1f1f]"><div class="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3"><div class="flex items-center gap-3"><div class="w-9 h-9 rounded-lg '+btnBg+' flex items-center justify-center font-bold text-sm text-white">'+initials+'</div><div><span class="font-semibold text-sm text-white" data-field="razao">'+razaoFmt+'</span><span class="ml-2 text-[11px] text-gray-500" data-field="cnpj">'+cnpjFmt+'</span></div></div><nav class="flex items-center gap-4 flex-wrap"><a href="#sobre" class="text-xs text-gray-400 hover:text-white">Quem Somos</a><a href="#servicos" class="text-xs text-gray-400 hover:text-white">Servi\u00e7os</a><a href="#galeria" class="text-xs text-gray-400 hover:text-white">Galeria</a><a href="#faq" class="text-xs text-gray-400 hover:text-white">FAQ</a><a href="#contato" class="text-xs text-gray-400 hover:text-white">Contato</a>'+(phoneFmt?'<a href="'+waLink+'" class="btn-accent text-xs" data-field="phone">'+phoneFmt+'</a>':'')+'</nav></div></header>';
 
   // ═══════════ INTERATIVIDADE REAL (navegação, modais, WhatsApp, formulário) ═══════════
   // Botão flutuante de WhatsApp (todo site de negócio real tem)
@@ -473,7 +473,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   };
   var footServNames = footServMap[segment] || ['Nossos Servi\u00e7os','Atendimento','Or\u00e7amentos','Suporte'];
   var footServCol = footServNames.map(function(n){ return '<li><a href="#servicos" class="hover:underline" style="color:var(--muted)">\u203a '+esc(n)+'</a></li>'; }).join('');
-  var footMenuCol = ['Home|/','Quem Somos|?page=sobre','Servi\u00e7os|#servicos','Galeria|#galeria','Contato|#fale'].map(function(m){ var p=m.split('|'); return '<li><a href="'+p[1]+'" class="hover:underline" style="color:var(--muted)">\u203a '+esc(p[0])+'</a></li>'; }).join('');
+  var footMenuCol = ['Home|#top','Quem Somos|#sobre','Servi\u00e7os|#servicos','Galeria|#galeria','Contato|#fale'].map(function(m){ var p=m.split('|'); return '<li><a href="'+p[1]+'" class="hover:underline" style="color:var(--muted)">\u203a '+esc(p[0])+'</a></li>'; }).join('');
   var footIconPin = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+skin.primary+'" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
   var footIconTel = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+skin.primary+'" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg>';
   var footIconMail = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="'+skin.primary+'" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>';
@@ -504,8 +504,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<div>'
     +'<h4 class="text-white font-bold text-sm uppercase tracking-wider mb-4" style="border-bottom:2px solid '+skin.primary+';display:inline-block;padding-bottom:4px">Site</h4>'
     +'<ul class="space-y-2 text-sm">'+footMenuCol
-    +'<li><a href="?page=politica-de-privacidade" class="hover:underline" style="color:var(--muted)">\u203a Privacidade</a></li>'
-    +'<li><a href="?page=termos-de-uso" class="hover:underline" style="color:var(--muted)">\u203a Termos de Uso</a></li>'
+    +'<li><a href="?page=politica-de-privacidade" data-modal="privacidade" class="hover:underline" style="color:var(--muted)">\u203a Privacidade</a></li>'
+    +'<li><a href="?page=termos-de-uso" data-modal="termos" class="hover:underline" style="color:var(--muted)">\u203a Termos de Uso</a></li>'
     +'</ul>'
     +'</div>'
     +'</div>'
