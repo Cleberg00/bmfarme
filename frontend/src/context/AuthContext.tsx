@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
-import api from '../api/client';
+import api, { markLoginSuccess } from '../api/client';
 
 type AuthUser = {
   id: number | string;
@@ -34,16 +34,45 @@ function readStoredUser(): AuthUser | null {
   }
 }
 
+function isTokenValid(token: string | null): boolean {
+  if (!token) return false;
+  try {
+    // JWT = header.payload.signature, decodifica o payload (base64)
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // exp é em segundos
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      // Token expirado — limpa
+      localStorage.removeItem('bmfarm.token');
+      localStorage.removeItem('bmfarm.user');
+      return false;
+    }
+    return true;
+  } catch {
+    // Token malformado — limpa
+    localStorage.removeItem('bmfarm.token');
+    localStorage.removeItem('bmfarm.user');
+    return false;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('bmfarm.token'));
-  const [user, setUser] = useState<AuthUser | null>(() => readStoredUser());
+  const [token, setToken] = useState<string | null>(() => {
+    const stored = localStorage.getItem('bmfarm.token');
+    return isTokenValid(stored) ? stored : null;
+  });
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    const stored = localStorage.getItem('bmfarm.token');
+    return isTokenValid(stored) ? readStoredUser() : null;
+  });
 
   const login = useCallback(async (email: string, password: string) => {
     const { data } = await api.post('/auth/login', { email, password });
     const nextToken = data.token;
     const nextUser = data.user;
+    if (!nextToken) throw new Error('Servidor não retornou token. Tente novamente.');
     localStorage.setItem('bmfarm.token', nextToken);
     localStorage.setItem('bmfarm.user', JSON.stringify(nextUser));
+    markLoginSuccess();
     setToken(nextToken);
     setUser(nextUser);
   }, []);

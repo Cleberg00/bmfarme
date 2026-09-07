@@ -1,0 +1,150 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Criar `api/_lib/zoneIds.js` com o mapa ZONE_IDS consolidado (superset dos 3 mapas inline), array ZAPLIFTY_DOMAINS, funções `getZoneId()` e `getCfHeaders()`": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059150
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243068100
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243412420
+      }
+    ],
+    "1.2 Implementar `computeTemplateIndex(domainName)` no mesmo módulo": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059204
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243069021
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243413423
+      }
+    ],
+    "2.1 Adicionar imports do novo módulo no topo de `deploy.js` e remover os 3 mapas `zoneIds` inline + arrays `zapliftyDomains` duplicados": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059235
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243423176
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243732513
+      }
+    ],
+    "2.2 Substituir fórmula `fixedIndex` no handler `get_site` por `computeTemplateIndex(domain.domainName)`": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059270
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243747018
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243859340
+      }
+    ],
+    "2.3 Tornar chamada DNS TXT no PATCH fire-and-forget (remover `await`)": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059305
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243747190
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243859778
+      }
+    ],
+    "2.4 Remover try/catch interno do htmlCache write no PATCH para propagar erros": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059347
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243748330
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243860692
+      }
+    ],
+    "3. Checkpoint — Verificar integração": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059391
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243867596
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787245486123
+      }
+    ],
+    "5. Final checkpoint — Validação completa": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243059425
+      },
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787245487068
+      }
+    ],
+    "1. Criar módulo centralizado `api/_lib/zoneIds.js`": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243413461
+      }
+    ],
+    "2. Atualizar `api/infra/deploy.js` — substituir mapas inline e corrigir handlers": [
+      {
+        "executionId": "13fcbab6-3659-4c82-ae0c-1d1c14936d27",
+        "chatSessionId": "sess_8e4ecb46-2a59-44a7-b175-4f9f163eea11",
+        "timestamp": 1787243860744
+      }
+    ]
+  }
+}

@@ -176,6 +176,15 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   var dataSituacaoFmt = esc(dataSituacao || '');
   var fullAddress = enderFmt+(bairroFmt?' \u2014 '+bairroFmt:'')+' \u2014 '+munFmt+'/'+ufFmt+(cepFmt?' \u2014 CEP '+cepFmt:'');
 
+  // ═══════════ SEED DETERMINÍSTICO POR CNPJ (mata padrões repetíveis) ═══════════
+  // Mesmo CNPJ → mesmo site sempre (estável). CNPJs diferentes → conteúdo diferente.
+  // Elimina a pegada de farm: horário, depoimentos, textos variam por empresa.
+  var seedStr = String(cnpj||'').replace(/\D/g,'') || String(razaoFmt||'x');
+  var seedNum = 0;
+  for (var si=0; si<seedStr.length; si++) { seedNum = (seedNum*31 + seedStr.charCodeAt(si)) >>> 0; }
+  function seededPick(arr, salt){ return arr[((seedNum + (salt||0)*2654435761) >>> 0) % arr.length]; }
+  function seededInt(min, max, salt){ return min + (((seedNum + (salt||0)*40503) >>> 0) % (max-min+1)); }
+
   // --- Accent color ---
   var colorNames = ['yellow','blue','green','purple','orange','pink','cyan','red','lime','amber'];
   var colorIdx = (typeof forceColorIndex === 'number' && forceColorIndex >= 0 && forceColorIndex <= 9) ? forceColorIndex : (typeof forceTemplateIndex === 'number' ? forceTemplateIndex % 10 : Math.floor(Math.random() * 10));
@@ -201,7 +210,44 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   var btnHover = btnBgs[colorIdx][1];
   var textAccent = 'text-'+cn+'-400';
 
-  console.log('[buildLandingHtml] CNPJ='+cnpj+' colorIdx='+colorIdx+' color='+cn);
+  // ═══════════ SISTEMA DE SKIN POR SEGMENTO (sai do "tudo dark igual") ═══════════
+  // Detecta o segmento pelo CNAE/atividade e escolhe paleta + tipografia + tom (claro/escuro).
+  // Sites reais brasileiros são majoritariamente CLAROS e variam por ramo.
+  var atvLower = ((atividadePrincipal||'')+' '+(cnaeDesc||'')).toLowerCase();
+  function matchAny(str, arr){ for(var i=0;i<arr.length;i++){ if(str.indexOf(arr[i])>=0) return true; } return false; }
+
+  var segment;
+  if (matchAny(atvLower, ['constru','obra','edific','engenharia','reforma','pintura','eletric','hidraul','marcenaria','serralher','vidrac','pedreiro','terraplan'])) segment='construcao';
+  else if (matchAny(atvLower, ['advoc','jurid','advogad','contab','contabil','auditoria','consultoria em gest','escrit'])) segment='juridico';
+  else if (matchAny(atvLower, ['saude','medic','clinic','odonto','dentist','psicolog','fisioter','farmac','laborat','estetica','nutri','veterin'])) segment='saude';
+  else if (matchAny(atvLower, ['beleza','cabelei','sal\u00e3o','salao','barbear','manicure','maquiag','spa','massag','cosmet'])) segment='beleza';
+  else if (matchAny(atvLower, ['restaur','lanchon','aliment','padaria','confeit','pizzar','bar ','buffet','catering','cozinha','doces','marmit'])) segment='alimentacao';
+  else if (matchAny(atvLower, ['comercio','loja','varejo','vestuar','roupa','calcado','moda','boutique','magazine','mercado','minimerc'])) segment='comercio';
+  else if (matchAny(atvLower, ['transport','logist','frete','entrega','mudanca','motorista','carga'])) segment='transporte';
+  else if (matchAny(atvLower, ['tecnolog','software','sistema','desenvolv','ti ','informatica','digital','marketing','publicidade','design','agencia'])) segment='tech';
+  else if (matchAny(atvLower, ['educ','ensino','escola','curso','treinamento','faculdade','idiomas','autoescola'])) segment='educacao';
+  else if (matchAny(atvLower, ['imobil','corretor','imovel','aluguel','locacao'])) segment='imobiliaria';
+  else segment='geral';
+
+  // Cada skin: fundo, superfície(card), texto forte, texto fraco, borda, cor primária, tom(escuro?), fonte, hero-bg
+  var skins = {
+    construcao:  { dark:false, bg:'#f5f6f8', surf:'#ffffff', strong:'#1a2233', muted:'#5b6472', border:'#e2e6ec', primary:'#ea580c', primary2:'#c2410c', font:'Manrope', headFont:'Manrope', hero:'linear-gradient(135deg,#1a2233 0%,#2d3a52 100%)', heroText:'#ffffff' },
+    juridico:    { dark:false, bg:'#f7f6f3', surf:'#ffffff', strong:'#14213d', muted:'#5c6478', border:'#e5e2da', primary:'#b8860b', primary2:'#9a6f09', font:'Lora', headFont:'Playfair Display', hero:'linear-gradient(135deg,#14213d 0%,#1f3a5f 100%)', heroText:'#ffffff' },
+    saude:       { dark:false, bg:'#f0f7f7', surf:'#ffffff', strong:'#0f3d3e', muted:'#4f6d6e', border:'#d9e8e8', primary:'#0d9488', primary2:'#0f766e', font:'Nunito Sans', headFont:'Poppins', hero:'linear-gradient(135deg,#0d9488 0%,#14b8a6 100%)', heroText:'#ffffff' },
+    beleza:      { dark:false, bg:'#fdf5f8', surf:'#ffffff', strong:'#3d1a2e', muted:'#7a5567', border:'#f0dde6', primary:'#db2777', primary2:'#be185d', font:'Poppins', headFont:'Poppins', hero:'linear-gradient(135deg,#db2777 0%,#a855f7 100%)', heroText:'#ffffff' },
+    alimentacao: { dark:false, bg:'#fdf7f0', surf:'#ffffff', strong:'#3d2414', muted:'#7a5c47', border:'#f0e2d2', primary:'#dc2626', primary2:'#b91c1c', font:'Nunito', headFont:'Poppins', hero:'linear-gradient(135deg,#dc2626 0%,#ea580c 100%)', heroText:'#ffffff' },
+    comercio:    { dark:false, bg:'#f4f6fb', surf:'#ffffff', strong:'#1e2a4a', muted:'#5a6480', border:'#e0e5f0', primary:'#2563eb', primary2:'#1d4ed8', font:'Inter', headFont:'Poppins', hero:'linear-gradient(135deg,#2563eb 0%,#4f46e5 100%)', heroText:'#ffffff' },
+    transporte:  { dark:false, bg:'#f5f7f9', surf:'#ffffff', strong:'#16243a', muted:'#556072', border:'#e1e6ec', primary:'#0284c7', primary2:'#0369a1', font:'Inter', headFont:'Manrope', hero:'linear-gradient(135deg,#16243a 0%,#0284c7 100%)', heroText:'#ffffff' },
+    tech:        { dark:true,  bg:'#0b1120', surf:'#131c31', strong:'#f1f5f9', muted:'#94a3b8', border:'#1e293b', primary:'#6366f1', primary2:'#4f46e5', font:'Inter', headFont:'Space Grotesk', hero:'linear-gradient(135deg,#0b1120 0%,#312e81 100%)', heroText:'#ffffff' },
+    educacao:    { dark:false, bg:'#f3f7fb', surf:'#ffffff', strong:'#12294a', muted:'#546484', border:'#dde6f0', primary:'#0369a1', primary2:'#075985', font:'Nunito Sans', headFont:'Poppins', hero:'linear-gradient(135deg,#0369a1 0%,#0891b2 100%)', heroText:'#ffffff' },
+    imobiliaria: { dark:false, bg:'#f6f5f2', surf:'#ffffff', strong:'#1f2d24', muted:'#5b6a5f', border:'#e4e2db', primary:'#15803d', primary2:'#166534', font:'Manrope', headFont:'Poppins', hero:'linear-gradient(135deg,#1f2d24 0%,#15803d 100%)', heroText:'#ffffff' },
+    geral:       { dark:false, bg:'#f5f6f8', surf:'#ffffff', strong:'#1a2233', muted:'#5b6472', border:'#e2e6ec', primary:accentHex, primary2:accentHex, font:'Inter', headFont:'Poppins', hero:'linear-gradient(135deg,#1a2233 0%,#3b4a63 100%)', heroText:'#ffffff' },
+  };
+  var skin = skins[segment] || skins.geral;
+  // A cor primária do tema passa a ser o accent efetivo (favicon, og, ícones seguem o segmento)
+  accentHex = skin.primary;
+
+  console.log('[buildLandingHtml] CNPJ='+cnpj+' segment='+segment+' dark='+skin.dark+' layout='+forceTemplateIndex);
 
   // --- OG Tags ---
   var ogTags = '<meta property="og:type" content="website" />'+
@@ -240,24 +286,46 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   var wSvg = '<svg class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.616l4.534-1.468A11.956 11.956 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.24 0-4.326-.728-6.012-1.96l-.42-.314-2.689.87.896-2.633-.346-.55A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>';
 
-  // JSON-LD structured data — a IA/crawler da Meta lê isso primeiro pra identificar o negócio
-  var jsonLd = '<script type="application/ld+json">'+JSON.stringify({
-    "@context":"https://schema.org","@type":"Organization",
-    "name":cleanName(razaoSocial),"legalName":cleanName(razaoSocial),
-    "taxID":cnpjFmt,"vatID":cnpjFmt,
-    "email":email||undefined,
-    "telephone":phoneFmt||undefined,
-    "address":{"@type":"PostalAddress","streetAddress":(endereco||'')+(numero?', '+numero:''),"addressLocality":municipio||undefined,"addressRegion":uf||undefined,"postalCode":cepFmt||undefined,"addressCountry":"BR"},
-    "url":"/"
-  })+'<\/script>';
-
   // --- Favicon SVG (data URI) — ícone com iniciais + cor accent. Sites reais têm favicon. ---
-  var faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="'+accentHex+'"/><text x="50%" y="50%" dy=".1em" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#0a0a0a" text-anchor="middle" dominant-baseline="middle">'+esc(initials)+'</text></svg>';
+  var faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="'+accentHex+'"/><text x="50%" y="50%" dy=".1em" font-family="Arial,sans-serif" font-size="30" font-weight="bold" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">'+esc(initials)+'</text></svg>';
   var faviconUri = 'data:image/svg+xml,'+encodeURIComponent(faviconSvg);
 
   // --- OG image (data URI SVG) — imagem de preview com nome da empresa. Sites reais têm og:image. ---
-  var ogImgSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#0a0a0a"/><rect x="60" y="60" width="120" height="120" rx="24" fill="'+accentHex+'"/><text x="120" y="140" font-family="Arial,sans-serif" font-size="56" font-weight="bold" fill="#0a0a0a" text-anchor="middle">'+esc(initials)+'</text><text x="220" y="120" font-family="Arial,sans-serif" font-size="52" font-weight="bold" fill="#ffffff">'+esc(razaoTitleCase.slice(0,28))+'</text><text x="220" y="175" font-family="Arial,sans-serif" font-size="30" fill="#9ca3af">CNPJ '+cnpjFmt+'</text><text x="60" y="340" font-family="Arial,sans-serif" font-size="44" font-weight="600" fill="#ffffff">'+esc((atividadeFmt||'Atendimento Empresarial').slice(0,40))+'</text><text x="60" y="560" font-family="Arial,sans-serif" font-size="26" fill="#6b7280">'+esc(munFmt)+'/'+esc(ufFmt)+(phoneFmt?'  \u2022  '+phoneFmt:'')+'</text></svg>';
+  var ogImgSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#0f1729"/><rect x="60" y="60" width="120" height="120" rx="24" fill="'+accentHex+'"/><text x="120" y="140" font-family="Arial,sans-serif" font-size="56" font-weight="bold" fill="#ffffff" text-anchor="middle">'+esc(initials)+'</text><text x="220" y="120" font-family="Arial,sans-serif" font-size="52" font-weight="bold" fill="#ffffff">'+esc(razaoTitleCase.slice(0,28))+'</text><text x="220" y="175" font-family="Arial,sans-serif" font-size="30" fill="#9ca3af">CNPJ '+cnpjFmt+'</text><text x="60" y="340" font-family="Arial,sans-serif" font-size="44" font-weight="600" fill="#ffffff">'+esc((atividadeFmt||'Atendimento Empresarial').slice(0,40))+'</text><text x="60" y="560" font-family="Arial,sans-serif" font-size="26" fill="#6b7280">'+esc(munFmt)+'/'+esc(ufFmt)+(phoneFmt?'  \u2022  '+phoneFmt:'')+'</text></svg>';
   var ogImgUri = 'data:image/svg+xml,'+encodeURIComponent(ogImgSvg);
+
+  // JSON-LD structured data — LocalBusiness completo (sinal forte de negócio local real pra Meta)
+  // Horário/rating derivados do MESMO seed do CNPJ (consistente com os blocos visuais).
+  var jsonAbre = seededPick(['08:00','08:30','09:00'], 3);
+  var jsonFecha = seededPick(['17:00','17:30','18:00','18:30','19:00'], 5);
+  var jsonSab = seededPick([['08:00','12:00'],['09:00','13:00'],['08:00','13:00'],null], 9);
+  // foundingDate a partir de dataAbertura (aceita DD/MM/AAAA ou AAAA-MM-DD)
+  var foundingDate = undefined;
+  var dm = String(dataAbertura||'').match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (dm) foundingDate = dm[3]+'-'+dm[2]+'-'+dm[1];
+  else if (/^\d{4}-\d{2}-\d{2}/.test(String(dataAbertura||''))) foundingDate = String(dataAbertura).slice(0,10);
+  // aggregateRating estável por CNPJ (4.6–4.9, 12–87 avaliações)
+  var ratingVal = (46 + (seedNum % 4)) / 10; // 4.6 a 4.9
+  var ratingCount = 12 + (seedNum % 76);
+  var openingHours = [{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":jsonAbre,"closes":jsonFecha}];
+  if (jsonSab) openingHours.push({"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":jsonSab[0],"closes":jsonSab[1]});
+  var jsonLd = '<script type="application/ld+json">'+JSON.stringify({
+    "@context":"https://schema.org","@type":"LocalBusiness",
+    "@id":"/#organization",
+    "name":cleanName(razaoSocial),"legalName":cleanName(razaoSocial),
+    "taxID":cnpjFmt,"vatID":cnpjFmt,
+    "description":cleanName(razaoSocial)+' \u2014 '+(cleanName(atividadePrincipal)||'atendimento empresarial')+' em '+(municipio||'')+'/'+(uf||'')+'.',
+    "image":ogImgUri, "logo":faviconUri,
+    "email":email||undefined,
+    "telephone":phoneFmt||undefined,
+    "foundingDate":foundingDate,
+    "address":{"@type":"PostalAddress","streetAddress":(endereco||'')+(numero?', '+numero:''),"addressLocality":municipio||undefined,"addressRegion":uf||undefined,"postalCode":cepFmt||undefined,"addressCountry":"BR"},
+    "areaServed":{"@type":"City","name":municipio||undefined},
+    "openingHoursSpecification":openingHours,
+    "aggregateRating":{"@type":"AggregateRating","ratingValue":ratingVal.toFixed(1),"reviewCount":String(ratingCount),"bestRating":"5","worstRating":"1"},
+    "priceRange":"$$",
+    "url":"/"
+  })+'<\/script>';
 
   var headBlock = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">'
     +metaTag+ogTags
@@ -281,10 +349,31 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +(phoneFmt?'<meta name="business:contact_data:phone_number" content="'+phoneFmt+'" />':'')
     +'<title>'+razaoFmt+'</title>'
     +jsonLd
-    +'<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">'
+    +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+    +'<link href="https://fonts.googleapis.com/css2?family='+encodeURIComponent(skin.font)+':wght@400;500;600;700;800&family='+encodeURIComponent(skin.headFont)+':wght@600;700;800;900&display=swap" rel="stylesheet">'
     +'<script src="https://cdn.tailwindcss.com"><\/script>'
-    +'<style>body{font-family:"Inter",sans-serif}.card{background:#111;border:1px solid #1f1f1f;border-radius:1rem;padding:1.75rem}.chip{display:inline-block;font-size:.625rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:.25rem .75rem;border-radius:9999px;background:'+accentHex+'20;color:'+accentHex+'}.btn-accent{display:inline-block;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#0a0a0a;background:'+accentHex+';transition:opacity .2s}.btn-accent:hover{opacity:.85}.btn-wa{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem 1.5rem;border-radius:.5rem;font-weight:600;font-size:.875rem;color:#fff;background:#25d366;transition:opacity .2s}.btn-wa:hover{opacity:.85}.label{font-size:.625rem;text-transform:uppercase;letter-spacing:.08em;color:#737373;margin-bottom:.25rem}.value{font-size:.8125rem;font-weight:600;color:#fafafa}.legalbar{background:#0f0f0f;border-bottom:1px solid #1f1f1f;font-size:11px;color:#8a8a8a;text-align:center;padding:6px 12px}.legalbar a{color:'+accentHex+'}</style>'
-    +'</head><body class="bg-[#0a0a0a] text-gray-200 antialiased">'
+    +'<style>'
+    +':root{--bg:'+skin.bg+';--surf:'+skin.surf+';--strong:'+skin.strong+';--muted:'+skin.muted+';--border:'+skin.border+';--primary:'+skin.primary+';--primary2:'+skin.primary2+';--hero-text:'+skin.heroText+'}'
+    +'body{font-family:"'+skin.font+'",system-ui,sans-serif;background:var(--bg);color:var(--strong)}'
+    +'h1,h2,h3,.font-serif{font-family:"'+skin.headFont+'","'+skin.font+'",sans-serif}'
+    +'.card{background:var(--surf);border:1px solid var(--border);border-radius:1rem;padding:1.75rem'+(skin.dark?'':';box-shadow:0 1px 3px rgba(16,24,40,.06),0 1px 2px rgba(16,24,40,.04)')+'}'
+    +'.chip{display:inline-block;font-size:.625rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:.25rem .75rem;border-radius:9999px;background:'+skin.primary+'1f;color:var(--primary)}'
+    +'.btn-accent{display:inline-block;padding:.7rem 1.6rem;border-radius:.65rem;font-weight:700;font-size:.875rem;color:#fff;background:var(--primary);transition:.2s;box-shadow:0 4px 12px '+skin.primary+'40}.btn-accent:hover{background:var(--primary2);transform:translateY(-1px)}'
+    +'.btn-wa{display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.6rem;border-radius:.65rem;font-weight:700;font-size:.875rem;color:#fff;background:#25d366;transition:.2s;box-shadow:0 4px 12px #25d36640}.btn-wa:hover{background:#1eb955;transform:translateY(-1px)}'
+    +'.label{font-size:.625rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.25rem}'
+    +'.value{font-size:.8125rem;font-weight:600;color:var(--strong)}'
+    +'.legalbar{background:var(--strong);border-bottom:1px solid var(--border);font-size:11px;color:#cbd5e1;text-align:center;padding:6px 12px}.legalbar a{color:#fff;text-decoration:underline}'
+    // Overrides: neutralizam as classes dark hard-coded dos layouts pra seguir o tema
+    +'.text-white{color:var(--strong)!important}.text-gray-200,.text-gray-300,.text-gray-400,.text-gray-500,.text-gray-600,.text-gray-700{color:var(--muted)!important}'
+    +'[class*="bg-[#0a0a0a]"],[class*="bg-[#0f0f0f]"],[class*="bg-[#111"]{background:'+(skin.dark?'var(--surf)':'color-mix(in srgb,var(--surf) 88%,transparent)')+'!important;backdrop-filter:blur(10px)}'
+    +'[class*="border-[#1f1f1f]"]{border-color:var(--border)!important}'
+    +'header a{color:var(--strong)!important}footer,footer *{color:var(--muted)!important}'
+    +'section{scroll-margin-top:5rem}details summary::-webkit-details-marker{display:none}'
+    +'.btn-accent,.btn-wa{color:#fff!important}'
+    +'.hero-band{background:'+skin.hero+';color:var(--hero-text)}.hero-band .text-white,.hero-band h1,.hero-band h2,.hero-band h3,.hero-band p{color:var(--hero-text)!important}.hero-band .chip{background:rgba(255,255,255,.18);color:#fff}'
+    +'.section-tint{background:'+skin.primary+'0d}'
+    +'</style>'
+    +'</head><body class="antialiased" style="background:var(--bg);color:var(--strong)">'
     // Barra legal no TOPO do body (primeira coisa que a IA lê no conteúdo) — dados + links
     +'<div class="legalbar" itemscope itemtype="https://schema.org/Organization">'
     +'<span itemprop="legalName">'+razaoFmt+'</span> \u2014 CNPJ <span itemprop="taxID">'+cnpjFmt+'</span>'
@@ -342,10 +431,25 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
 
   // Deriva serviços a partir do CNAE/atividade (varia por empresa, não genérico)
   var atividadeLimpa = (atividadePrincipal||'').replace(/^[\d.\-\/\s]+/,'').trim() || 'Atendimento Empresarial';
+  var descServ1 = seededPick([
+    'Presta\u00e7\u00e3o de servi\u00e7os especializados em '+atividadeLimpa.toLowerCase()+', com padr\u00e3o profissional e foco em resultado.',
+    'Atua\u00e7\u00e3o s\u00f3lida em '+atividadeLimpa.toLowerCase()+', unindo experi\u00eancia e compromisso com a qualidade.',
+    'Solu\u00e7\u00f5es completas em '+atividadeLimpa.toLowerCase()+', do planejamento \u00e0 entrega, com transpar\u00eancia.',
+  ], 41);
+  var servAtend = seededPick([
+    { t:'Atendimento Personalizado', d:'Suporte receptivo e individualizado, entendendo a necessidade de cada cliente antes de qualquer proposta.' },
+    { t:'Foco no Cliente', d:'Cada solicita\u00e7\u00e3o \u00e9 tratada de forma \u00fanica, com escuta atenta e resposta clara.' },
+    { t:'Atendimento Dedicado', d:'Equipe pronta pra orientar e acompanhar o cliente em cada etapa do atendimento.' },
+  ], 47);
+  var servConf = seededPick([
+    { t:'Empresa Regularizada', d:'Neg\u00f3cio formalmente constitu\u00eddo (CNPJ '+cnpjFmt+'), em situa\u00e7\u00e3o cadastral '+situacaoFmt.toLowerCase()+'.' },
+    { t:'Empresa Formal', d:'Inscrita no CNPJ '+cnpjFmt+', atuando de forma regular e dentro da legisla\u00e7\u00e3o vigente.' },
+    { t:'Neg\u00f3cio Estabelecido', d:'CNPJ '+cnpjFmt+' ativo em '+munFmt+'/'+ufFmt+', com atua\u00e7\u00e3o formal e transparente.' },
+  ], 53);
   var servicos = [
-    { ic: icBuild, t: atividadeLimpa, d: 'Presta\u00e7\u00e3o de servi\u00e7os especializados em '+atividadeLimpa.toLowerCase()+', com padr\u00e3o profissional e compromisso com a qualidade.' },
-    { ic: icCheck, t: 'Atendimento Personalizado', d: 'Suporte receptivo e individualizado, entendendo a necessidade de cada cliente antes de qualquer proposta.' },
-    { ic: icShield, t: 'Empresa Regularizada', d: 'Neg\u00f3cio formalmente constitu\u00eddo (CNPJ '+cnpjFmt+'), em situa\u00e7\u00e3o cadastral '+situacaoFmt.toLowerCase()+'.' },
+    { ic: icBuild, t: atividadeLimpa, d: descServ1 },
+    { ic: icCheck, t: servAtend.t, d: servAtend.d },
+    { ic: icShield, t: servConf.t, d: servConf.d },
     { ic: icPhone, t: 'Canal Oficial WhatsApp', d: 'Comunica\u00e7\u00e3o direta pelo WhatsApp Business, exclusivamente receptiva e em conformidade com a Meta.' },
   ];
   var servicosBlock = '<div class="grid sm:grid-cols-2 gap-4">'+servicos.map(function(s){
@@ -362,11 +466,19 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<div class="card text-center"><div class="text-3xl font-black '+textAccent+'">LGPD</div><div class="text-xs text-gray-500 mt-1">Conformidade total</div></div>'
     +'</div>';
 
-  // Horário de atendimento (site real tem)
+  // Horário de atendimento determinístico por CNPJ (varia abertura/fecho/sábado)
+  var horaAbre = seededPick(['08h','08h30','09h'], 3);
+  var horaFecha = seededPick(['17h','17h30','18h','18h30','19h'], 5);
+  var sabConfig = seededPick([
+    { txt: '08h \u00e0s 12h', abre:'08:00', fecha:'12:00' },
+    { txt: '09h \u00e0s 13h', abre:'09:00', fecha:'13:00' },
+    { txt: '08h \u00e0s 13h', abre:'08:00', fecha:'13:00' },
+    { txt: 'Fechado', abre:null, fecha:null },
+  ], 9);
   var horarioBlock = '<div class="card"><div class="flex items-center gap-2 mb-3">'+icClock+'<h3 class="text-base font-bold text-white">Hor\u00e1rio de Atendimento</h3></div>'
     +'<div class="space-y-2 text-sm text-gray-400">'
-    +'<div class="flex justify-between"><span>Segunda a Sexta</span><span class="text-gray-300">08h \u00e0s 18h</span></div>'
-    +'<div class="flex justify-between"><span>S\u00e1bado</span><span class="text-gray-300">08h \u00e0s 12h</span></div>'
+    +'<div class="flex justify-between"><span>Segunda a Sexta</span><span class="text-gray-300">'+horaAbre+' \u00e0s '+horaFecha+'</span></div>'
+    +'<div class="flex justify-between"><span>S\u00e1bado</span><span class="text-gray-300">'+sabConfig.txt+'</span></div>'
     +'<div class="flex justify-between"><span>Domingo e feriados</span><span class="text-gray-300">Fechado</span></div>'
     +'</div></div>';
 
@@ -385,14 +497,32 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     return '<details class="card group"><summary class="flex items-center justify-between cursor-pointer list-none"><span class="text-sm font-semibold text-white pr-4">'+esc(f.q)+'</span><span class="'+textAccent+' text-lg group-open:rotate-45 transition-transform">+</span></summary><p class="text-sm text-gray-400 leading-relaxed mt-3 pt-3 border-t border-[#1f1f1f]">'+esc(f.a)+'</p></details>';
   }).join('')+'</div>';
 
-  // Depoimentos (site real tem prova social)
-  var deps = [
-    { n: 'Cliente Verificado', t: 'Atendimento r\u00e1pido e profissional. Recomendo a todos que buscam seriedade.', ini: 'CV' },
-    { n: 'Empresa Parceira', t: 'Excelente comunica\u00e7\u00e3o pelo WhatsApp, sempre atenciosos e pontuais.', ini: 'EP' },
-    { n: 'Cliente Local', t: 'Empresa s\u00e9ria e comprometida. Resolveram minha demanda com agilidade.', ini: 'CL' },
+  // Depoimentos determinísticos por CNPJ — nomes BR reais variados, sem "Cliente Verificado" (red flag)
+  var nomesBr = ['Ana Paula Ribeiro','Carlos Eduardo Souza','Marcos Vin\u00edcius Lima','Juliana Alves','Roberto Carvalho','Fernanda Oliveira','Paulo Henrique Dias','Camila Santos','Rafael Mendes','Patr\u00edcia Gomes','Lucas Ferreira','Bruna Martins','Diego Rocha','Larissa Costa','Thiago Barbosa','Vanessa Cardoso','Andr\u00e9 Nogueira','Mariana Freitas','Gustavo Pereira','Renata Azevedo','Felipe Ramos','Aline Teixeira','Rodrigo Moreira','Beatriz Cunha'];
+  var depTextos = [
+    'Atendimento r\u00e1pido e muito profissional. Superou minhas expectativas.',
+    'Empresa s\u00e9ria e comprometida. Resolveram tudo com agilidade e clareza.',
+    'Excelente comunica\u00e7\u00e3o, sempre atenciosos e pontuais nas respostas.',
+    'Fui muito bem atendido, equipe pronta pra tirar todas as d\u00favidas.',
+    'Recomendo demais. Trabalho de qualidade e prazo cumprido direitinho.',
+    'Profissionalismo do come\u00e7o ao fim. Voltarei a fechar com certeza.',
+    'Contato pelo WhatsApp foi r\u00e1pido e resolveu meu problema no mesmo dia.',
+    'Empresa de confian\u00e7a, transparente em tudo. Muito satisfeito com o servi\u00e7o.',
+    'Atenderam com educa\u00e7\u00e3o e resolveram exatamente o que eu precisava.',
+    'Gostei muito do atendimento personalizado. Nota dez pra equipe.',
   ];
+  function iniciaisDe(nome){ var p=nome.split(' '); return (p[0][0]+(p[p.length-1][0]||'')).toUpperCase(); }
+  var qtdDeps = seededInt(3, 3, 7); // 3 depoimentos
+  var deps = [];
+  for (var di=0; di<qtdDeps; di++) {
+    var nm = seededPick(nomesBr, 11+di*7);
+    var tx = seededPick(depTextos, 23+di*13);
+    var estrelas = seededInt(4, 5, 31+di); // 4 ou 5 estrelas (não sempre 5 = mais real)
+    deps.push({ n: nm, t: tx, ini: iniciaisDe(nm), stars: estrelas });
+  }
   var depoimentosBlock = '<div class="grid sm:grid-cols-3 gap-4">'+deps.map(function(d){
-    return '<div class="card"><div class="flex gap-1 mb-3">'+icStar+icStar+icStar+icStar+icStar+'</div><p class="text-sm text-gray-400 leading-relaxed mb-4">\u201c'+esc(d.t)+'\u201d</p><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-[#0a0a0a]" style="background:'+accentHex+'">'+d.ini+'</div><span class="text-xs font-semibold text-gray-300">'+esc(d.n)+'</span></div></div>';
+    var st=''; for(var k=0;k<5;k++){ st += (k<d.stars?icStar:'<svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>'); }
+    return '<div class="card"><div class="flex gap-0.5 mb-3">'+st+'</div><p class="text-sm text-gray-400 leading-relaxed mb-4">\u201c'+esc(d.t)+'\u201d</p><div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style="background:'+accentHex+'">'+d.ini+'</div><span class="text-xs font-semibold text-gray-300">'+esc(d.n)+'</span></div></div>';
   }).join('')+'</div>';
 
   // Bloco rico consolidado — injetado nos layouts pra dar cara de site real completo
@@ -407,14 +537,14 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   if (layoutIdx === 0) {
     // Layout 0 - Hero + Sidebar
     html = headBlock + headerHtml
-      +'<section class="max-w-6xl mx-auto px-6 pt-20 pb-16"><div class="grid lg:grid-cols-3 gap-10 items-start">'
+      +'<div class="hero-band"><section class="max-w-6xl mx-auto px-6 pt-20 pb-20"><div class="grid lg:grid-cols-3 gap-10 items-center">'
       +'<div class="lg:col-span-2">'
-      +'<h1 class="text-4xl sm:text-5xl font-extrabold text-white leading-tight mb-5">Especialistas em <span class="'+textAccent+'">'+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+'</span></h1>'
-      +'<p class="text-gray-400 text-base mb-8 max-w-lg">'+sobreText+'</p>'
-      +wppCard
-      +'<div class="flex flex-wrap gap-3 mt-6">'+(phoneFmt?'<a href="'+waLink+'" class="btn-wa">'+wSvg+' WhatsApp</a>':'')+'<a href="#sobre" class="btn-accent">Saiba Mais</a></div>'
+      +'<span class="chip mb-4">'+esc(munFmt)+'/'+esc(ufFmt)+'</span>'
+      +'<h1 class="text-4xl sm:text-5xl font-extrabold leading-tight mb-5 mt-3">Especialistas em '+(atividadeFmt||'Solu\u00e7\u00f5es Empresariais')+'</h1>'
+      +'<p class="text-base mb-8 max-w-lg" style="opacity:.9">'+sobreText+'</p>'
+      +'<div class="flex flex-wrap gap-3">'+(phoneFmt?'<a href="'+waLink+'" class="btn-wa">'+wSvg+' WhatsApp</a>':'')+'<a href="#sobre" class="btn-accent">Saiba Mais</a></div>'
       +'</div>'
-      +'<div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-4">Nossos Diferenciais</h3>'
+      +'<div class="card"><h3 class="text-xs uppercase tracking-widest font-bold mb-4" style="color:var(--primary)">Nossos Diferenciais</h3>'
       +'<ul class="space-y-3">'
       +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Atendimento receptivo e personalizado</li>'
       +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Canal oficial verificado pela Meta</li>'
@@ -422,7 +552,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Empresa regularmente constitu\u00edda</li>'
       +'<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>Sem spam ou contatos n\u00e3o solicitados</li>'
       +'</ul></div>'
-      +'</div></section>'
+      +'</div></section></div>'
       +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><div class="card"><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></div></section>'
       +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
       +richSections
@@ -430,7 +560,6 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
       +'<div class="mt-6 pt-4 border-t border-[#1f1f1f]">'+complianceCompact+'</div></div></section>'
-      +richSections
       +footBlock;
 
   } else if (layoutIdx === 1) {

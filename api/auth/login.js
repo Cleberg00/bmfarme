@@ -28,7 +28,7 @@ module.exports = async function handler(req, res) {
     const token = jwt.sign(
       { email: user.email, role: user.role },
       env.jwtSecret,
-      { subject: user.id, expiresIn: '24h' }
+      { subject: String(user.id), expiresIn: '24h' }
     );
 
     return res.status(200).json({

@@ -1,0 +1,6 @@
+https://validzaplifyaco.com/ -> HTTP 522 | server=cloudflare | len=15 | primeiros80="[object Object]"
+https://www.validzaplifyaco.com/ -> HTTP 404 | server=cloudflare | len=54 | primeiros80="<html><body><h1>Site não encontrado</h1></body></html>"
+https://zaplifyvort.com/ -> HTTP 522 | server=cloudflare | len=15 | primeiros80="[object Object]"
+https://www.zaplifyvort.com/ -> HTTP 404 | server=cloudflare | len=54 | primeiros80="<html><body><h1>Site não encontrado</h1></body></html>"
+https://acobarrazapy.com/ -> HTTP 200 | server=hcdn | len=19145 | primeiros80="<!DOCTYPE html> <html lang="pt-BR"> <head>     <meta charset="UTF-8">     <m"
+https://www.acobarrazapy.com/ -> HTTP 200 | server=hcdn | len=19145 | primeiros80="<!DOCTYPE html> <html lang="pt-BR"> <head>     <meta charset="UTF-8">     <m"
