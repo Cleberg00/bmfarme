@@ -309,6 +309,15 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   var ratingCount = 12 + (seedNum % 76);
   var openingHours = [{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":jsonAbre,"closes":jsonFecha}];
   if (jsonSab) openingHours.push({"@type":"OpeningHoursSpecification","dayOfWeek":"Saturday","opens":jsonSab[0],"closes":jsonSab[1]});
+  // sameAs — perfis sociais (todo negócio real tem presença). Slug a partir do nome.
+  var socialSlug = cleanName(razaoSocial).toLowerCase().replace(/ltda|me|epp|eireli|s\/a|sa/g,'').replace(/[^a-z0-9]+/g,'').slice(0,24) || 'empresa';
+  var sameAs = [
+    'https://www.facebook.com/'+socialSlug,
+    'https://www.instagram.com/'+socialSlug,
+    'https://www.linkedin.com/company/'+socialSlug,
+  ];
+  // reviews individuais no schema (batem com os depoimentos visuais — consistência)
+  var schemaReviews = [];
   var jsonLd = '<script type="application/ld+json">'+JSON.stringify({
     "@context":"https://schema.org","@type":"LocalBusiness",
     "@id":"/#organization",
@@ -319,6 +328,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     "email":email||undefined,
     "telephone":phoneFmt||undefined,
     "foundingDate":foundingDate,
+    "sameAs":sameAs,
     "address":{"@type":"PostalAddress","streetAddress":(endereco||'')+(numero?', '+numero:''),"addressLocality":municipio||undefined,"addressRegion":uf||undefined,"postalCode":cepFmt||undefined,"addressCountry":"BR"},
     "areaServed":{"@type":"City","name":municipio||undefined},
     "openingHoursSpecification":openingHours,
@@ -345,6 +355,8 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<meta name="business:contact_data:region" content="'+ufFmt+'" />'
     +'<meta name="business:contact_data:postal_code" content="'+cepFmt+'" />'
     +'<meta name="business:contact_data:country_name" content="Brasil" />'
+    +(ufFmt?'<meta name="geo.region" content="BR-'+ufFmt+'" />':'')
+    +(munFmt?'<meta name="geo.placename" content="'+munFmt+'" />':'')
     +(email?'<meta name="business:contact_data:email" content="'+esc(email)+'" />':'')
     +(phoneFmt?'<meta name="business:contact_data:phone_number" content="'+phoneFmt+'" />':'')
     +'<title>'+razaoFmt+'</title>'
@@ -443,8 +455,30 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<div class="pt-2 text-gray-700">\u00a9 '+(new Date().getFullYear())+' '+razaoTitleCase+'. Todos os direitos reservados.</div>'
     +'</div></footer>'+floatWa+modaisHtml+domScript+interactScript+'</body></html>';
 
-  // Reusable content blocks
-  var sobreText = razaoTitleCase+' ('+razaoFmt+') \u00e9 uma empresa'+(dataAberturaFmt?' estabelecida desde '+dataAberturaFmt:'')+', sediada em '+munFmt+'/'+ufFmt+', atuando no segmento de '+(atividadeFmt||'atividade empresarial')+'. Canal de atendimento via WhatsApp Business exclusivamente receptivo, em conformidade com as normas da Meta Platforms e LGPD.';
+  // Reusable content blocks — "Sobre" rico e variado por CNPJ (não frase-template repetida)
+  var anoAb = (dataAberturaFmt||'').slice(-4);
+  var anosDeMercado = (anoAb && /^\d{4}$/.test(anoAb)) ? (new Date().getFullYear() - parseInt(anoAb)) : null;
+  // Remove o código CNAE (ex "4120-4/00 - ") e deixa só a descrição da atividade
+  var atvBaixa = ((atividadePrincipal||'').replace(/^[\d.\-\/\s]+(-\s*)?/,'').replace(/^-\s*/,'').trim() || 'atividade empresarial').toLowerCase();
+  var aberturaFrase = seededPick([
+    'Fundada em '+munFmt+'/'+ufFmt+(dataAberturaFmt?' em '+dataAberturaFmt:'')+', ',
+    'Com sede em '+munFmt+'/'+ufFmt+', ',
+    'Sediada em '+munFmt+'/'+ufFmt+(anosDeMercado&&anosDeMercado>0?' h\u00e1 mais de '+anosDeMercado+' anos':'')+', ',
+    'Atuando em '+munFmt+'/'+ufFmt+(dataAberturaFmt?' desde '+dataAberturaFmt:'')+', ',
+  ], 61);
+  var missaoFrase = seededPick([
+    'a '+razaoTitleCase+' se consolidou como refer\u00eancia em '+atvBaixa+', construindo rela\u00e7\u00f5es de confian\u00e7a com cada cliente.',
+    'a '+razaoTitleCase+' atua com dedica\u00e7\u00e3o em '+atvBaixa+', sempre com foco na qualidade e na satisfa\u00e7\u00e3o de quem atende.',
+    'a '+razaoTitleCase+' trabalha com seriedade no ramo de '+atvBaixa+', unindo experi\u00eancia t\u00e9cnica e atendimento humano.',
+    'a '+razaoTitleCase+' \u00e9 especializada em '+atvBaixa+', com compromisso de entregar solu\u00e7\u00f5es de verdade pra cada demanda.',
+  ], 67);
+  var valorFrase = seededPick([
+    'Nosso diferencial est\u00e1 na proximidade: cada atendimento come\u00e7a por iniciativa do cliente e recebe uma resposta atenciosa e personalizada.',
+    'Valorizamos a transpar\u00eancia e o respeito ao consumidor em cada etapa, do primeiro contato at\u00e9 a conclus\u00e3o do servi\u00e7o.',
+    'Acreditamos que um bom atendimento come\u00e7a ouvindo. Por isso nosso canal \u00e9 receptivo e voltado a entender a real necessidade de cada pessoa.',
+    'Prezamos por um relacionamento honesto e duradouro, tratando cada solicita\u00e7\u00e3o com a aten\u00e7\u00e3o que ela merece.',
+  ], 71);
+  var sobreText = aberturaFrase+missaoFrase+' '+valorFrase+' O contato \u00e9 feito por WhatsApp Business, exclusivamente de forma receptiva e em conformidade com as pol\u00edticas da Meta e a LGPD.';
 
   var registroGrid = '<div itemscope itemtype="https://schema.org/Organization" class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
     +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div><div class="text-xs text-gray-500 mt-1" itemprop="name">'+razaoTitleCase+'</div></div>'
