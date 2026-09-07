@@ -480,6 +480,34 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   ], 71);
   var sobreText = aberturaFrase+missaoFrase+' '+valorFrase+' O contato \u00e9 feito por WhatsApp Business, exclusivamente de forma receptiva e em conformidade com as pol\u00edticas da Meta e a LGPD.';
 
+  // ═══════════ BANNER VISUAL POR SEGMENTO (substitui o "cartão CNPJ" do meio) ═══════════
+  // Imagem SVG grande com cena do ramo — dá cara de site real em vez de campos cadastrais.
+  var bannerCenas = {
+    construcao: '<rect width="800" height="400" fill="'+skin.primary+'"/><rect width="800" height="400" fill="url(#g)" opacity=".3"/><g fill="#ffffff" opacity=".9"><rect x="80" y="200" width="90" height="160"/><rect x="190" y="150" width="90" height="210"/><rect x="300" y="230" width="90" height="130"/><path d="M60 200 L125 140 L190 200 Z"/><path d="M170 150 L235 90 L300 150 Z"/></g><g stroke="#ffffff" stroke-width="3" opacity=".5"><line x1="500" y1="120" x2="620" y2="120"/><line x1="560" y1="120" x2="560" y2="300"/><line x1="500" y1="300" x2="620" y2="300"/></g>',
+    saude: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="#ffffff" opacity=".9"><path d="M380 120 h40 v60 h60 v40 h-60 v60 h-40 v-60 h-60 v-40 h60 z"/></g><circle cx="620" cy="150" r="50" fill="none" stroke="#fff" stroke-width="6" opacity=".5"/><path d="M120 260 q60 -80 120 0 t120 0" fill="none" stroke="#fff" stroke-width="5" opacity=".5"/>',
+    juridico: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="#ffffff" opacity=".9"><rect x="380" y="90" width="12" height="220"/><path d="M300 140 h172 M386 140 l-50 90 h100 z M386 140 l50 90 h-100 z" fill="none" stroke="#fff" stroke-width="6"/><circle cx="336" cy="230" r="4"/><circle cx="436" cy="230" r="4"/></g>',
+    beleza: '<rect width="800" height="400" fill="url(#g)"/><g fill="#ffffff" opacity=".85"><circle cx="400" cy="180" r="70"/><path d="M400 250 q-80 20 -100 110 h200 q-20 -90 -100 -110 z"/></g><circle cx="620" cy="120" r="8" fill="#fff" opacity=".6"/><circle cx="180" cy="300" r="6" fill="#fff" opacity=".6"/>',
+    alimentacao: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="none" stroke="#fff" stroke-width="6" opacity=".85"><circle cx="400" cy="200" r="90"/><circle cx="400" cy="200" r="55"/><line x1="250" y1="130" x2="250" y2="270"/><line x1="560" y1="130" x2="560" y2="270"/></g>',
+    comercio: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="#ffffff" opacity=".9"><path d="M320 160 h160 l20 140 h-200 z"/><path d="M350 160 v-20 a50 50 0 0 1 100 0 v20" fill="none" stroke="#fff" stroke-width="8"/></g>',
+    transporte: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="#ffffff" opacity=".9"><rect x="280" y="180" width="150" height="90" rx="8"/><path d="M430 200 h70 l30 40 v30 h-100 z"/><circle cx="340" cy="290" r="26" fill="#0a0a0a" stroke="#fff" stroke-width="6"/><circle cx="490" cy="290" r="26" fill="#0a0a0a" stroke="#fff" stroke-width="6"/></g>',
+    tech: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="none" stroke="#fff" stroke-width="6" opacity=".85"><rect x="300" y="140" width="200" height="130" rx="10"/><line x1="360" y1="300" x2="440" y2="300"/><line x1="400" y1="270" x2="400" y2="300"/></g><g fill="#fff" opacity=".7"><circle cx="620" cy="150" r="6"/><circle cx="650" cy="200" r="6"/><circle cx="600" cy="230" r="6"/></g>',
+    educacao: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="#ffffff" opacity=".9"><path d="M400 140 l160 60 -160 60 -160 -60 z"/><path d="M480 200 v70 q-80 40 -160 0" fill="none" stroke="#fff" stroke-width="6"/></g>',
+    imobiliaria: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="#ffffff" opacity=".9"><path d="M400 130 l120 90 v120 h-240 v-120 z"/><rect x="370" y="270" width="60" height="70" fill="'+skin.primary+'"/></g>',
+    geral: '<rect width="800" height="400" fill="'+skin.primary+'"/><g fill="none" stroke="#fff" stroke-width="6" opacity=".7"><circle cx="400" cy="200" r="90"/><path d="M340 200 l40 40 80 -90"/></g>',
+  };
+  var bannerSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%;display:block"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="'+skin.primary+'"/><stop offset="1" stop-color="'+skin.primary2+'"/></linearGradient></defs>'+(bannerCenas[segment]||bannerCenas.geral)+'</svg>';
+  var bannerUri = 'data:image/svg+xml,'+encodeURIComponent(bannerSvg);
+  // Chips de destaque (comerciais) pro showcase
+  var chipsPool = ['Or\u00e7amento sem compromisso','Atendimento r\u00e1pido','Equipe qualificada','Compromisso com prazos','Pre\u00e7o justo','Garantia no servi\u00e7o','Atende '+munFmt];
+  var diferenciaisChips = '';
+  for (var xc=0; xc<4; xc++){ var ci=((seedNum + xc*131) >>> 0) % chipsPool.length; diferenciaisChips += '<span class="chip">'+esc(chipsPool[ci])+'</span>'; }
+  // Showcase visual = imagem grande + texto do negócio (no lugar dos campos de cartório)
+  var showcaseBlock = '<div class="grid md:grid-cols-2 gap-6 items-center">'
+    +'<div class="rounded-2xl overflow-hidden" style="aspect-ratio:16/10;min-height:220px"><img src="'+bannerUri+'" alt="'+esc(razaoTitleCase)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy"></div>'
+    +'<div><h3 class="text-xl font-bold text-white mb-3">'+esc(razaoTitleCase)+'</h3><p class="text-sm text-gray-400 leading-relaxed mb-4">'+valorFrase+'</p>'
+    +'<div class="flex flex-wrap gap-2">'+diferenciaisChips+'</div></div>'
+    +'</div>';
+
   var registroGrid = '<div itemscope itemtype="https://schema.org/Organization" class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
     +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div><div class="text-xs text-gray-500 mt-1" itemprop="name">'+razaoTitleCase+'</div></div>'
     +'<div><div class="label">CNPJ</div><div class="value" itemprop="taxID" data-field="cnpj">'+cnpjFmt+'</div></div>'
@@ -725,8 +753,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<div class="card"><h3 class="text-xs uppercase tracking-widest font-bold mb-4" style="color:var(--primary)">Por Que Nos Escolher</h3>'
       +'<ul class="space-y-3">'+diferenciais.map(function(d){return '<li class="flex items-center gap-2 text-sm text-gray-300"><span class="w-1.5 h-1.5 rounded-full '+btnBg+' flex-shrink-0"></span>'+esc(d)+'</li>';}).join('')+'</ul></div>'
       +'</div></section></div>'
-      +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><div class="card"><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></div></section>'
-      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2>'+showcaseBlock+'</section>'
       +richSections
       +'<section id="contato" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
       +wppCard
@@ -749,7 +776,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'</div>'
       +'</section>'
       +'<section id="sobre" class="max-w-3xl mx-auto px-6 py-16 text-center"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p></section>'
-      +'<section id="registro" class="max-w-4xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section class="max-w-5xl mx-auto px-6 py-16">'+showcaseBlock+'</section>'
       +'<section id="contato" class="max-w-3xl mx-auto px-6 py-16 text-center"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
       +wppCard
       +(phoneFmt?'<div class="mt-4"><a href="'+waLink+'" class="btn-wa">'+wSvg+' Iniciar Conversa</a></div>':'')
@@ -778,7 +805,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<main class="flex-1 overflow-y-auto">'
       +headerHtml
       +'<section id="sobre" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Sobre</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed mb-6">'+sobreText+'</p>'+wppCard+'</section>'
-      +'<section id="registro" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section class="max-w-4xl mx-auto px-6 py-16">'+showcaseBlock+'</section>'
       +richSections
       +'<section id="contato" class="max-w-3xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
       +wppCard
@@ -801,7 +828,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<div class="card" id="contato"><span class="chip">Conformidade</span><div class="mt-3">'+complianceCompact+'</div></div>'
       +'</div>'
       +'</section>'
-      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section class="max-w-6xl mx-auto px-6 py-16">'+showcaseBlock+'</section>'
       +richSections
       +footBlock;
 
@@ -812,7 +839,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<h1 class="text-3xl font-extrabold text-white mb-12 text-center">'+razaoFmt+'</h1>'
       +'<div class="relative border-l-2 border-[#1f1f1f] ml-4 space-y-12">'
       +'<div class="relative pl-8" id="sobre"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">01 \u2014 Sobre</span><h2 class="text-xl font-bold text-white mt-2 mb-3">'+displayName+'</h2><p class="text-sm text-gray-400 leading-relaxed">'+sobreText+'</p>'+wppCard+'</div>'
-      +'<div class="relative pl-8" id="registro"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">02 \u2014 Registro</span><h2 class="text-xl font-bold text-white mt-2 mb-3">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></div>'
+      +'<div class="relative pl-8"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">02 \u2014 Nossa Estrutura</span><h2 class="text-xl font-bold text-white mt-2 mb-3">Conhe\u00e7a Mais</h2>'+showcaseBlock+'</div>'
       +'<div class="relative pl-8" id="contato"><div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full '+btnBg+'"></div><span class="chip">03 \u2014 Contato</span><h2 class="text-xl font-bold text-white mt-2 mb-3">Fale Conosco</h2><div class="card">'
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
@@ -836,9 +863,9 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<p class="text-base text-gray-400 leading-relaxed mb-8">'+sobreText+'</p>'
       +wppCard
       +'</div></section>'
-      +'<section id="registro" class="min-h-[80vh] flex items-center bg-[#0a0a0a]"><div class="max-w-4xl mx-auto px-6">'
-      +'<span class="chip">Registro</span><h2 class="text-3xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2>'
-      +'<div class="card">'+registroGrid+'</div>'
+      +'<section class="min-h-[80vh] flex items-center bg-[#0a0a0a]"><div class="max-w-5xl mx-auto px-6 w-full">'
+      +'<span class="chip">Conhe\u00e7a</span><h2 class="text-3xl font-bold text-white mt-3 mb-6">Nossa Empresa</h2>'
+      +showcaseBlock
       +'</div></section>'
       +'<section id="contato" class="min-h-[80vh] flex items-center bg-[#0f0f14]"><div class="max-w-4xl mx-auto px-6 text-center">'
       +'<span class="chip">Contato</span><h2 class="text-3xl font-bold text-white mt-3 mb-6">Fale Conosco</h2>'
@@ -870,7 +897,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +(natJurFmt?'<div class="card"><div class="label">Natureza Jur\u00eddica</div><div class="value">'+natJurFmt+'</div></div>':'')
       +'</aside>'
       +'</div></section>'
-      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-serif font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Conhe\u00e7a</span><h2 class="text-2xl font-serif font-bold text-white mt-3 mb-6">Nossa Empresa</h2>'+showcaseBlock+'</section>'
       +richSections
       +footBlock;
 
@@ -887,7 +914,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'</div>'
       +'</section>'
       +'<section id="sobre" class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Sobre</h3><p class="text-sm text-gray-400 leading-relaxed font-mono">'+sobreText+'</p></div></section>'
-      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Registro</h3>'+registroGrid+'</div></section>'
+      +'<section class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Nossa Empresa</h3>'+showcaseBlock+'</div></section>'
       +'<section id="contato" class="max-w-6xl mx-auto px-6 py-8"><div class="card"><h3 class="text-xs uppercase tracking-widest '+textAccent+' font-bold mb-3">// Contato</h3>'
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
@@ -906,7 +933,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<div class="max-w-5xl mx-auto px-6"><div class="border-t-4 border-['+accentHex+']"></div></div>'
       +'<section id="sobre" class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Sobre</h2><p class="text-base text-gray-400 leading-relaxed max-w-2xl">'+sobreText+'</p></section>'
       +'<div class="max-w-5xl mx-auto px-6"><div class="border-t-4 border-['+accentHex+']"></div></div>'
-      +'<section id="registro" class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Registro</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Nossa Empresa</h2>'+showcaseBlock+'</section>'
       +'<div class="max-w-5xl mx-auto px-6"><div class="border-t-4 border-['+accentHex+']"></div></div>'
       +'<section id="contato" class="max-w-5xl mx-auto px-6 py-20"><h2 class="text-3xl font-bold text-white mb-6">Contato</h2>'
       +wppCard
@@ -932,7 +959,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
       +'<div class="card"><div class="label">Situa\u00e7\u00e3o</div><div class="text-lg font-bold '+textAccent+'">'+situacaoFmt+'</div><div class="label mt-3">Endere\u00e7o</div><div class="value">'+fullAddress+'</div></div>'
       +'</div>'
       +'</section>'
-      +'<section id="registro" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Registro</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Dados Cadastrais</h2><div class="card">'+registroGrid+'</div></section>'
+      +'<section class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Conhe\u00e7a</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Nossa Empresa</h2>'+showcaseBlock+'</section>'
       +'<section id="contato" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Contato</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fale Conosco</h2><div class="card">'
       +wppCard
       +(phoneFmt?'<a href="'+waLink+'" class="btn-wa mt-4">'+wSvg+' Iniciar Conversa</a>':'')
