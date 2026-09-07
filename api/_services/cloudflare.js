@@ -781,15 +781,29 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<section class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Depoimentos</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">O Que Dizem Sobre N\u00f3s</h2>'+depoimentosBlock+'</section>'
     +'<section id="faq" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">FAQ</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Perguntas Frequentes</h2>'+faqBlock+'</section>'
     // Formulário de contato funcional (envia pro WhatsApp) + mapa real do endereço
-    +'<section id="fale" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Fale Conosco</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Envie uma Mensagem</h2>'
-    +'<div class="grid md:grid-cols-2 gap-4">'
-    +'<div class="card"><form id="contato-form" class="space-y-3">'
-    +'<div><label class="label" for="cf-nome">Seu nome</label><input id="cf-nome" name="nome" required placeholder="Nome completo" style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem"></div>'
-    +'<div><label class="label" for="cf-msg">Mensagem</label><textarea id="cf-msg" name="msg" rows="4" required placeholder="Como podemos ajudar?" style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem;resize:vertical"></textarea></div>'
-    +'<button type="submit" class="btn-wa" style="width:100%;justify-content:center">'+wSvg+' Enviar pelo WhatsApp</button>'
-    +'<p class="text-xs" style="color:var(--muted)">Ao enviar, voc\u00ea inicia uma conversa no nosso WhatsApp de forma volunt\u00e1ria.</p>'
+    +'<section id="fale" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Fale Conosco</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Entre em Contato</h2>'
+    +'<div class="grid gap-4 lg:grid-cols-3">'
+    // Col 1 — Contato (endereço, email, telefone, social)
+    +'<div class="card"><h3 class="text-lg font-bold text-white mb-5">Contato</h3><div class="space-y-4">'
+    +'<div class="flex gap-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:'+accentHex+'1a">'+icPin+'</div><div><div class="text-[11px] uppercase font-bold" style="color:var(--muted)">Endere\u00e7o</div><div class="text-sm" style="color:var(--strong)">'+fullAddress+'</div></div></div>'
+    +(emailFmt?'<div class="flex gap-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:'+accentHex+'1a">'+ic('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/>')+'</div><div><div class="text-[11px] uppercase font-bold" style="color:var(--muted)">E-mail</div><div class="text-sm" style="color:var(--strong)">'+emailFmt+'</div></div></div>':'')
+    +(phoneFmt?'<div class="flex gap-3"><div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:'+accentHex+'1a">'+icPhone+'</div><div><div class="text-[11px] uppercase font-bold" style="color:var(--muted)">Telefone</div><div class="text-sm" style="color:var(--strong)">'+phoneFmt+'</div></div></div>':'')
+    +'</div>'
+    +'<div class="flex gap-3 mt-5">'
+    +'<a href="'+sameAs[0]+'" target="_blank" rel="noopener nofollow" aria-label="Facebook" class="w-9 h-9 rounded-lg flex items-center justify-center text-white" style="background:'+accentHex+'">'+svgFb+'</a>'
+    +'<a href="'+sameAs[1]+'" target="_blank" rel="noopener nofollow" aria-label="Instagram" class="w-9 h-9 rounded-lg flex items-center justify-center text-white" style="background:'+accentHex+'">'+svgIg+'</a>'
+    +'<a href="'+sameAs[2]+'" target="_blank" rel="noopener nofollow" aria-label="LinkedIn" class="w-9 h-9 rounded-lg flex items-center justify-center text-white" style="background:'+accentHex+'">'+svgLi+'</a>'
+    +'</div></div>'
+    // Col 2 — Mensagem (formulário → WhatsApp)
+    +'<div class="card"><h3 class="text-lg font-bold text-white mb-5">Mensagem</h3><form id="contato-form" class="space-y-3">'
+    +'<div><input id="cf-nome" name="nome" required placeholder="Seu nome" style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem"></div>'
+    +'<div><input id="cf-email" name="email" type="email" placeholder="Seu e-mail" style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem"></div>'
+    +'<div><textarea id="cf-msg" name="msg" rows="4" required placeholder="Sua mensagem..." style="width:100%;padding:.7rem .9rem;border-radius:.6rem;border:1px solid var(--border);background:var(--bg);color:var(--strong);font-size:.875rem;resize:vertical"></textarea></div>'
+    +'<button type="submit" class="btn-accent" style="width:100%;text-align:center">Enviar Mensagem</button>'
+    +'<p class="text-xs" style="color:var(--muted)">Ao enviar, voc\u00ea inicia uma conversa no nosso WhatsApp.</p>'
     +'</form></div>'
-    +'<div class="card" style="padding:0;overflow:hidden;min-height:280px"><iframe title="Mapa" width="100%" height="100%" style="border:0;min-height:280px" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q='+encodeURIComponent(fullAddress.replace(/ \u2014 /g,', '))+'&output=embed"></iframe></div>'
+    // Col 3 — Mapa
+    +'<div class="card" style="padding:0;overflow:hidden;min-height:320px"><iframe title="Mapa - '+esc(razaoTitleCase)+'" width="100%" height="100%" style="border:0;min-height:320px" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q='+encodeURIComponent(fullAddress.replace(/ \u2014 /g,', '))+'&output=embed"></iframe></div>'
     +'</div></section>';
 
   var html;
