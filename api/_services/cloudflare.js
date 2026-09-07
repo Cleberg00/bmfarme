@@ -591,6 +591,50 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<div class="flex flex-wrap gap-2">'+diferenciaisChips+'</div></div>'
     +'</div>';
 
+  // ═══════════ GALERIA DE FOTOS (portfólio de trabalhos — todo site de serviço tem) ═══════════
+  function fotoUrlDe(id, w){ return 'https://images.unsplash.com/photo-'+id+'?auto=format&fit=crop&w='+(w||600)+'&q=65'; }
+  var galeriaBlock = '<div class="grid grid-cols-2 md:grid-cols-4 gap-3">'+fotoIds.map(function(id,i){
+    return '<div class="rounded-xl overflow-hidden" style="aspect-ratio:1;background:'+skin.primary+'22"><img src="'+fotoUrlDe(id,500)+'" alt="'+esc(razaoTitleCase)+' - trabalho '+(i+1)+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display=\'none\'"></div>';
+  }).join('')+'</div>';
+
+  // ═══════════ NOVIDADES / BLOG (site vivo tem conteúdo datado recente) ═══════════
+  var postsSeg = {
+    construcao:[['Dicas para planejar sua obra sem surpresas','Antes de come\u00e7ar qualquer constru\u00e7\u00e3o, o planejamento evita gastos extras. Veja como organizamos cada projeto.'],['A import\u00e2ncia de um bom acabamento','O acabamento \u00e9 o que valoriza o im\u00f3vel. Conhe\u00e7a nosso cuidado nos detalhes.'],['Reforma ou constru\u00e7\u00e3o do zero?','Ajudamos voc\u00ea a decidir a melhor op\u00e7\u00e3o para o seu or\u00e7amento e necessidade.']],
+    saude:[['Cuidar da sa\u00fade come\u00e7a com preven\u00e7\u00e3o','Consultas regulares fazem toda a diferen\u00e7a. Agende sua avalia\u00e7\u00e3o.'],['A import\u00e2ncia do acompanhamento','Um bom acompanhamento garante resultados melhores no tratamento.'],['Atendimento humanizado','Cada paciente \u00e9 \u00fanico. Veja como cuidamos de perto de cada caso.']],
+    juridico:[['Seus direitos importam','Entenda como uma orienta\u00e7\u00e3o jur\u00eddica pode proteger voc\u00ea e sua fam\u00edlia.'],['Contratos: leia antes de assinar','A revis\u00e3o de contratos evita dores de cabe\u00e7a. Saiba mais.'],['Transpar\u00eancia em cada processo','Acompanhamos cada etapa e mantemos voc\u00ea informado sempre.']],
+    beleza:[['Tend\u00eancias da esta\u00e7\u00e3o','Confira os cortes e cores que est\u00e3o em alta e agende seu hor\u00e1rio.'],['Cuidados que fazem diferen\u00e7a','Dicas simples pra manter o visual sempre em dia.'],['Seu momento de cuidar de voc\u00ea','Um ambiente pensado pro seu bem-estar e autoestima.']],
+    alimentacao:[['Sabor que conquista','Ingredientes selecionados e preparo caprichado em cada prato.'],['Fa\u00e7a seu pedido sem sair de casa','Pe\u00e7a pelo WhatsApp e receba com praticidade.'],['Encomendas para eventos','Deixe sua ocasi\u00e3o especial ainda mais saborosa.']],
+    comercio:[['Novidades chegando','Confira os produtos que acabaram de chegar na loja.'],['Atendimento que ajuda de verdade','Nossa equipe te orienta na melhor escolha.'],['Condi\u00e7\u00f5es especiais','Consulte nossas ofertas e formas de pagamento.']],
+    transporte:[['Log\u00edstica com pontualidade','Entregas no prazo e com seguran\u00e7a em toda a regi\u00e3o.'],['Mudan\u00e7a sem estresse','Cuidamos de tudo pra sua mudan\u00e7a ser tranquila.'],['Or\u00e7amento r\u00e1pido','Solicite seu or\u00e7amento pelo WhatsApp em minutos.']],
+    tech:[['Tecnologia que resolve','Solu\u00e7\u00f5es sob medida pra fazer seu neg\u00f3cio crescer.'],['Suporte quando voc\u00ea precisa','Acompanhamento cont\u00ednuo e atendimento \u00e1gil.'],['Transforma\u00e7\u00e3o digital','Como a tecnologia certa otimiza seus processos.']],
+    educacao:[['Matr\u00edculas abertas','Garanta sua vaga nas pr\u00f3ximas turmas.'],['Aprender no seu ritmo','Metodologia pr\u00e1tica e turmas em v\u00e1rios hor\u00e1rios.'],['Invista no seu futuro','Conhecimento que abre portas. Fale com a gente.']],
+    imobiliaria:[['Encontre o im\u00f3vel ideal','Temos op\u00e7\u00f5es para comprar e alugar na sua regi\u00e3o.'],['Hora de vender?','Fazemos a avalia\u00e7\u00e3o justa do seu im\u00f3vel.'],['Assessoria completa','Acompanhamos voc\u00ea do come\u00e7o ao fim do neg\u00f3cio.']],
+    geral:[['Compromisso com voc\u00ea','Atendimento de qualidade e foco no cliente em tudo que fazemos.'],['Conte com a gente','Estamos prontos pra atender sua necessidade.'],['Fale conosco','Tire suas d\u00favidas pelo WhatsApp de forma r\u00e1pida.']],
+  };
+  var posts = postsSeg[segment] || postsSeg.geral;
+  var mesesBr = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var hoje = new Date();
+  var novidadesBlock = '<div class="grid md:grid-cols-3 gap-4">'+posts.map(function(p,i){
+    var d = new Date(hoje.getTime() - (i*11+3)*86400000); // datas recentes escalonadas
+    var dataStr = d.getDate()+' '+mesesBr[d.getMonth()]+' '+d.getFullYear();
+    var imgId = fotoIds[(i+1)%fotoIds.length];
+    return '<article class="card" style="padding:0;overflow:hidden">'
+      +'<div style="aspect-ratio:16/9;background:'+skin.primary+'22"><img src="'+fotoUrlDe(imgId,500)+'" alt="'+esc(p[0])+'" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.style.display=\'none\'"></div>'
+      +'<div style="padding:1.25rem"><div class="text-xs mb-2" style="color:var(--primary)">'+dataStr+'</div><h3 class="text-base font-bold text-white mb-2">'+esc(p[0])+'</h3><p class="text-sm text-gray-400 leading-relaxed">'+esc(p[1])+'</p></div>'
+      +'</article>';
+  }).join('')+'</div>';
+
+  // ═══════════ PARCEIROS / SELOS (prova social — logos como o site oficial tinha no topo) ═══════════
+  var selos = [
+    {t:'Empresa Verificada',ic:'<path d="M12 2l2.4 4.8L20 8l-4 4 1 6-5-3-5 3 1-6-4-4 5.6-1.2z"/>'},
+    {t:'Atendimento 5 Estrelas',ic:'<path d="M12 2l3 6 6 1-4.5 4.5 1 6L12 17l-5.5 2.5 1-6L3 9l6-1z"/>'},
+    {t:'CNPJ Ativo',ic:'<path d="M20 6L9 17l-5-5"/>'},
+    {t:'LGPD',ic:'<path d="M12 2l8 3v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V5z"/>'},
+  ];
+  var parceirosBlock = '<div class="flex flex-wrap items-center justify-center gap-6">'+selos.map(function(s){
+    return '<div class="flex items-center gap-2" style="opacity:.75"><svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linejoin="round">'+s.ic+'</svg><span class="text-sm font-semibold" style="color:var(--muted)">'+esc(s.t)+'</span></div>';
+  }).join('')+'</div>';
+
   var registroGrid = '<div itemscope itemtype="https://schema.org/Organization" class="grid sm:grid-cols-2 gap-x-8 gap-y-4">'
     +'<div><div class="label">Raz\u00e3o Social</div><div class="value" itemprop="legalName" data-field="razao">'+razaoFmt+'</div><div class="text-xs text-gray-500 mt-1" itemprop="name">'+razaoTitleCase+'</div></div>'
     +'<div><div class="label">CNPJ</div><div class="value" itemprop="taxID" data-field="cnpj">'+cnpjFmt+'</div></div>'
@@ -808,6 +852,9 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
     +'<section class="max-w-6xl mx-auto px-6 py-10">'+statsBlock+'</section>'
     +'<section class="max-w-6xl mx-auto px-6 py-16"><div class="grid md:grid-cols-2 gap-4">'+horarioBlock+localBlock+'</div></section>'
     +'<section class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Depoimentos</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">O Que Dizem Sobre N\u00f3s</h2>'+depoimentosBlock+'</section>'
+    +'<section id="galeria" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Galeria</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Nossos Trabalhos</h2>'+galeriaBlock+'</section>'
+    +'<section class="max-w-6xl mx-auto px-6 pb-8"><div class="card" style="padding:1.5rem">'+parceirosBlock+'</div></section>'
+    +'<section id="novidades" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Novidades</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Fique por Dentro</h2>'+novidadesBlock+'</section>'
     +'<section id="faq" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">FAQ</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Perguntas Frequentes</h2>'+faqBlock+'</section>'
     // Formulário de contato funcional (envia pro WhatsApp) + mapa real do endereço
     +'<section id="fale" class="max-w-6xl mx-auto px-6 py-16"><span class="chip">Fale Conosco</span><h2 class="text-2xl font-bold text-white mt-3 mb-6">Entre em Contato</h2>'
