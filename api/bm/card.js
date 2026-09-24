@@ -334,8 +334,23 @@ function buildCardHtmlGR(d) {
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
   const now = new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  // Gera uma data estável para preencher campos vazios do modelo demonstrativo.
+  const seedSource = String(d.cnpj || d.razaoSocial || 'GR');
+  let seed = 0;
+  for (let i = 0; i < seedSource.length; i++) seed += seedSource.charCodeAt(i);
+  const generatedDate = `${String(1 + (seed % 27)).padStart(2,'0')}/${String(1 + (seed % 12)).padStart(2,'0')}/${2017 + (seed % 3)}`;
+
+  d = {
+    ...d,
+    razaoSocial: String(d.razaoSocial || '').toUpperCase(),
+    porte: 'EPP',
+    dataAbertura: d.dataAbertura || generatedDate,
+    dataSituacao: d.dataSituacao || generatedDate,
+  };
+
   const pais       = esc(String(d.pais || 'CANADA').toUpperCase());
-  const inscricao  = esc(d.cnpj || 'MATRIZ');
+  const inscricao  = esc(d.cnpj || '');
   const phoneCard  = esc(d.smsPhone || d.telefone || '');
   const secundaria = esc(d.atividadesSecundarias || 'Não informada');
 
@@ -348,6 +363,7 @@ function buildCardHtmlGR(d) {
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#c0c0c0;padding:20px;}
 .page{width:17cm;margin:0 auto;padding:15mm 0;background:#fff;}
+.demo-warning{width:17cm;margin:0 auto 12px;padding:7px;border:2px solid #b91c1c;color:#b91c1c;text-align:center;font-size:11px;font-weight:bold;letter-spacing:.4px;}
 .main-table{width:17cm;border-collapse:collapse;line-height:9pt;margin:0 auto;}
 .content-box{border:.5pt solid windowtext;padding:5.65pt;}
 .header-table{width:100%;margin-bottom:12px;}
@@ -382,6 +398,7 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
 </head>
 <body>
 <div class="page">
+<div class="demo-warning">DOCUMENTO FICTÍCIO — SEM VALIDADE — APENAS PARA DEMONSTRAÇÃO</div>
 <table class="main-table">
 <tr><td class="content-box">
 
