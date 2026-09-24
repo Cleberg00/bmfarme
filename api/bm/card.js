@@ -320,6 +320,302 @@ body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background
 </html>`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Modelo GR ("gringo") — mesmo layout do comprovante, mas para empresa
+// estrangeira (ex: Canadá no print). Diferenças em relação ao BR:
+//   • Cabeçalho usa o país informado (default CANADA)
+//   • Nenhum valor é reformatado: CNPJ, CEP e telefone saem exatamente como
+//     foram digitados (ex: "M3B 2R7", "+19734574628")
+//   • Razão social NÃO recebe sufixo LTDA
+//   • Atividades secundárias são digitadas (default "Não informada"),
+//     não geradas a partir do CNPJ
+// ─────────────────────────────────────────────────────────────────────────────
+function buildCardHtmlGR(d) {
+  function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  const now = new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const pais       = esc(String(d.pais || 'CANADA').toUpperCase());
+  const inscricao  = esc(d.cnpj || 'MATRIZ');
+  const phoneCard  = esc(d.smsPhone || d.telefone || '');
+  const secundaria = esc(d.atividadesSecundarias || 'Não informada');
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<title>Comprovante CNPJ</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;background:#c0c0c0;padding:20px;}
+.page{width:17cm;margin:0 auto;padding:15mm 0;background:#fff;}
+.main-table{width:17cm;border-collapse:collapse;line-height:9pt;margin:0 auto;}
+.content-box{border:.5pt solid windowtext;padding:5.65pt;}
+.header-table{width:100%;margin-bottom:12px;}
+.header-logo-cell{width:60px;height:60px;vertical-align:middle;text-align:left;}
+.logo{width:60px;height:60px;display:block;}
+.header-cell{text-align:center;font-weight:bold;}
+.header-title{margin-top:12px;margin-bottom:12px;font-size:medium;}
+.header-sub-title{margin-bottom:12px;font-size:medium;}
+.empty-col{vertical-align:middle;text-align:left;width:60px;height:60px;}
+.info-table{width:100%;border-collapse:collapse;line-height:normal;margin-bottom:12px;}
+.table-last{margin-bottom:0;}
+.info-row{vertical-align:top;}
+.section{border:.5pt solid windowtext;padding:0 0 3.5pt 3.5pt;}
+.section-centered{text-align:center;font-weight:bold;border:.5pt solid windowtext;padding:1.5px 0 3.5pt 3.5pt;vertical-align:middle;}
+.section-centered-title{font-size:10pt;font-weight:bold;}
+.section-no-border-vertical{border-left:.5pt solid windowtext;border-right:.5pt solid windowtext;border-top:none!important;padding:1.5px 0 3.5pt 3.5pt;}
+.section-title{font-size:6pt;}
+.section-data{font-size:8pt;font-weight:bold;}
+.min-height-20{min-height:19px;}
+.data-big{min-height:19.5px;}
+.texto-final{width:17cm;max-width:100%;line-height:normal;font-family:Arial,Helvetica,sans-serif;text-align:justify;font-size:small;margin-top:28px;}
+.actions{display:flex;gap:12px;justify-content:center;margin:24px 0 10px;}
+.btn{padding:10px 28px;border:none;border-radius:5px;font-size:12px;font-weight:bold;cursor:pointer;}
+.btn-green{background:#1a7f4b;color:#fff;}
+.btn-gray{background:#d1d5db;color:#374151;}
+@media print{
+  .actions{display:none!important;}
+  body{background:#fff;padding:0;}
+  .page{width:100%;padding:8mm 10mm;margin:0;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+<table class="main-table">
+<tr><td class="content-box">
+
+<!-- HEADER -->
+<table class="header-table">
+<tr>
+  <td class="header-logo-cell" rowspan="5">
+    <img class="logo" src="https://bmfarme.vercel.app/brasao2.gif" alt="Brasão"/>
+  </td>
+  <td class="header-cell">
+    <div class="header-title">REPÚBLICA FEDERATIVA DO ${pais}</div>
+    <div class="header-sub-title">CADASTRO NACIONAL DA PESSOA JURÍDICA</div>
+  </td>
+  <td class="empty-col"></td>
+</tr>
+</table>
+
+<!-- ROW 1: Nº Inscrição | Comprovante | Data Abertura -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="24%" class="section">
+    <span class="section-title">NÚMERO DE INSCRIÇÃO</span>
+    <div class="section-data">${inscricao}</div>
+    <div class="section-data">MATRIZ</div>
+  </td>
+  <td width="52%" class="section-centered">
+    <div class="section-centered-title">COMPROVANTE DE INSCRIÇÃO E DE SITUAÇÃO CADASTRAL</div>
+  </td>
+  <td width="24%" class="section">
+    <span class="section-title">DATA DE ABERTURA</span>
+    <div class="section-data">${esc(d.dataAbertura||'')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 2: Nome Empresarial -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="100%" class="section">
+    <span class="section-title">NOME EMPRESARIAL</span>
+    <div class="section-data">${esc(d.razaoSocial||'')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 3: Nome Fantasia | Porte -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="88%" class="section">
+    <span class="section-title">TÍTULO DO ESTABELECIMENTO (NOME DE FANTASIA)</span>
+    <div class="section-data">${esc(d.nomeFantasia||'********')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="10%" class="section">
+    <span class="section-title">PORTE</span>
+    <div class="section-data">${esc(d.porte||'')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 4: Atividade Principal -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="100%" class="section">
+    <span class="section-title">CÓDIGO E DESCRIÇÃO DA ATIVIDADE ECONÔMICA PRINCIPAL</span>
+    <div class="section-data">${esc(d.atividadePrincipal||'Não informada')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 5: Atividades Secundárias -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="100%" class="section">
+    <span class="section-title">CÓDIGO E DESCRIÇÃO DAS ATIVIDADES ECONÔMICAS SECUNDÁRIAS</span>
+    <div class="section-data" style="white-space:pre-line">${secundaria}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 6: Natureza Jurídica -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="100%" class="section">
+    <span class="section-title">CÓDIGO E DESCRIÇÃO DA NATUREZA JURÍDICA</span>
+    <div class="section-data">${esc(d.naturezaJuridica||'')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 7: Logradouro | Número | Complemento -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="50%" class="section">
+    <span class="section-title">LOGRADOURO</span>
+    <div class="section-data">${esc(d.endereco||'')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="10%" class="section">
+    <span class="section-title">NÚMERO</span>
+    <div class="section-data">${esc(d.numero||'S/N')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="36%" class="section">
+    <span class="section-title">COMPLEMENTO</span>
+    <div class="section-data">${esc(d.complemento||'********')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 8: CEP | Bairro | Município | UF -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="18%" class="section">
+    <span class="section-title">CEP</span>
+    <div class="section-data">${esc(d.cep||'')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="30%" class="section">
+    <span class="section-title">BAIRRO/DISTRITO</span>
+    <div class="section-data">${esc(d.bairro||'')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="38%" class="section">
+    <span class="section-title">MUNICÍPIO</span>
+    <div class="section-data">${esc(d.municipio||'')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="10%" class="section">
+    <span class="section-title">UF</span>
+    <div class="section-data">${esc(d.uf||'')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 9: Email | Telefone -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="50%" class="section">
+    <span class="section-title">ENDEREÇO ELETRÔNICO</span>
+    <div class="section-data">${esc(d.email||'')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="48%" class="section">
+    <span class="section-title">TELEFONE</span>
+    <div class="section-data">${phoneCard}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 10: EFR -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="100%" class="section">
+    <span class="section-title">ENTE FEDERATIVO RESPONSÁVEL (EFR)</span>
+    <div class="section-data">*****</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 11: Situação Cadastral | Data -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="64%" class="section" style="padding-bottom:3pt">
+    <span class="section-title">SITUAÇÃO CADASTRAL</span>
+    <div class="section-data data-big">${esc(d.situacao||'ATIVA')}</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical" style="padding-bottom:3pt"></td>
+  <td width="24%" class="section" style="padding-bottom:3pt">
+    <span class="section-title">DATA DA SITUAÇÃO CADASTRAL</span>
+    <div class="section-data">${esc(d.dataSituacao||'')}</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 12: Motivo -->
+<table class="info-table">
+<tr class="info-row">
+  <td width="100%" class="section">
+    <span class="section-title">MOTIVO DE SITUAÇÃO CADASTRAL</span>
+    <div class="section-data">&nbsp;</div>
+  </td>
+</tr>
+</table>
+
+<!-- ROW 13: Situação Especial | Data -->
+<table class="info-table table-last">
+<tr class="info-row">
+  <td width="64%" class="section">
+    <span class="section-title">SITUAÇÃO ESPECIAL</span>
+    <div class="section-data">********</div>
+  </td>
+  <td width="2%" class="section-no-border-vertical"></td>
+  <td width="24%" class="section">
+    <span class="section-title">DATA DA SITUAÇÃO ESPECIAL</span>
+    <div class="section-data">********</div>
+  </td>
+</tr>
+</table>
+
+</td></tr>
+</table>
+
+<!-- Rodapé -->
+<p class="texto-final" style="margin-bottom:8px;margin-top:28px;">
+  <i>Aprovado pela Instrução Normativa RFB nº 2.119, de 06 de dezembro de 2022.</i>
+</p>
+<table border="0" cellspacing="0" class="texto-final">
+<tr>
+  <td align="left">
+    <p>Emitido no dia <b>${now.split(',')[0]?.trim() || now}</b> às <b>${now.split(',')[1]?.trim() || ''}</b> (data e hora de Brasília).</p>
+  </td>
+  <td align="right">
+    <p>Página: <b>1/1</b></p>
+  </td>
+</tr>
+</table>
+
+<!-- Botões (só na tela) -->
+<div class="actions">
+  <button class="btn btn-green" onclick="window.print()">Imprimir / Salvar PDF</button>
+  <button class="btn btn-gray" onclick="window.close()">Fechar</button>
+</div>
+
+</div><!-- /page -->
+</body>
+</html>`;
+}
+
+// Escolhe o gerador conforme o modelo pedido (br = padrão, gr = gringo)
+function buildCard(data, model) {
+  return String(model).toLowerCase() === 'gr' ? buildCardHtmlGR(data) : buildCardHtml(data);
+}
+
 
 module.exports = async function handler(req, res) {
   setCors(res);
@@ -421,13 +717,13 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const { clientId, format } = req.query;
+      const { clientId, format, model } = req.query;
       if (!clientId) return res.status(400).json({ error: 'clientId é obrigatório.' });
       const data = await buildDataFromClient(clientId);
       if (!data) return res.status(404).json({ error: 'Cliente não encontrado.' });
       if (format === 'json') return res.status(200).json(data);
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.status(200).send(buildCardHtml(data));
+      return res.status(200).send(buildCard(data, model));
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -455,7 +751,7 @@ module.exports = async function handler(req, res) {
       }
 
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.status(200).send(buildCardHtml(data));
+      return res.status(200).send(buildCard(data, req.query?.model));
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

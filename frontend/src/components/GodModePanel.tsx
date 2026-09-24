@@ -189,12 +189,10 @@ export default function GodModePanel() {
                 className="rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-2 text-sm font-semibold text-green-400 transition hover:bg-green-500/20">
                 📱 WABAs
               </button>
-              {clientId && (
-                <button type="button" onClick={() => setShowCard(true)}
-                  className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-400 transition hover:bg-blue-500/20">
-                  📄 Cartão CNPJ
-                </button>
-              )}
+              <button type="button" onClick={() => setShowCard(true)}
+                className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-400 transition hover:bg-blue-500/20">
+                📄 Cartão CNPJ
+              </button>
               <button type="button" onClick={resetPipeline}
                 className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm font-semibold text-amber-400 transition hover:bg-amber-500/20">
                 🔄 Novo Farm
@@ -327,8 +325,8 @@ export default function GodModePanel() {
         </div>
       </div>
 
-      {/* Modal cartão CNPJ */}
-      {showCard && clientId && (
+      {/* Modal cartão CNPJ — abre mesmo sem clientId (preenchimento manual) */}
+      {showCard && (
         <CnpjCardModal clientId={clientId} workerUrl={workerUrl} onClose={() => setShowCard(false)} />
       )}
 

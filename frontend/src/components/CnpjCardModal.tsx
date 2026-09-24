@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+type CardModel = 'br' | 'gr';
+
 type CardData = {
   razaoSocial: string;
   nomeFantasia: string;
@@ -10,6 +12,7 @@ type CardData = {
   porte: string;
   naturezaJuridica: string;
   atividadePrincipal: string;
+  atividadesSecundarias: string;
   endereco: string;
   numero: string;
   complemento: string;
@@ -20,43 +23,51 @@ type CardData = {
   email: string;
   telefone: string;
   smsPhone: string;
+  pais: string;
 };
 
-type Props = { clientId: string; workerUrl?: string | null; onClose: () => void };
+// clientId opcional: quando não há CNPJ digitado, o modal abre em branco
+// pro usuário preencher tudo manualmente e escolher o modelo (BR ou GR).
+type Props = { clientId?: string | null; workerUrl?: string | null; onClose: () => void };
 
-const FIELDS: { key: keyof CardData; label: string; hint?: string; wide?: boolean }[] = [
-  { key: 'razaoSocial',        label: 'Nome Empresarial',          wide: true },
-  { key: 'nomeFantasia',       label: 'Nome Fantasia' },
-  { key: 'cnpj',               label: 'CNPJ' },
-  { key: 'dataAbertura',       label: 'Data de Abertura',          hint: 'ex: 11/03/2026' },
-  { key: 'situacao',           label: 'Situação Cadastral' },
-  { key: 'dataSituacao',       label: 'Data da Situação',          hint: 'ex: 11/03/2026' },
-  { key: 'porte',              label: 'Porte',                     hint: 'EPP, ME, DEMAIS...' },
-  { key: 'naturezaJuridica',   label: 'Natureza Jurídica',         wide: true, hint: 'ex: 206-2 - Sociedade Empresária Limitada' },
-  { key: 'atividadePrincipal', label: 'Atividade Principal (CNAE)', wide: true },
-  { key: 'endereco',           label: 'Logradouro',                wide: true },
-  { key: 'numero',             label: 'Número' },
-  { key: 'complemento',        label: 'Complemento' },
-  { key: 'bairro',             label: 'Bairro/Distrito' },
-  { key: 'cep',                label: 'CEP' },
-  { key: 'municipio',          label: 'Município' },
-  { key: 'uf',                 label: 'UF' },
-  { key: 'email',              label: 'Endereço Eletrônico',       wide: true },
-  { key: 'telefone',           label: 'Telefone' },
-  { key: 'smsPhone',           label: 'Número SMS (verificação)',  hint: 'Substitui telefone no documento' },
+type Field = { key: keyof CardData; label: string; hint?: string; wide?: boolean; model?: CardModel };
+
+const FIELDS: Field[] = [
+  { key: 'pais',                 label: 'País (cabeçalho)',           hint: 'ex: CANADA', model: 'gr' },
+  { key: 'razaoSocial',          label: 'Nome Empresarial',           wide: true },
+  { key: 'nomeFantasia',         label: 'Nome Fantasia' },
+  { key: 'cnpj',                 label: 'Número de Inscrição / CNPJ' },
+  { key: 'dataAbertura',         label: 'Data de Abertura',           hint: 'ex: 11/03/2026' },
+  { key: 'situacao',             label: 'Situação Cadastral' },
+  { key: 'dataSituacao',         label: 'Data da Situação',           hint: 'ex: 11/03/2026' },
+  { key: 'porte',                label: 'Porte',                      hint: 'EPP, ME, DEMAIS...' },
+  { key: 'naturezaJuridica',     label: 'Natureza Jurídica',          wide: true, hint: 'ex: 206-2 - Sociedade Empresária Limitada' },
+  { key: 'atividadePrincipal',   label: 'Atividade Principal (CNAE)', wide: true },
+  { key: 'atividadesSecundarias', label: 'Atividades Secundárias',    wide: true, hint: 'default: Não informada', model: 'gr' },
+  { key: 'endereco',             label: 'Logradouro',                 wide: true },
+  { key: 'numero',               label: 'Número' },
+  { key: 'complemento',          label: 'Complemento' },
+  { key: 'bairro',               label: 'Bairro/Distrito' },
+  { key: 'cep',                  label: 'CEP' },
+  { key: 'municipio',            label: 'Município' },
+  { key: 'uf',                   label: 'UF' },
+  { key: 'email',                label: 'Endereço Eletrônico',        wide: true },
+  { key: 'telefone',             label: 'Telefone' },
+  { key: 'smsPhone',             label: 'Número SMS (verificação)',   hint: 'Substitui telefone no documento' },
 ];
 
 const EMPTY: CardData = {
   razaoSocial:'', nomeFantasia:'', cnpj:'', dataAbertura:'', situacao:'ATIVA',
   dataSituacao:'', porte:'', naturezaJuridica:'', atividadePrincipal:'',
-  endereco:'', numero:'', complemento:'', bairro:'', cep:'', municipio:'',
-  uf:'', email:'', telefone:'', smsPhone:'',
+  atividadesSecundarias:'', endereco:'', numero:'', complemento:'', bairro:'',
+  cep:'', municipio:'', uf:'', email:'', telefone:'', smsPhone:'', pais:'CANADA',
 };
 
 export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   const [data, setData]           = useState<CardData | null>(null);
   const [loading, setLoading]     = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [model, setModel]         = useState<CardModel>('br');
 
   // Gera email do domínio a partir da workerUrl
   const domainEmail = workerUrl ? (() => {
@@ -70,6 +81,13 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   })() : '';
 
   useEffect(() => {
+    // Sem cliente: abre em branco pra preenchimento 100% manual.
+    if (!clientId) {
+      setData({ ...EMPTY, email: domainEmail });
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('bmfarm.token');
     const base  = import.meta.env.VITE_API_URL
       ? import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/api'
@@ -93,7 +111,7 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   // Salva os dados editados no Client — o SITE passa a mostrar exatamente
   // os mesmos dados do documento (cartão), evitando divergência na Meta.
   const handleSave = async () => {
-    if (!data) return;
+    if (!data || !clientId) return;
     setSaving(true);
     setSavedMsg('');
     try {
@@ -114,13 +132,14 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
 
   const handleDownload = async () => {
     if (!data) return;
+    if (!data.razaoSocial.trim()) { alert('Preencha ao menos o Nome Empresarial pra gerar o PDF.'); return; }
     setGenerating(true);
     try {
       const token = localStorage.getItem('bmfarm.token');
       const base  = import.meta.env.VITE_API_URL
         ? import.meta.env.VITE_API_URL.replace(/\/$/, '') + '/api'
         : '/api';
-      const res  = await fetch(`${base}/bm/card`, {
+      const res  = await fetch(`${base}/bm/card?model=${model}`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -137,15 +156,28 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
       <div className="w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 gap-3 flex-wrap">
           <div>
             <h2 className="text-lg font-bold text-slate-100">📄 Comprovante CNPJ</h2>
-            <p className="text-xs text-slate-500">Modelo oficial da Receita Federal — edite e gere o PDF</p>
+            <p className="text-xs text-slate-500">Edite os campos, escolha o modelo e gere o PDF</p>
           </div>
-          <button type="button" onClick={onClose}
-            className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-400 hover:text-white transition">
-            ✕ Fechar
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Seletor de modelo: PDF BR (Receita Federal) ou PDF GR (gringo) */}
+            <div className="flex rounded-lg border border-slate-700 bg-slate-800 p-0.5">
+              <button type="button" onClick={() => setModel('br')}
+                className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${model === 'br' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                PDF BR
+              </button>
+              <button type="button" onClick={() => setModel('gr')}
+                className={`rounded-md px-3 py-1.5 text-xs font-bold transition ${model === 'gr' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                PDF GR
+              </button>
+            </div>
+            <button type="button" onClick={onClose}
+              className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-sm text-slate-400 hover:text-white transition">
+              ✕ Fechar
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -161,7 +193,7 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
             <div className="text-center py-16 text-slate-500">Não foi possível carregar os dados.</div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
-              {FIELDS.map(f => (
+              {FIELDS.filter(f => !f.model || f.model === model).map(f => (
                 <div key={f.key} className={f.wide ? 'sm:col-span-2' : ''}>
                   <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">
                     {f.label}
@@ -181,13 +213,17 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
         {data && (
           <div className="border-t border-slate-800 px-6 py-4 flex items-center justify-between gap-3 flex-wrap">
             <p className="text-xs text-slate-600 flex-1 min-w-[180px]">
-              {savedMsg || <>💾 "Salvar" aplica os dados no site também (documento = site). "Gerar PDF" → <kbd className="rounded bg-slate-700 px-1">Ctrl+P</kbd></>}
+              {savedMsg || (clientId
+                ? <>💾 "Salvar" aplica os dados no site também (documento = site). "Gerar PDF" → <kbd className="rounded bg-slate-700 px-1">Ctrl+P</kbd></>
+                : <>✍️ Modo manual — preencha os campos e gere o PDF ({model.toUpperCase()}). "Gerar PDF" → <kbd className="rounded bg-slate-700 px-1">Ctrl+P</kbd></>)}
             </p>
             <div className="flex items-center gap-2 shrink-0">
-              <button type="button" onClick={handleSave} disabled={saving}
-                className="flex items-center gap-2 rounded-xl border border-emerald-600 px-5 py-2.5 text-sm font-bold text-emerald-400 hover:bg-emerald-600/10 transition disabled:opacity-50">
-                {saving ? 'Salvando...' : '💾 Salvar dados'}
-              </button>
+              {clientId && (
+                <button type="button" onClick={handleSave} disabled={saving}
+                  className="flex items-center gap-2 rounded-xl border border-emerald-600 px-5 py-2.5 text-sm font-bold text-emerald-400 hover:bg-emerald-600/10 transition disabled:opacity-50">
+                  {saving ? 'Salvando...' : '💾 Salvar dados'}
+                </button>
+              )}
               <button type="button" onClick={handleDownload} disabled={generating}
                 className="flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-emerald-500 transition disabled:opacity-50">
                 {generating ? (
