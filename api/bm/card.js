@@ -8,8 +8,9 @@ function buildCardHtml(d) {
   function fmtPhone(t){
     if(!t) return '';
     let n=String(t).replace(/\D/g,'');
+    if(n.startsWith('1') && n.length===11){ n=n.slice(1); return `(${n.slice(0,3)}) ${n.slice(3,6)}-${n.slice(6)}`; }
     if(n.startsWith('55') && n.length>=12) n=n.slice(2);
-    if(n.length===10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+    if(n.length===10) return `(${n.slice(0,3)}) ${n.slice(3,6)}-${n.slice(6)}`;
     if(n.length===11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
     return t;
   }
@@ -386,9 +387,10 @@ module.exports = async function handler(req, res) {
     function fmtPhone(tel) {
       if (!tel) return '';
       let d = String(tel).replace(/\D/g, '');
+      if (d.startsWith('1') && d.length === 11) { d = d.slice(1); return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`; }
       if (d.length === 13 && d.startsWith('55')) d = d.slice(2);
       if (d.length === 12 && d.startsWith('55')) d = d.slice(2);
-      if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+      if (d.length === 10) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
       if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
       return tel;
     }
