@@ -11,12 +11,12 @@ const { getZoneId, getCfHeaders, ZAPLIFTY_DOMAINS, computeTemplateIndex } = requ
 function formatPhoneForReplace(phone) {
   let n = String(phone || '').replace(/\D/g, '');
   if (n.startsWith('1') && n.length === 11) {
-    // Canada/EUA
+    // Canada/EUA (codigo de pais 1 explicito)
     n = n.slice(1);
     return `(${n.slice(0,3)}) ${n.slice(3,6)}-${n.slice(6)}`;
   }
-  if (n.startsWith('55') && n.length >= 12) n = n.slice(2); // Brasil
-  if (n.length === 10) return `(${n.slice(0,3)}) ${n.slice(3,6)}-${n.slice(6)}`; // Canada/EUA sem codigo
+  if (n.startsWith('55') && n.length >= 12) n = n.slice(2); // Brasil com codigo
+  if (n.length === 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`; // Brasil fixo
   if (n.length === 11) return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`; // Brasil mobile
   return phone;
 }

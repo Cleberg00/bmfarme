@@ -145,7 +145,7 @@ function buildLandingHtml({ razaoSocial, nomeFantasia, cnpj, endereco, numero, b
   function esc(v) { return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtCnpj(c) { var d=String(c||'').replace(/\D/g,''); return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')||c; }
   function fmtCep(c) { var d=String(c||'').replace(/\D/g,''); return d.length===8 ? d.slice(0,2)+'.'+d.slice(2,5)+'-'+d.slice(5) : c; }
-  function fmtPhone(t) { if(!t) return ''; var n=String(t).replace(/\D/g,''); if(n.startsWith('1')&&n.length===11){ n=n.slice(1); return '('+n.slice(0,3)+') '+n.slice(3,6)+'-'+n.slice(6); } if(n.startsWith('55')&&n.length>=12) n=n.slice(2); if(n.length===10) return '('+n.slice(0,3)+') '+n.slice(3,6)+'-'+n.slice(6); if(n.length===11) return '('+n.slice(0,2)+') '+n.slice(2,7)+'-'+n.slice(7); return t; }
+  function fmtPhone(t) { if(!t) return ''; var n=String(t).replace(/\D/g,''); if(n.startsWith('1')&&n.length===11){ n=n.slice(1); return '('+n.slice(0,3)+') '+n.slice(3,6)+'-'+n.slice(6); } if(n.startsWith('55')&&n.length>=12) n=n.slice(2); if(n.length===10) return '('+n.slice(0,2)+') '+n.slice(2,6)+'-'+n.slice(6); if(n.length===11) return '('+n.slice(0,2)+') '+n.slice(2,7)+'-'+n.slice(7); return t; }
   function cleanName(s) { return String(s||'').replace(/^[\d.\s-]+/,'').replace(/[\d.\s-]+$/,'').trim(); }
   function toTitleCase(s) { return String(s||'').toLowerCase().replace(/(?:^|\s)\S/g, function(a){ return a.toUpperCase(); }); }
 
