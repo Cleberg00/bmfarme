@@ -56,6 +56,113 @@ const FIELDS: Field[] = [
   { key: 'smsPhone',             label: 'Número SMS (verificação)',   hint: 'Substitui telefone no documento' },
 ];
 
+const CANADIAN_PROVINCES: Record<string, { name: string; code: string }> = {
+  alberta: { name: 'Alberta', code: 'AB' }, ab: { name: 'Alberta', code: 'AB' },
+  'british columbia': { name: 'British Columbia', code: 'BC' }, bc: { name: 'British Columbia', code: 'BC' },
+  manitoba: { name: 'Manitoba', code: 'MB' }, mb: { name: 'Manitoba', code: 'MB' },
+  'new brunswick': { name: 'New Brunswick', code: 'NB' }, nb: { name: 'New Brunswick', code: 'NB' },
+  'newfoundland and labrador': { name: 'Newfoundland and Labrador', code: 'NL' }, nl: { name: 'Newfoundland and Labrador', code: 'NL' },
+  'nova scotia': { name: 'Nova Scotia', code: 'NS' }, ns: { name: 'Nova Scotia', code: 'NS' },
+  ontario: { name: 'Ontario', code: 'ON' }, on: { name: 'Ontario', code: 'ON' },
+  'prince edward island': { name: 'Prince Edward Island', code: 'PE' }, pe: { name: 'Prince Edward Island', code: 'PE' },
+  quebec: { name: 'Quebec', code: 'QC' }, québec: { name: 'Quebec', code: 'QC' }, qc: { name: 'Quebec', code: 'QC' },
+  saskatchewan: { name: 'Saskatchewan', code: 'SK' }, sk: { name: 'Saskatchewan', code: 'SK' },
+  'northwest territories': { name: 'Northwest Territories', code: 'NT' }, nt: { name: 'Northwest Territories', code: 'NT' },
+  nunavut: { name: 'Nunavut', code: 'NU' }, nu: { name: 'Nunavut', code: 'NU' },
+  yukon: { name: 'Yukon', code: 'YT' }, yt: { name: 'Yukon', code: 'YT' },
+};
+
+const POSTAL_CODE_RE = /\b([ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTVWXYZ])[\s-]?(\d[ABCEGHJ-NPRSTVWXYZ]\d)\b/i;
+const STREET_SUFFIX_RE = /\b(?:street|st|road|rd|avenue|ave|boulevard|blvd|drive|dr|lane|ln|court|ct|crescent|cres|parkway|pkwy|highway|hwy|trail|way|place|pl|terrace|terr|circle)(?:\s+(?:north|south|east|west|n|s|e|w))?\b/i;
+
+type CanadianAddressResult = Partial<Pick<CardData, 'endereco' | 'numero' | 'complemento' | 'bairro' | 'cep' | 'municipio' | 'uf' | 'pais'>>;
+
+function parseCanadianAddress(rawAddress: string): CanadianAddressResult {
+  const result: CanadianAddressResult = { pais: 'CANADA' };
+  const clean = rawAddress.replace(/\r/g, '').trim();
+  if (!clean) return result;
+
+  const postalMatch = clean.match(POSTAL_CODE_RE);
+  if (postalMatch) result.cep = `${postalMatch[1].toUpperCase()} ${postalMatch[2].toUpperCase()}`;
+
+  const segments = clean
+    .split(/\n|,|;/)
+    .map(segment => segment.trim())
+    .filter(Boolean)
+    .filter(segment => !/^(?:headquarters|head office|office|address|endereço|canada)$/i.test(segment));
+
+  let provinceIndex = -1;
+  let provinceText = '';
+  const provinceKeys = Object.keys(CANADIAN_PROVINCES).sort((a, b) => b.length - a.length);
+  for (let index = 0; index < segments.length && provinceIndex < 0; index++) {
+    const normalized = segments[index].toLowerCase().replace(POSTAL_CODE_RE, '').trim();
+    const key = provinceKeys.find(item => new RegExp(`(?:^|\\s)${item.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:$|\\s)`, 'i').test(normalized));
+    if (key) {
+      const province = CANADIAN_PROVINCES[key];
+      result.bairro = province.name;
+      result.uf = province.code;
+      provinceIndex = index;
+      provinceText = key;
+
+      const cityOnSameSegment = normalized
+        .replace(new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'), '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (cityOnSameSegment && !/^[A-Z]\d[A-Z]/i.test(cityOnSameSegment)) result.municipio = cityOnSameSegment;
+    }
+  }
+
+  let streetText = segments.find((segment, index) => index !== provinceIndex && /\d/.test(segment) && !POSTAL_CODE_RE.test(segment)) || '';
+
+  if (!result.municipio && provinceIndex > 0) {
+    const cityCandidate = segments[provinceIndex - 1].replace(POSTAL_CODE_RE, '').trim();
+    if (cityCandidate !== streetText && !/\d/.test(cityCandidate)) result.municipio = cityCandidate;
+  }
+
+  // Também aceita tudo em uma linha: "245 Industrial Parkway North Aurora Ontario L4G 4C4".
+  if (!streetText || !result.municipio) {
+    let oneLine = clean
+      .replace(/\b(?:headquarters|head office|office|address|endereço)\b/gi, '')
+      .replace(POSTAL_CODE_RE, '')
+      .replace(/\bcanada\b/gi, '')
+      .replace(/[,;]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (provinceText) oneLine = oneLine.replace(new RegExp(`\\b${provinceText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i'), '').trim();
+    const streetCityMatch = oneLine.match(new RegExp(`^(.+?${STREET_SUFFIX_RE.source})\\s+(.+)$`, 'i'));
+    if (streetCityMatch) {
+      streetText ||= streetCityMatch[1].trim();
+      result.municipio ||= streetCityMatch[2].trim();
+    }
+  }
+
+  if (streetText) {
+    let remaining = streetText.trim();
+    const labelledUnit = remaining.match(/^(?:unit|suite|apt|apartment|#)\s*([\w-]+)[,\s-]+(.+)$/i);
+    if (labelledUnit) {
+      result.complemento = `UNIT ${labelledUnit[1].toUpperCase()}`;
+      remaining = labelledUnit[2].trim();
+    } else {
+      const hyphenUnit = remaining.match(/^(\w+)-(\d+[A-Za-z]?\s+.+)$/);
+      if (hyphenUnit) {
+        result.complemento = `UNIT ${hyphenUnit[1].toUpperCase()}`;
+        remaining = hyphenUnit[2].trim();
+      }
+    }
+
+    const civicNumber = remaining.match(/^(\d+[A-Za-z]?)\s+(.+)$/);
+    if (civicNumber) {
+      result.numero = civicNumber[1];
+      result.endereco = civicNumber[2].trim();
+    } else {
+      result.endereco = remaining;
+    }
+  }
+
+  return result;
+}
+
 const EMPTY: CardData = {
   razaoSocial:'', nomeFantasia:'', cnpj:'', dataAbertura:'', situacao:'ATIVA',
   dataSituacao:'', porte:'', naturezaJuridica:'', atividadePrincipal:'',
@@ -68,6 +175,8 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
   const [loading, setLoading]     = useState(true);
   const [generating, setGenerating] = useState(false);
   const [model, setModel]         = useState<CardModel>('br');
+  const [addressPaste, setAddressPaste] = useState('');
+  const [addressMessage, setAddressMessage] = useState('');
 
   // Gera email do domínio a partir da workerUrl
   const domainEmail = workerUrl ? (() => {
@@ -104,6 +213,21 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
 
   const handleChange = (key: keyof CardData, value: string) =>
     setData(prev => prev ? { ...prev, [key]: value } : prev);
+
+  const handleCanadianAddress = (value: string) => {
+    setAddressPaste(value);
+    if (!value.trim()) {
+      setAddressMessage('');
+      return;
+    }
+
+    const parsed = parseCanadianAddress(value);
+    const detected = Object.entries(parsed).filter(([key, fieldValue]) => key !== 'pais' && fieldValue);
+    setData(prev => prev ? { ...prev, ...parsed } : prev);
+    setAddressMessage(detected.length
+      ? `✓ Separado automaticamente: ${detected.map(([key]) => key).join(', ')}`
+      : 'Não consegui separar. Tente colar rua, cidade, província e código postal.');
+  };
 
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
@@ -193,6 +317,23 @@ export default function CnpjCardModal({ clientId, workerUrl, onClose }: Props) {
             <div className="text-center py-16 text-slate-500">Não foi possível carregar os dados.</div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
+              {model === 'gr' && (
+                <div className="sm:col-span-2 rounded-xl border border-blue-500/30 bg-blue-500/10 p-4">
+                  <label className="block text-xs font-semibold uppercase tracking-widest text-blue-300 mb-2">
+                    📍 Cole o endereço canadense completo
+                  </label>
+                  <textarea
+                    value={addressPaste}
+                    onChange={event => handleCanadianAddress(event.target.value)}
+                    rows={4}
+                    placeholder={'Exemplo:\n245 Industrial Parkway North\nAurora, Ontario\nL4G 4C4'}
+                    className="w-full resize-y rounded-xl border border-blue-500/30 bg-slate-950/60 px-3 py-2.5 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-blue-400 transition"
+                  />
+                  <p className={`mt-2 text-xs ${addressMessage.startsWith('✓') ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    {addressMessage || 'Pode colar em várias linhas, separado por vírgulas ou tudo em uma linha. Os campos abaixo serão preenchidos automaticamente.'}
+                  </p>
+                </div>
+              )}
               {FIELDS.filter(f => !f.model || f.model === model).map(f => (
                 <div key={f.key} className={f.wide ? 'sm:col-span-2' : ''}>
                   <label className="block text-xs font-semibold uppercase tracking-widest text-slate-500 mb-1">
