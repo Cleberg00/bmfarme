@@ -206,7 +206,6 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
         <button
           type="button"
           onClick={handleGenerate}
-          disabled={loading}
           className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-3 text-base font-bold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
