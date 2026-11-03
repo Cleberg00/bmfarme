@@ -144,12 +144,15 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
   };
 
   const handleGenerate = async () => {
+    console.log('🚀 Gerar Empresa clicado!');
     setLoading(true);
     setError('');
     setClient(null);
     try {
       // Chama a API para gerar empresa aleatória (busca CNPJ do banco)
+      console.log('🔍 Chamando /cnpj/generate...');
       const { data } = await api.post<{ client: ClientPayload }>(`/cnpj/generate`, {});
+      console.log('✅ Dados recebidos:', data);
       setClient(data.client);
       onClientReady(data.client.id, {
         razaoSocial: data.client.razaoSocial,
@@ -159,6 +162,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
       });
       alert('✅ Empresa gerada com sucesso!');
     } catch (err) {
+      console.error('❌ Erro ao gerar empresa:', err);
       setError(
         axios.isAxiosError(err)
           ? err.response?.data?.error || err.message
