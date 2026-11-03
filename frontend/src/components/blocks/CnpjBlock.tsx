@@ -144,15 +144,12 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
   };
 
   const handleGenerate = async () => {
-    if (!isReady) return;
     setLoading(true);
     setError('');
     setClient(null);
     try {
-      // Chama a API para gerar empresa automaticamente
-      const { data } = await api.post<{ client: ClientPayload }>(`/cnpj/generate`, {
-        cnpj: rawDigits
-      });
+      // Chama a API para gerar empresa aleatória (busca CNPJ do banco)
+      const { data } = await api.post<{ client: ClientPayload }>(`/cnpj/generate`, {});
       setClient(data.client);
       onClientReady(data.client.id, {
         razaoSocial: data.client.razaoSocial,
