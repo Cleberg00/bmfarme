@@ -149,7 +149,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
     setClient(null);
     try {
       // Pede ao backend uma empresa aleatoria do banco de CNPJs
-      const { data } = await api.post<{ client: ClientPayload }>(`/cnpj/generate`, {});
+      const { data } = await api.post<{ client: ClientPayload }>(`/generate-company`, {});
       setCnpj(formatCnpj(data.client.cnpj));
       setClient(data.client);
       onClientReady(data.client.id, {
