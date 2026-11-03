@@ -143,6 +143,35 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
     }
   };
 
+  const handleGenerate = async () => {
+    if (!isReady) return;
+    setLoading(true);
+    setError('');
+    setClient(null);
+    try {
+      // Chama a API para gerar empresa automaticamente
+      const { data } = await api.post<{ client: ClientPayload }>(`/cnpj/generate`, {
+        cnpj: rawDigits
+      });
+      setClient(data.client);
+      onClientReady(data.client.id, {
+        razaoSocial: data.client.razaoSocial,
+        nomeFantasia: data.client.nomeFantasia,
+        endereco: data.client.endereco,
+        cep: data.client.cep,
+      });
+      alert('✅ Empresa gerada com sucesso!');
+    } catch (err) {
+      setError(
+        axios.isAxiosError(err)
+          ? err.response?.data?.error || err.message
+          : err instanceof Error ? err.message : 'Falha ao gerar empresa.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
@@ -172,6 +201,17 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
               Buscando...
             </>
           ) : 'Consultar CNPJ'}
+        </button>
+        <button
+          type="button"
+          onClick={handleGenerate}
+          disabled={loading}
+          className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-3 text-base font-bold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          Gerar Empresa
         </button>
       </div>
 
