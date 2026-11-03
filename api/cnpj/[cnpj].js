@@ -12,7 +12,22 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   try {
-    const { cnpj } = req.query;
+    let { cnpj } = req.query;
+
+    // Rota especial: /cnpj/random → pega um CNPJ aleatorio do banco de dados
+    if (cnpj === 'random' || cnpj === 'generate') {
+      const total = await prisma.client.count();
+      if (total === 0) {
+        return res.status(404).json({ error: 'Nenhum cliente no banco. Consulte um CNPJ manual primeiro.' });
+      }
+      const skip = Math.floor(Math.random() * total);
+      const randomClient = await prisma.client.findFirst({ skip, select: { cnpj: true } });
+      if (!randomClient) {
+        return res.status(404).json({ error: 'Nenhum cliente encontrado no banco.' });
+      }
+      cnpj = randomClient.cnpj;
+    }
+
     const d = await lookupCnpj(cnpj);
     const raw = d.raw || {};
 
