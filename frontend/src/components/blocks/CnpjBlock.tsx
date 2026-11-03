@@ -144,15 +144,13 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
   };
 
   const handleGenerate = async () => {
-    console.log('🚀 Gerar Empresa clicado!');
     setLoading(true);
     setError('');
     setClient(null);
     try {
-      // Chama a API para gerar empresa aleatória (busca CNPJ do banco)
-      console.log('🔍 Chamando /cnpj/generate...');
+      // Pede ao backend uma empresa aleatoria do banco de CNPJs
       const { data } = await api.post<{ client: ClientPayload }>(`/cnpj/generate`, {});
-      console.log('✅ Dados recebidos:', data);
+      setCnpj(formatCnpj(data.client.cnpj));
       setClient(data.client);
       onClientReady(data.client.id, {
         razaoSocial: data.client.razaoSocial,
@@ -160,9 +158,7 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
         endereco: data.client.endereco,
         cep: data.client.cep,
       });
-      alert('✅ Empresa gerada com sucesso!');
     } catch (err) {
-      console.error('❌ Erro ao gerar empresa:', err);
       setError(
         axios.isAxiosError(err)
           ? err.response?.data?.error || err.message
@@ -206,14 +202,25 @@ export default function CnpjBlock({ onClientReady, workerUrl }: CnpjBlockProps) 
         <button
           type="button"
           onClick={handleGenerate}
-          onMouseDown={() => console.log('mousedown button gerar empresa')}
-          onFocus={() => console.log('focus button gerar empresa')}
+          disabled={loading}
           className="flex items-center gap-2 rounded-xl bg-purple-600 px-6 py-3 text-base font-bold text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-          </svg>
-          Gerar Empresa
+          {loading ? (
+            <>
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" className="stroke-current opacity-20" strokeWidth="4" />
+                <path d="M22 12a10 10 0 0 0-10-10" className="stroke-current" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+              Gerando...
+            </>
+          ) : (
+            <>
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              Gerar Empresa
+            </>
+          )}
         </button>
       </div>
 
