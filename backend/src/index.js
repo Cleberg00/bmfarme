@@ -7,6 +7,7 @@ const cnpjRoutes = require('./routes/cnpj.routes');
 const infraRoutes = require('./routes/infra.routes');
 const smsRoutes = require('./routes/sms.routes');
 const bmRoutes = require('./routes/bm.routes');
+const whatsappRoutes = require('./routes/whatsapp.routes');
 
 const app = express();
 let server = null;
@@ -29,6 +30,7 @@ app.use('/api/cnpj', cnpjRoutes);
 app.use('/api/infra', infraRoutes);
 app.use('/api/sms', smsRoutes);
 app.use('/api/bm', bmRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 app.use((req, res) => {
   return res.status(404).json({ error: 'Route not found.' });

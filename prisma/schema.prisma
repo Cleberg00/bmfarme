@@ -35,23 +35,24 @@ enum BmStatus {
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
-  name      String
-  role      UserRole  @default(OPERATOR)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  clients    Client[]
-  domains    Domain[]
-  smsLogs    SmsLog[]
-  bmAssets   BmAsset[]
-  wabaAssets WabaAsset[]
+  id           String        @id @default(cuid())
+  email        String        @unique
+  password     String
+  name         String
+  role         UserRole      @default(OPERATOR)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  clients      Client[]
+  domains      Domain[]
+  smsLogs      SmsLog[]
+  bmAssets     BmAsset[]
+  wabaAssets   WabaAsset[]
+  autoAnswers  AutoAnswer[]
 }
 
 model Client {
-  id                 String    @id @default(cuid())
-  cnpj               String    @unique
+  id                 String        @id @default(cuid())
+  cnpj               String        @unique
   razaoSocial        String
   nomeFantasia       String?
   endereco           String
@@ -70,11 +71,12 @@ model Client {
   telefone           String?
   email              String?
   userId             String
-  createdAt          DateTime  @default(now())
-  user               User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt          DateTime      @default(now())
+  user               User          @relation(fields: [userId], references: [id], onDelete: Restrict)
   domains            Domain[]
   smsLogs            SmsLog[]
   bmAssets           BmAsset[]
+  autoAnswers        AutoAnswer[]
 }
 
 model Domain {
@@ -162,4 +164,20 @@ model WabaAsset {
   updatedAt   DateTime   @updatedAt
   bmAsset     BmAsset?   @relation(fields: [bmAssetId], references: [id], onDelete: SetNull)
   user        User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+}
+
+model AutoAnswer {
+  id               String    @id @default(cuid())
+  clientId         String
+  messageTemplate  String
+  isActive         Boolean   @default(true)
+  responseDelay    Int       @default(30)
+  keywords         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  client           Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([clientId])
 }
