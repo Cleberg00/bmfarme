@@ -69,6 +69,7 @@ model Client {
   naturezaJuridica   String?
   atividadePrincipal String?
   telefone           String?
+  whatsapp           String?
   email              String?
   userId             String
   createdAt          DateTime      @default(now())
