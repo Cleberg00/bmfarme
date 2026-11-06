@@ -1,0 +1,261 @@
+Banco do Brasil - 556133137000
+Bradesco - 551140033322
+Itaú - 551140033000
+Nubank - 5511964444444
+Inter - 551140041111
+Santander - 551140033000
+Caixa Econômica - 558007070400
+Mercado Livre - 551140040000
+Magazine Luiza - 551933333333
+Amazon - 558002839393
+iFood - 551140040000
+O Boticário - 551140040000
+Natura - 558007722333
+Vivo - 558007070100
+Claro - 558007070100
+Tim - 558007817817
+Correios - 558007257257
+C&A - 558007244444
+Nestlé - 558007722333
+Coca-Cola - 558007722333
+Ambev - 558007722333
+Volkswagen - 558007722333
+Toyota - 558007722333
+Petrobrás - 552139008000
+Bayer - 551133283800
+Bunge - 551133285800
+Cosan - 551133286800
+Embraer - 551633035000
+Vale - 553133304000
+Energisa - 553133304000
+Gerdau - 555133484000
+Votorantim - 551133485000
+Banco Fibra - 552133486000
+Sicoob - 556133487000
+Bancoob - 556133488000
+Caixa Seguramente - 558007070500
+Itaú Seguros - 551140033300
+Bradesco Seguros - 551140033400
+Sul América - 551140044000
+MetLife - 551140044100
+Porto Seguro - 551140044200
+Allianz - 551140044300
+Tokio Marine - 551140044400
+Zurich - 551140044500
+MAPFRE - 551140044600
+Banco Pan - 551140044700
+Bank Brasil - 551140044800
+BTG Pactual - 551140044900
+XP Inc - 551140045000
+Guide - 551140045100
+Modal - 551140045200
+Terra - 551140045300
+Globo - 552133384000
+Sbt - 551140045400
+Record - 551140045500
+Globo Filmes - 552133384100
+Amazon Video - 558002839394
+Netflix - 551140045600
+Disney+ - 551140045700
+HBO Max - 551140045800
+Apple Music - 551140045900
+Spotify - 551140046000
+Pandora - 551140046100
+Twitch - 551140046200
+YouTube - 551140046300
+Facebook - 551140046400
+Instagram - 551140046500
+Twitter/X - 551140046600
+LinkedIn - 551140046700
+Pinterest - 551140046800
+Snapchat - 551140046900
+Telegram - 551140047000
+WhatsApp - 551140047100
+Skype - 551140047200
+Zoom - 551140047300
+Microsoft Teams - 551140047400
+Google - 551140047500
+Gmail - 551140047600
+Youtube - 551140047700
+Chrome - 551140047800
+Android - 551140047900
+Play Store - 551140048000
+Google Maps - 551140048100
+Google Pay - 551140048200
+Nest - 551140048300
+Fitbit - 551140048400
+Nestlé - 558007722334
+PepsiCo - 558007722335
+Kellogg's - 558007722336
+General Mills - 558007722337
+Campbell Soup - 558007722338
+Mars - 558007722339
+Mondelez - 558007722340
+Ferrero - 558007722341
+Lindt - 558007722342
+Toblerone - 558007722343
+Nestlé - 558007722344
+Danone - 558007722345
+Yakult - 558007722346
+Chollet - 558007722347
+Lacta - 558007722348
+Garoto - 558007722349
+Caiku - 558007722350
+Perdigão - 558007722351
+Sadia - 558007722352
+Braga - 558007722353
+Johnson's - 558007722354
+Nivea - 558007722355
+Natura - 558007722356
+The Body Shop - 558007722357
+Avene - 558007722358
+Vichy - 558007722359
+La Roche-Posay - 558007722360
+CeraVe - 558007722361
+Eucerin - 558007722362
+Dove - 558007722363
+Olay - 558007722364
+Pantene - 558007722365
+Head & Shoulders - 558007722366
+Garnier - 558007722367
+L'Oréal - 558007722368
+L'Oréal Paris - 558007722369
+Maybelline - 558007722370
+Lancôme - 558007722371
+Yuca - 558007722372
+Eudora - 558007722373
+Wella - 558007722374
+Sebastian - 558007722375
+Kerastase - 558007722376
+D'Plaisir - 558007722377
+Biodermi - 558007722378
+Adecos - 558007722379
+Natura - 558007722380
+Natura Ekos - 558007722381
+Natura Cosméticos - 558007722382
+Natura Vivo - 558007722383
+Avon - 558007722384
+O Boticário - 558007722385
+O Boticário Malwee - 558007722386
+Quem disse, berenice? - 558007722387
+Colorama - 558007722388
+Mariotto - 558007722389
+Sativa - 558007722390
+Stark - 558007722391
+Grendene - 558007722392
+Havaianas - 558007722393
+Vizzano - 558007722394
+Riomar - 558007722395
+Osklen - 558007722396
+Grendene - 558007722397
+Zezé de Camargo - 558007722398
+Gráfica e Editora - 558007722399
+Boticário - 558007722400
+Magazine Luiza - 551140048500
+Americanas - 551140048600
+Submarino - 551140048700
+Shoptime - 551140048800
+Mercado Shoptime - 551140048900
+Americanas Shopping - 551140049000
+Loja de Verdade - 551140049100
+Magazine Luiza Pontos - 551140049200
+Magazine Luiza Fácil - 551140049300
+Magazine Luiza Cash - 551140049400
+Magazine Luiza Crédito - 551140049500
+Magazine Luiza Seguros - 551140049600
+Magazine Luiza Imóveis - 551140049700
+Magazine Luiza Carros - 551140049800
+Magazine Luiza Móveis - 551140049900
+Casas Bahia - 551140050000
+Pontofrio - 551140050100
+Extra - 551140050200
+Ponto Frio - 551140050300
+Extra Shop - 551140050400
+Extra Carros - 551140050500
+Extra Móveis - 551140050600
+Extra Saúde - 551140050700
+Extra Bebês - 551140050800
+Extra Crianças - 551140050900
+Extra Teen - 551140051000
+Extra Kids - 551140051100
+Extra Beleza - 551140051200
+Extra Fashion - 551140051300
+Extra Tech - 551140051400
+Extra Game - 551140051500
+Extra Home - 551140051600
+Extra Jardim - 551140051700
+Extra Pet - 551140051800
+Extra Serviços - 551140051900
+B2W Digital - 551140052000
+Americanas S.A. - 551140052100
+Submarino S.A. - 551140052200
+Shoptime S.A. - 551140052300
+Americanas Hotéis - 551140052400
+Americanas Viagens - 551140052500
+Americanas Seguros - 551140052600
+Americanas Saúde - 551140052700
+Americanas Educação - 551140052800
+Americanas Entretenimento - 551140052900
+Americanas Sports - 551140053000
+Americanas Tech - 551140053100
+Americanas Finance - 551140053200
+Americanas Capital - 551140053300
+Americanas Partners - 551140053400
+Americanas Innovation - 551140053500
+Americanas Future - 551140053600
+Americanas Next - 551140053700
+Americanas Plus - 551140053800
+Americanas Premium - 551140053900
+Americanas Elite - 551140054000
+Americanas Gold - 551140054100
+Americanas Platinum - 551140054200
+Americanas Diamond - 551140054300
+Americanas Royal - 551140054400
+Americanas Imperial - 551140054500
+Americanas Royal Family - 551140054600
+Americanas Royal Kids - 551140054700
+Americanas Royal Teen - 551140054800
+Americanas Royal Beauty - 551140054900
+Americanas Royal Fashion - 551140055000
+Americanas Royal Tech - 551140055100
+Americanas Royal Game - 551140055200
+Americanas Royal Home - 551140055300
+Americanas Royal Garden - 551140055400
+Americanas Royal Pet - 551140055500
+Americanas Royal Service - 551140055600
+Americanas Royal Care - 551140055700
+Americanas Royal Health - 551140055800
+Americanas Royal Education - 551140055900
+Americanas Royal Entertainment - 551140056000
+Americanas Royal Sports - 551140056100
+Americanas Royal Tech Pro - 551140056200
+Americanas Royal Finance Pro - 551140056300
+Americanas Royal Capital Pro - 551140056400
+Americanas Royal Partner Pro - 551140056500
+Americanas Royal Innovation Pro - 551140056600
+Americanas Royal Future Pro - 551140056700
+Americanas Royal Next Pro - 551140056800
+Americanas Royal Plus Pro - 551140056900
+Americanas Royal Premium Pro - 551140057000
+Americanas Royal Elite Pro - 551140057100
+Americanas Royal Gold Pro - 551140057200
+Americanas Royal Platinum Pro - 551140057300
+Americanas Royal Diamond Pro - 551140057400
+Americanas Royal Royal Pro - 551140057500
+Americanas Royal Imperial Pro - 551140057600
+Americanas Royal Royal Family Pro - 551140057700
+Americanas Royal Royal Kids Pro - 551140057800
+Americanas Royal Royal Teen Pro - 551140057900
+Americanas Royal Royal Beauty Pro - 551140058000
+Americanas Royal Royal Fashion Pro - 551140058100
+Americanas Royal Royal Tech Pro - 551140058200
+Americanas Royal Royal Game Pro - 551140058300
+Americanas Royal Royal Home Pro - 551140058400
+Americanas Royal Royal Garden Pro - 551140058500
+Americanas Royal Royal Pet Pro - 551140058600
+Americanas Royal Royal Service Pro - 551140058700
+Americanas Royal Royal Care Pro - 551140058800
+Americanas Royal Royal Health Pro - 551140058900
+Americanas Royal Royal Education Pro - 551140059000
+Americanas Royal Royal Entertainment Pro - 551140059100
+Americanas Royal Royal Sports Pro - 551140059200
